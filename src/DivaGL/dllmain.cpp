@@ -87,8 +87,8 @@ void FASTCALL divagl_main() {
 
 #if defined(DINPUT8_DLL)
     load_original_dll();
-    LoadLibraryW(L"N:\\DUMP\\plugins\\DivaSound.dva");
-    LoadLibraryW(L"N:\\DUMP\\plugins\\TLAC.dva");
+    LoadLibraryW(L"plugins\\DivaSound.dva");
+    LoadLibraryW(L"plugins\\TLAC.dva");
 #endif
     extern void FASTCALL wrap_addresses();
     wrap_addresses();
