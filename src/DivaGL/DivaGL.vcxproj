@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DebugDLL|x64">
+      <Configuration>DebugDLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseDLL|x64">
+      <Configuration>ReleaseDLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{4D949362-9095-4113-9423-7E0492618F16}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>DivaGL</TargetName>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(SolutionDir)obj\debug\DivaGL\</IntDir>
+    <TargetExt>.dva</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>dinput8</TargetName>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(SolutionDir)obj\debug\DivaGL\</IntDir>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>DivaGL</TargetName>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(SolutionDir)obj\release\DivaGL\</IntDir>
+    <TargetExt>.dva</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>dinput8</TargetName>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(SolutionDir)obj\release\DivaGL\</IntDir>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OmitFramePointers>false</OmitFramePointers>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <UseFullPaths>false</UseFullPaths>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\debugopt\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
+del "$(SolutionDir)bin\$(TargetName).exp"
+del "$(SolutionDir)bin\$(TargetName).lib"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;DINPUT8_DLL;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OmitFramePointers>false</OmitFramePointers>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <UseFullPaths>false</UseFullPaths>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\debugopt\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dll" "N:\DUMP\$(TargetName).dll"
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\$(TargetName).pdb"
+del "$(SolutionDir)bin\$(TargetName).exp"
+del "$(SolutionDir)bin\$(TargetName).lib"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <OmitFramePointers>false</OmitFramePointers>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CallingConvention>FastCall</CallingConvention>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\release\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
+del "$(SolutionDir)bin\$(TargetName).exp"
+del "$(SolutionDir)bin\$(TargetName).lib"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;DINPUT8_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <OmitFramePointers>false</OmitFramePointers>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CallingConvention>FastCall</CallingConvention>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\release\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dll" "N:\DUMP\$(TargetName).dll"
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\$(TargetName).pdb"
+del "$(SolutionDir)bin\$(TargetName).exp"
+del "$(SolutionDir)bin\$(TargetName).lib"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="auth_3d.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="mdl\disp_manager.cpp" />
+    <ClCompile Include="mdl\draw_object.cpp" />
+    <ClCompile Include="Glitter\glitter.cpp" />
+    <ClCompile Include="Glitter\particle.cpp" />
+    <ClCompile Include="Glitter\particle_manager.cpp" />
+    <ClCompile Include="Glitter\render_group.cpp" />
+    <ClCompile Include="Glitter\render_scene.cpp" />
+    <ClCompile Include="Glitter\scene.cpp" />
+    <ClCompile Include="gl_state.cpp" />
+    <ClCompile Include="inject.cpp" />
+    <ClCompile Include="light_param\fog.cpp" />
+    <ClCompile Include="light_param\light.cpp" />
+    <ClCompile Include="object.cpp" />
+    <ClCompile Include="print.cpp" />
+    <ClCompile Include="render.cpp" />
+    <ClCompile Include="renderer\dof.cpp" />
+    <ClCompile Include="renderer\fbo.cpp" />
+    <ClCompile Include="renderer\transparency.cpp" />
+    <ClCompile Include="render_context.cpp" />
+    <ClCompile Include="render_manager.cpp" />
+    <ClCompile Include="render_texture.cpp" />
+    <ClCompile Include="resolution_mode.cpp" />
+    <ClCompile Include="rob\rob.cpp" />
+    <ClCompile Include="shader_glsl.cpp" />
+    <ClCompile Include="shader_glsl_ft.cpp" />
+    <ClCompile Include="shader_table.cpp" />
+    <ClCompile Include="shadow.cpp" />
+    <ClCompile Include="shared.cpp" />
+    <ClCompile Include="sprite.cpp" />
+    <ClCompile Include="stage.cpp" />
+    <ClCompile Include="stage_param.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="uniform.cpp" />
+    <ClCompile Include="hook.cpp" />
+    <ClCompile Include="wrap.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DivaGL.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="auth_3d.hpp" />
+    <ClInclude Include="camera.hpp" />
+    <ClInclude Include="color.hpp" />
+    <ClInclude Include="mdl\disp_manager.hpp" />
+    <ClInclude Include="mdl\draw_object.hpp" />
+    <ClInclude Include="gl.hpp" />
+    <ClInclude Include="Glitter\glitter.hpp" />
+    <ClInclude Include="gl_array_buffer.hpp" />
+    <ClInclude Include="gl_element_array_buffer.hpp" />
+    <ClInclude Include="gl_shader_storage_buffer.hpp" />
+    <ClInclude Include="gl_uniform_buffer.hpp" />
+    <ClInclude Include="gl_state.hpp" />
+    <ClInclude Include="inject.hpp" />
+    <ClInclude Include="light_param\fog.hpp" />
+    <ClInclude Include="light_param\light.hpp" />
+    <ClInclude Include="object.hpp" />
+    <ClInclude Include="print.hpp" />
+    <ClInclude Include="render.hpp" />
+    <ClInclude Include="renderer\dof.hpp" />
+    <ClInclude Include="renderer\fbo.hpp" />
+    <ClInclude Include="renderer\transparency.hpp" />
+    <ClInclude Include="render_context.hpp" />
+    <ClInclude Include="render_manager.hpp" />
+    <ClInclude Include="render_texture.hpp" />
+    <ClInclude Include="resolution_mode.hpp" />
+    <ClInclude Include="rob\rob.hpp" />
+    <ClInclude Include="shader_glsl.hpp" />
+    <ClInclude Include="shader_glsl_ft.hpp" />
+    <ClInclude Include="shader_table.hpp" />
+    <ClInclude Include="shadow.hpp" />
+    <ClInclude Include="shared.hpp" />
+    <ClInclude Include="sprite.hpp" />
+    <ClInclude Include="stage.hpp" />
+    <ClInclude Include="stage_param.hpp" />
+    <ClInclude Include="texture.hpp" />
+    <ClInclude Include="types.hpp" />
+    <ClInclude Include="uniform.hpp" />
+    <ClInclude Include="hook.hpp" />
+    <ClInclude Include="wrap.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KKdLib\KKdLib.vcxproj">
+      <Project>{4c9636b9-e5b6-41e5-9afc-5b33cc9633de}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

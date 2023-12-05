@@ -1,0 +1,146 @@
+/*
+    by korenkonder
+    GitHub/GitLab: korenkonder
+*/
+
+#include "glitter.hpp"
+#include "../inject.hpp"
+#include "../gl_state.hpp"
+#include "../wrap.hpp"
+
+namespace Glitter {
+    void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec1, const vec3* vec2) {
+        *axis = vec3::cross(*vec1, *vec2);
+        *angle = vec3::length(*axis);
+        if (*angle >= 0.000001f)
+            *angle = asinf(min_def(*angle, 1.0f));
+        else {
+            *angle = 0.0f;
+            axis->x = vec1->z;
+            axis->y = 0.0f;
+            axis->z = vec1->x;
+            if (vec3::length(*axis) < 0.000001f) {
+                axis->x = -vec1->y;
+                axis->y = vec1->x;
+                axis->z = 0.0f;
+            }
+        }
+
+        if (vec3::dot(*vec1, *vec2) < 0.0f)
+            *angle = (float_t)M_PI - *angle;
+    }
+
+    void CreateBuffer(int32_t max_count, bool is_quad, GLuint& vao, GLuint& vbo, GLuint& ebo) {
+        glGenVertexArrays(1, &vao);
+        gl_state_bind_vertex_array(vao, true);
+
+        glGenBuffers(1, &vbo);
+        gl_state_bind_array_buffer(vbo, true);
+
+        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sizeof(Buffer) * max_count), 0, GL_DYNAMIC_DRAW);
+
+        if (is_quad) {
+            size_t count = (size_t)max_count / 4 * 5;
+            int32_t* ebo_data = (int32_t*)_operator_new(sizeof(int32_t) * (count - 1));
+            for (size_t i = 0, j = 0, k = count / 5 - 1; i < count; i += 5, j += 4, k--) {
+                ebo_data[i + 0] = (uint32_t)(j + 0);
+                ebo_data[i + 1] = (uint32_t)(j + 1);
+                ebo_data[i + 2] = (uint32_t)(j + 3);
+                ebo_data[i + 3] = (uint32_t)(j + 2);
+                if (k)
+                    ebo_data[i + 4] = 0xFFFFFFFF;
+            }
+
+            glGenBuffers(1, &ebo);
+            gl_state_bind_element_array_buffer(ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int32_t) * (count - 1), ebo_data, GL_STATIC_DRAW);
+            _operator_delete(ebo_data);
+        }
+        else
+            ebo = 0;
+
+        static const GLsizei buffer_size = sizeof(Buffer);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
+            (void*)offsetof(Buffer, position));
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, buffer_size,
+            (void*)offsetof(Buffer, uv));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, buffer_size,
+            (void*)offsetof(Buffer, color));
+
+        gl_state_bind_array_buffer(0);
+        gl_state_bind_vertex_array(0);
+        if (is_quad)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void DeleteBuffer(GLuint& vao, GLuint& vbo, GLuint& ebo) {
+        if (ebo) {
+            glDeleteBuffers(1, &ebo);
+            ebo = 0;
+        }
+
+        if (vbo) {
+            glDeleteBuffers(1, &vbo);
+            vbo = 0;
+        }
+
+        if (vao) {
+            glDeleteVertexArrays(1, &vao);
+            vao = 0;
+        }
+    }
+
+    // Particle
+    const char* _000000014039BC78_patch_data
+        = "\x48\x89\xE9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x3D";
+    const char* _00000001403AEA7E_patch_data
+        = "\x48\x89\xD9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x0B";
+
+    // RenderGroup
+    const char* _00000001403A5CA7_patch_data
+        = "\x48\x8B\xCE\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xE9\x95\x00\x00\x00";
+    const char* _00000001403A8552_patch_data
+        = "\x48\x89\xD9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x07";
+
+    void Patch() {
+        uint8_t buf[0x100];
+
+        // Particle
+        inject_uint32_t((void*)0x000000014039A396,
+            0x1B0 + sizeof(GLuint) * 2 + sizeof(DrawListData*));
+
+        memcpy(buf, _000000014039BC78_patch_data, 0x11);
+        *(uint64_t*)&buf[0x05] = (uint64_t)Particle::CreateBuffer;
+        inject_data((void*)0x000000014039BC78, buf, 0x11);
+
+        memcpy(buf, _00000001403AEA7E_patch_data, 0x11);
+        *(uint64_t*)&buf[0x05] = (uint64_t)Particle::DeleteBuffer;
+        inject_data((void*)0x00000001403AEA7E, buf, 0x11);
+
+        // RenderGroup
+        inject_uint32_t((void*)0x00000001403A9740, sizeof(RenderGroup));
+
+        memcpy(buf, _00000001403A5CA7_patch_data, 0x14);
+        *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::CreateBuffer;
+        inject_data((void*)0x00000001403A5CA7, buf, 0x14);
+
+        memcpy(buf, _00000001403A8552_patch_data, 0x11);
+        *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::DeleteBuffer;
+        inject_data((void*)0x00000001403A8552, buf, 0x11);
+
+        // RenderScene
+        buf[0x00] = 0x48;
+        buf[0x01] = 0xB8;
+        *(uint64_t*)&buf[0x02] = (uint64_t)RenderScene::Disp;
+        buf[0x0A] = 0xFF;
+        buf[0x0B] = 0xE0;
+        inject_data((void*)0x00000001403AA140, buf, 0x0C);
+
+        // GltParticleManager
+        inject_uint64_t((void*)(0x00000001409EB880 + 0x20), (uint64_t)GltParticleManager::Disp);
+    }
+}
