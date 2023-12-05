@@ -92,6 +92,7 @@ void FASTCALL divagl_main() {
 #endif
     extern void FASTCALL wrap_addresses();
     wrap_addresses();
+    //Sleep(5000);
     //return;
 
     printf_divagl("Patching memory");

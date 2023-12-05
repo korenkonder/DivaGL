@@ -49,6 +49,9 @@ HOOK(int32_t, FASTCALL, data_free, 0x000000140192490) {
 }
 
 HOOK(void, FASTCALL, sub_140194CD0, 0x000000140194CD0) {
+    extern void FASTCALL wrap_addresses();
+    wrap_addresses();
+
     rctx->ctrl();
     originalsub_140194CD0();
 }
