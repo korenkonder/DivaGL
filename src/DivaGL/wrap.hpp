@@ -3254,6 +3254,7 @@ extern bool GL_VERSION_4_4;
 extern bool GL_VERSION_4_5;
 extern bool GL_VERSION_4_6;
 
+extern void wrap_addresses();
 extern void wrap_patch();
 
 extern void GLAPIENTRY glAlphaFuncDLL(GLenum func, GLfloat ref);

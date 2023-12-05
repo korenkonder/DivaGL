@@ -101,6 +101,8 @@ void inject_patches() {
 static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int32_t a5) {
     HDC& hDc = *(HDC*)(glut_handle + 0x55F20);
 
+    wrap_addresses();
+
     if (true/*a5*/) {
         const int32_t attrib_list[] = {
             WGL_CONTEXT_MAJOR_VERSION_ARB, 4,

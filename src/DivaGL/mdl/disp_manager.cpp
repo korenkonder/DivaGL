@@ -75,7 +75,7 @@ namespace mdl {
 
     void ObjData::init_etc(const mat4* mat, mdl::EtcObj* etc) {
         kind = mdl::OBJ_KIND_ETC;
-        this->mat = *mat;
+        mat4_transpose(mat, &this->mat);
         args.etc = *etc;
 
         disp_manager->add_vertex_array(&args.etc, this->mat);
@@ -88,7 +88,7 @@ namespace mdl {
         int32_t instances_count, mat4* instances_mat,
         void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data) {
         kind = mdl::OBJ_KIND_NORMAL;
-        this->mat = *mat;
+        mat4_transpose(mat, &this->mat);
         this->radius = radius;
 
         mdl::ObjSubMeshArgs* args = &this->args.sub_mesh;
@@ -138,13 +138,13 @@ namespace mdl {
 
     void ObjData::init_translucent(const mat4* mat, ObjTranslucentArgs* translucent) {
         kind = mdl::OBJ_KIND_TRANSLUCENT;
-        this->mat = *mat;
+        mat4_transpose(mat, &this->mat);
         args.translucent = *translucent;
     }
 
     void ObjData::init_user(const mat4* mat, UserArgsFunc func, void* data) {
         kind = OBJ_KIND_USER;
-        this->mat = *mat;
+        mat4_transpose(mat, &this->mat);
         args.user.func = func;
         args.user.data = data;
     }

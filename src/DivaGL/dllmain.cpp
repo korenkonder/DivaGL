@@ -90,10 +90,10 @@ void FASTCALL divagl_main() {
     LoadLibraryW(L"plugins\\DivaSound.dva");
     LoadLibraryW(L"plugins\\TLAC.dva");
 #endif
-    extern void FASTCALL wrap_addresses();
-    wrap_addresses();
     //Sleep(5000);
     //return;
+
+    wrap_addresses();
 
     printf_divagl("Patching memory");
     hook_funcs();

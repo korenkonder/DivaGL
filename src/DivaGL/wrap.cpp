@@ -1616,7 +1616,7 @@ static void print_debug_error(const char* c, const char* e) {
 }
 #endif
 
-void FASTCALL wrap_addresses() {
+void wrap_addresses() {
 #ifdef DEBUG
     print_debug_error("Patching tables", 0);
 #endif
@@ -1682,10 +1682,6 @@ HOOK(void, FASTCALL, wglGetProcAddresses, 0x0000000140461B50) {
     wrap_addresses();
 }
 
-HOOK(GLenum, FASTCALL, gl_check_framebuffer_status, 0x0000000140503240) {
-    return glCheckFramebufferStatus(GL_FRAMEBUFFER);
-}
-
 void wrap_patch() {
     // glShadeModel(GL_SMOOTH);
     WRITE_NOP_11(0x00000001401948CA);
@@ -1695,11 +1691,7 @@ void wrap_patch() {
     // glClampColorARB(GL_CLAMP_READ_COLOR_ARB, GL_FIXED_ONLY_ARB);
     WRITE_JUMP(0x0000000140194932, 0x000000014019495B);
 
-    // glCheckFramebufferStatusEXT -> glCheckFramebufferStatus
-    //WRITE_NULL(0x0000000140A0C3E0, 0x03);
-
     INSTALL_HOOK(wglGetProcAddresses);
-    //INSTALL_HOOK(gl_check_framebuffer_status);
 }
 
 void GLAPIENTRY glAlphaFuncDLL(GLenum func, GLfloat ref) {

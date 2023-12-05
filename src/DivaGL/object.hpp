@@ -318,22 +318,6 @@ struct obj_sub_mesh {
 
 static_assert(sizeof(obj_sub_mesh) == 0x70, "\"obj_sub_mesh\" struct should have a size of 0x70");
 
-struct obj_vertex_data {
-    vec3 position;
-    vec3 normal;
-    vec4 tangent;
-    vec3 binormal;
-    vec2 texcoord0;
-    vec2 texcoord1;
-    vec2 texcoord2;
-    vec2 texcoord3;
-    vec4 color0;
-    vec4 color1;
-    vec4 bone_weight;
-    vec4i16 bone_index;
-    vec4 unknown;
-};
-
 struct obj_mesh_attrib_member {
     uint32_t double_buffer : 1;
     uint32_t billboard_y_axis : 1;
@@ -360,7 +344,7 @@ struct obj_mesh_vertex_array {
     vec4* color1;
     vec4* bone_weight;
     vec4* bone_index;
-    void* field_60;
+    vec4* unknown;
     void* field_68;
     void* field_70;
     void* field_78;
@@ -494,6 +478,9 @@ struct obj_mesh_vertex_buffer {
     void cycle_index();
     GLuint get_buffer();
     GLsizeiptr get_size();
+    bool load(obj_mesh* mesh);
+
+    static void* fill_data(void* data, obj_mesh* mesh);
 };
 
 static_assert(sizeof(obj_mesh_vertex_buffer) == 0x18, "\"obj_mesh_vertex_buffer\" struct should have a size of 0x18");
