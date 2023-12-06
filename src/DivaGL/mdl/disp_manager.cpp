@@ -37,9 +37,34 @@ static const GLuint MORPH_TEXCOORD0_INDEX = 13;
 static const GLuint MORPH_TEXCOORD1_INDEX = 14;
 static const GLuint      BONE_INDEX_INDEX = 15;
 
+texture_pattern_struct::texture_pattern_struct() {
+    src = (uint32_t)-1;
+    dst = (uint32_t)-1;
+}
+
+texture_pattern_struct::texture_pattern_struct(uint32_t src, uint32_t dst) : src(src), dst(dst) {
+
+}
+
+texture_transform_struct::texture_transform_struct() {
+    id = (uint32_t)-1;
+    mat = mat4_identity;
+}
+
+texture_transform_struct::texture_transform_struct(uint32_t id, const mat4& mat) : id(id), mat(mat) {
+
+}
+
 namespace mdl {
     prj::vector<DispManager::vertex_array> vertex_array_cache;
     prj::vector<DispManager::etc_vertex_array> etc_vertex_array_cache;
+
+    ObjSubMeshArgs::ObjSubMeshArgs() : sub_mesh(), mesh(), material(), textures(), mat_count(),
+        mats(), vertex_buffer(), index_buffer(), set_blend_color(), chara_color(), self_shadow(),
+        shadow(), morph_vertex_buffer(), morph_weight(), texture_pattern_count(), texture_transform_count(),
+        field_7C4(), field_7C8(), instances_count(), instances_mat(), func(), func_data() {
+
+    }
 
     EtcObjTeapot::EtcObjTeapot() {
         size = 1.0f;
@@ -87,11 +112,7 @@ namespace mdl {
 
     }
 
-    EtcObj::EtcObj() : type(), fog(), count(), offset() {
-
-    }
-
-    void EtcObj::init(EtcObjType type) {
+    EtcObj::EtcObj(EtcObjType type) : count(), offset() {
         this->type = type;
         color = 0xFFFFFFFF;
         fog = false;
@@ -121,6 +142,34 @@ namespace mdl {
             data.cross = {};
             break;
         }
+    }
+
+    EtcObj::~EtcObj() {
+
+    }
+
+    UserArgs::UserArgs() : func(), data(){
+
+    }
+
+    ObjTranslucentArgs::ObjTranslucentArgs() : count(), sub_mesh() {
+
+    }
+
+    ObjData::Args::Args() : sub_mesh() {
+
+    }
+
+    ObjData::Args::~Args() {
+
+    }
+
+    ObjData::ObjData() : kind(), view_z(), radius() {
+
+    }
+
+    ObjData::~ObjData() {
+
     }
 
     void ObjData::init_etc(const mat4* mat, mdl::EtcObj* etc) {
@@ -1197,8 +1246,7 @@ namespace mdl {
 
         if (show_alpha_center && type == OBJ_TYPE_TRANSLUCENT)
             for (vec3& i : alpha_center) {
-                mdl::EtcObj etc;
-                etc.init(ETC_OBJ_SPHERE);
+                mdl::EtcObj etc(ETC_OBJ_SPHERE);
                 etc.color = { 0xFF, 0x00, 0x00, 0xFF };
                 etc.data.sphere.radius = 0.05f;
                 etc.data.sphere.slices = 8;
@@ -1212,8 +1260,7 @@ namespace mdl {
 
         if (show_mat_center && type == OBJ_TYPE_TRANSLUCENT)
             for (vec3& i : alpha_center) {
-                mdl::EtcObj etc;
-                etc.init(ETC_OBJ_SPHERE);
+                mdl::EtcObj etc(ETC_OBJ_SPHERE);
                 etc.color = { 0x00, 0x00, 0xFF, 0xFF };
                 etc.data.sphere.radius = 0.05f;
                 etc.data.sphere.slices = 8;

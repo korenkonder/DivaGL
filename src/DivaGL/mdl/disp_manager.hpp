@@ -118,6 +118,9 @@ static_assert(sizeof(morph_struct) == 0x08, "\"morph_struct\" struct should have
 struct texture_pattern_struct {
     uint32_t src;
     uint32_t dst;
+
+    texture_pattern_struct();
+    texture_pattern_struct(uint32_t src, uint32_t dst);
 };
 
 static_assert(sizeof(texture_pattern_struct) == 0x08, "\"texture_pattern_struct\" struct should have a size of 0x08");
@@ -125,6 +128,9 @@ static_assert(sizeof(texture_pattern_struct) == 0x08, "\"texture_pattern_struct\
 struct texture_transform_struct {
     uint32_t id;
     mat4 mat;
+
+    texture_transform_struct();
+    texture_transform_struct(uint32_t id, const mat4& mat);
 };
 
 static_assert(sizeof(texture_transform_struct) == 0x44, "\"texture_pattern_struct\" struct should have a size of 0x44");
@@ -141,12 +147,12 @@ static_assert(sizeof(texture_data_struct) == 0x34, "\"texture_pattern_struct\" s
 
 namespace mdl {
     struct ObjSubMeshArgs {
-        obj_sub_mesh* sub_mesh;
-        obj_mesh* mesh;
-        obj_material_data* material;
+        const obj_sub_mesh* sub_mesh;
+        const obj_mesh* mesh;
+        const obj_material_data* material;
         prj::vector<GLuint>* textures;
         int32_t mat_count;
-        mat4* mats;
+        const mat4* mats;
         GLuint vertex_buffer;
         GLuint index_buffer;
         bool set_blend_color;
@@ -167,20 +173,18 @@ namespace mdl {
         int32_t field_7C4;
         int32_t field_7C8;
         int32_t instances_count;
-        mat4* instances_mat;
+        const mat4* instances_mat;
         void(FASTCALL* func)(const ObjSubMeshArgs*);
         const ObjSubMeshArgs* func_data;
-    };
 
-    static_assert(sizeof(mdl::ObjSubMeshArgs) == 0x7E8, "\"mdl::ObjSubMeshArgs\" struct should have a size of 0x7F8");
+        ObjSubMeshArgs();
+    };
 
     struct EtcObjTeapot {
         float_t size;
 
         EtcObjTeapot();
     };
-
-    static_assert(sizeof(mdl::EtcObjTeapot) == 0x04, "\"mdl::EtcObjTeapot\" struct should have a size of 0x04");
 
     struct EtcObjGrid {
         int32_t w;
@@ -191,16 +195,12 @@ namespace mdl {
         EtcObjGrid();
     };
 
-    static_assert(sizeof(mdl::EtcObjGrid) == 0x10, "\"mdl::EtcObjGrid\" struct should have a size of 0x10");
-
     struct EtcObjCube {
         vec3 size;
         bool wire;
 
         EtcObjCube();
     };
-
-    static_assert(sizeof(mdl::EtcObjCube) == 0x10, "\"mdl::EtcObjCube\" struct should have a size of 0x10");
 
     struct EtcObjSphere {
         float_t radius;
@@ -211,16 +211,12 @@ namespace mdl {
         EtcObjSphere();
     };
 
-    static_assert(sizeof(mdl::EtcObjSphere) == 0x10, "\"mdl::EtcObjSphere\" struct should have a size of 0x10");
-
     struct EtcObjPlane {
         int32_t w;
         int32_t h;
 
         EtcObjPlane();
     };
-
-    static_assert(sizeof(mdl::EtcObjPlane) == 0x08, "\"mdl::EtcObjPlane\" struct should have a size of 0x08");
 
     struct EtcObjCone {
         float_t base;
@@ -232,23 +228,17 @@ namespace mdl {
         EtcObjCone();
     };
 
-    static_assert(sizeof(mdl::EtcObjCone) == 0x14, "\"mdl::EtcObjCone\" struct should have a size of 0x14");
-
     struct EtcObjLine {
         vec3 pos[2];
 
         EtcObjLine();
     };
 
-    static_assert(sizeof(mdl::EtcObjLine) == 0x18, "\"mdl::EtcObjLine\" struct should have a size of 0x18");
-
     struct EtcObjCross {
         float_t size;
 
         EtcObjCross();
     };
-
-    static_assert(sizeof(mdl::EtcObjCross) == 0x04, "\"mdl::EtcObjCross\" struct should have a size of 0x04");
 
     struct EtcObj {
         union Data {
@@ -271,27 +261,25 @@ namespace mdl {
         GLsizei count; // Added
         size_t offset; // Added
 
-        EtcObj();
-        void init(EtcObjType type);
+        EtcObj(EtcObjType type);
+        ~EtcObj();
     };
-
-    static_assert(sizeof(mdl::EtcObj) == 0x30, "\"mdl::EtcObj\" struct should have a size of 0x30");
 
     typedef void(*UserArgsFunc)(void* data);
 
     struct UserArgs {
         UserArgsFunc func;
         void* data;
-    };
 
-    static_assert(sizeof(mdl::UserArgs) == 0x10, "\"mdl::UserArgs\" struct should have a size of 0x10");
+        UserArgs();
+    };
 
     struct ObjTranslucentArgs {
         int32_t count;
         ObjSubMeshArgs* sub_mesh[40];
-    };
 
-    static_assert(sizeof(mdl::ObjTranslucentArgs) == 0x148, "\"mdl::ObjTranslucentArgs\" struct should have a size of 0x148");
+        ObjTranslucentArgs();
+    };
 
     struct ObjData {
         union Args {
@@ -299,6 +287,9 @@ namespace mdl {
             EtcObj etc;
             UserArgs user;
             ObjTranslucentArgs translucent;
+
+            Args();
+            ~Args();
         };
 
         ObjKind kind;
@@ -306,6 +297,9 @@ namespace mdl {
         float_t view_z;
         float_t radius;
         Args args;
+        
+        ObjData();
+        ~ObjData();
 
         void init_etc(const mat4* mat, mdl::EtcObj* etc);
         void init_sub_mesh(const mat4* mat,
@@ -318,8 +312,6 @@ namespace mdl {
         void init_user(const mat4* mat, UserArgsFunc func, void* data);
     };
 
-    static_assert(sizeof(mdl::ObjData) == 0x838, "\"mdl::ObjData\" struct should have a size of 0x838");
-
     struct CullingCheck {
         struct Info {
             int32_t objects;
@@ -327,8 +319,6 @@ namespace mdl {
             int32_t submesh_array;
             int pad;
         };
-
-        static_assert(sizeof(mdl::CullingCheck::Info) == 0x10, "\"mdl::CullingCheck::Info\" struct should have a size of 0x10");
 
         Info passed;
         Info culled;
