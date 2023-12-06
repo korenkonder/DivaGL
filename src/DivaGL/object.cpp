@@ -18,10 +18,14 @@ obj_skin* (FASTCALL* obj_database_get_object_skin)(object_info obj_info)
     = (obj_skin * (FASTCALL*)(object_info obj_info))0x000000014045A3E0;
 obj_mesh_vertex_buffer* (FASTCALL* object_info_get_mesh_vertex_buffer)(object_info obj_info, int32_t a2)
     = (obj_mesh_vertex_buffer * (FASTCALL*)(object_info obj_info, int32_t a2))0x000000014045A480;
+int32_t(FASTCALL* obj_database_get_obj_set_obj_id)(int32_t set_index, int32_t obj_index)
+    = (int32_t(FASTCALL*)(int32_t set_index, int32_t obj_index))0x000000014045A750;
 GLuint(FASTCALL* obj_database_get_obj_set_texture)(int32_t set, int32_t tex_id)
     = (GLuint(FASTCALL*)(int32_t set, int32_t tex_id))0x000000014045A8F0;
 prj::vector<GLuint>* (FASTCALL* obj_database_get_obj_set_textures)(int32_t set)
     = (prj::vector<GLuint> * (FASTCALL*)(int32_t set))0x000000014045A9E0;
+int32_t(FASTCALL* obj_database_get_set_id)(int32_t set_index)
+    = (int32_t(FASTCALL*)(int32_t set_index))0x000000014045AA10;
 
 static void obj_vertex_add_bone_weight(vec4& bone_weight, vec4i16& bone_index, int16_t index, float_t weight);
 static void obj_vertex_validate_bone_data(vec4& bone_weight, vec4i16& bone_index);

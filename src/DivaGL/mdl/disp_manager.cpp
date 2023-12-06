@@ -5,6 +5,7 @@
 
 #include "disp_manager.hpp"
 #include "../gl_state.hpp"
+#include "../object.hpp"
 #include "../render_manager.hpp"
 #include "../shader_glsl_ft.hpp"
 #include "../sprite.hpp"
@@ -2396,6 +2397,24 @@ namespace mdl {
 
     static const mat4* rob_chara_item_equip_mat = 0;
 
+    HOOK(void, FASTCALL, DataTestObjectManager__Disp, 0x0000000140293E30, __int64 a1) {
+        if (*(int32_t*)(a1 + 0x88) == 3 || *(int32_t*)(a1 + 0x74) < 0
+            || *(int32_t*)(a1 + 0x74) >= *(int32_t*)(a1 + 0x70))
+            return;
+
+        int32_t set_id = obj_database_get_set_id(*(int32_t*)(a1 + 0x68));
+        int32_t id = obj_database_get_obj_set_obj_id(*(int32_t*)(a1 + 0x68), *(int32_t*)(a1 + 0x74));
+        disp_manager->set_obj_flags((mdl::ObjFlags)(*(int32_t*)(a1 + 0x84) | mdl::OBJ_40 | mdl::OBJ_20));
+        mat4 mat;
+        mat4_rotate_xyz(*(float_t*)(a1 + 0x78), *(float_t*)(a1 + 0x7C), *(float_t*)(a1 + 0x80), &mat);
+
+        vec3 pos = 0.0f;
+        sub_1405E8A20(shadow_ptr_get(), 0, &pos);
+        disp_manager->set_shadow_type(SHADOW_CHARA);
+        disp_manager->entry_obj_by_object_info(&mat, object_info((uint16_t)id, (uint16_t)set_id));
+        disp_manager->set_obj_flags((mdl::ObjFlags)0);
+    }
+
     HOOK(void, FASTCALL, sub_14031AF10, 0x000000014031AF10, obj_axis_aligned_bounding_box* aabb, color4u8_bgra color) {
         mdl::EtcObj etc(mdl::ETC_OBJ_SPHERE);
         etc.color = color;
@@ -2495,6 +2514,7 @@ namespace mdl {
 
         WRITE_NOP_6(0x0000000140512BE6);
 
+        INSTALL_HOOK(DataTestObjectManager__Disp);
         INSTALL_HOOK(sub_14031AF10);
         INSTALL_HOOK(sub_14031AFE0);
         INSTALL_HOOK(DispManager__entry_obj);

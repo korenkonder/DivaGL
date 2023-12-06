@@ -504,8 +504,10 @@ extern obj* (FASTCALL* object_info_get_object)(object_info obj_info);
 extern obj_mesh_index_buffer* (FASTCALL* object_info_get_mesh_index_buffer)(object_info obj_info, int32_t a2);
 extern obj_skin* (FASTCALL* obj_database_get_object_skin)(object_info obj_info);
 extern obj_mesh_vertex_buffer* (FASTCALL* object_info_get_mesh_vertex_buffer)(object_info obj_info, int32_t a2);
+extern int32_t(FASTCALL* obj_database_get_obj_set_obj_id)(int32_t set_index, int32_t obj_index);
 extern GLuint(FASTCALL* obj_database_get_obj_set_texture)(int32_t set, int32_t tex_id);
 extern prj::vector<GLuint>* (FASTCALL* obj_database_get_obj_set_textures)(int32_t set);
+extern int32_t(FASTCALL* obj_database_get_set_id)(int32_t set_index);
 
 extern int32_t obj_material_texture_type_get_texcoord_index(
     obj_material_texture_type type, int32_t index);
