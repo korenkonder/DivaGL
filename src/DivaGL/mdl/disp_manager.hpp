@@ -176,6 +176,8 @@ namespace mdl {
 
     struct EtcObjTeapot {
         float_t size;
+
+        EtcObjTeapot();
     };
 
     static_assert(sizeof(mdl::EtcObjTeapot) == 0x04, "\"mdl::EtcObjTeapot\" struct should have a size of 0x04");
@@ -185,6 +187,8 @@ namespace mdl {
         int32_t h;
         int32_t ws;
         int32_t hs;
+
+        EtcObjGrid();
     };
 
     static_assert(sizeof(mdl::EtcObjGrid) == 0x10, "\"mdl::EtcObjGrid\" struct should have a size of 0x10");
@@ -192,6 +196,8 @@ namespace mdl {
     struct EtcObjCube {
         vec3 size;
         bool wire;
+
+        EtcObjCube();
     };
 
     static_assert(sizeof(mdl::EtcObjCube) == 0x10, "\"mdl::EtcObjCube\" struct should have a size of 0x10");
@@ -201,6 +207,8 @@ namespace mdl {
         int32_t slices;
         int32_t stacks;
         bool wire;
+
+        EtcObjSphere();
     };
 
     static_assert(sizeof(mdl::EtcObjSphere) == 0x10, "\"mdl::EtcObjSphere\" struct should have a size of 0x10");
@@ -208,6 +216,8 @@ namespace mdl {
     struct EtcObjPlane {
         int32_t w;
         int32_t h;
+
+        EtcObjPlane();
     };
 
     static_assert(sizeof(mdl::EtcObjPlane) == 0x08, "\"mdl::EtcObjPlane\" struct should have a size of 0x08");
@@ -218,18 +228,24 @@ namespace mdl {
         int32_t slices;
         int32_t stacks;
         bool wire;
+
+        EtcObjCone();
     };
 
     static_assert(sizeof(mdl::EtcObjCone) == 0x14, "\"mdl::EtcObjCone\" struct should have a size of 0x14");
 
     struct EtcObjLine {
         vec3 pos[2];
+
+        EtcObjLine();
     };
 
     static_assert(sizeof(mdl::EtcObjLine) == 0x18, "\"mdl::EtcObjLine\" struct should have a size of 0x18");
 
     struct EtcObjCross {
         float_t size;
+
+        EtcObjCross();
     };
 
     static_assert(sizeof(mdl::EtcObjCross) == 0x04, "\"mdl::EtcObjCross\" struct should have a size of 0x04");
@@ -244,6 +260,8 @@ namespace mdl {
             EtcObjCone cone;
             EtcObjLine line;
             EtcObjCross cross;
+
+            Data();
         };
 
         EtcObjType type;
@@ -253,6 +271,7 @@ namespace mdl {
         GLsizei count; // Added
         size_t offset; // Added
 
+        EtcObj();
         void init(EtcObjType type);
     };
 
@@ -268,7 +287,7 @@ namespace mdl {
     static_assert(sizeof(mdl::UserArgs) == 0x10, "\"mdl::UserArgs\" struct should have a size of 0x10");
 
     struct ObjTranslucentArgs {
-        uint32_t count;
+        int32_t count;
         ObjSubMeshArgs* sub_mesh[40];
     };
 
@@ -383,6 +402,7 @@ namespace mdl {
         ObjData* alloc_obj_data(ObjKind kind);
         mat4* alloc_mat4_array(int32_t count);
         void buffer_reset();
+        void calc_obj_radius(mat4* view, mdl::ObjType type);
         void check_vertex_arrays();
         void draw(mdl::ObjType type, int32_t depth_mask = 0, bool a4 = true);
         void draw_translucent(mdl::ObjType type, int32_t alpha);
@@ -414,9 +434,10 @@ namespace mdl {
         GLuint get_vertex_array(const ObjSubMeshArgs* args);
         GLuint get_vertex_array(const mdl::EtcObj* etc);
         bool get_chara_color();
-        ObjFlags get_obj_flags();
         void get_morph(object_info& object, float_t& weight);
+        void get_obj_center(mat4& mat, const mdl::ObjSubMeshArgs* args, vec3& center);
         int32_t get_obj_count(ObjType type);
+        ObjFlags get_obj_flags();
         shadow_type_enum get_shadow_type();
         void get_texture_color_coeff(vec4& value);
         void get_texture_color_offset(vec4& value);

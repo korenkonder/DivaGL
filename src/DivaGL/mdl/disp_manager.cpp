@@ -1144,6 +1144,88 @@ namespace mdl {
         buff_offset = 0;
     }
 
+    void DispManager::calc_obj_radius(mat4* view, mdl::ObjType type) {
+        std::vector<vec3> alpha_center;
+        std::vector<vec3> mat_center;
+
+        for (ObjData*& i : obj[type]) {
+            vec3 center = 0.0f;
+            bool v50 = false;
+            switch (i->kind) {
+            case OBJ_KIND_NORMAL: {
+                mat4 mat = i->mat;
+                if (i->args.sub_mesh.mesh->attrib.m.billboard)
+                    model_mat_face_camera_view(view, &mat, &mat);
+                else if (i->args.sub_mesh.mesh->attrib.m.billboard_y_axis)
+                    model_mat_face_camera_position(view, &mat, &mat);
+
+                get_obj_center(mat, &i->args.sub_mesh, center);
+
+                v50 = !!i->args.sub_mesh.material->material.attrib.m.flag_30;
+                i->radius = i->args.sub_mesh.mesh->bounding_sphere.radius;
+            } break;
+            case OBJ_KIND_ETC:
+            case OBJ_KIND_USER:
+                mat4_get_translation(&i->mat, &center);
+                break;
+            case OBJ_KIND_TRANSLUCENT:
+                vec3 center_sum = 0.0f;
+                for (int32_t j = 0; j < i->args.translucent.count; j++) {
+                    vec3 _center = 0.0f;
+                    get_obj_center(i->mat, i->args.translucent.sub_mesh[j], _center);
+                    if (i->args.translucent.sub_mesh[j]->material->material.attrib.m.flag_30) {
+                        v50 = true;
+                        break;
+                    }
+
+                    center_sum += _center;
+                }
+
+                if (!v50)
+                    center = center_sum * (1.0f / (float_t)i->args.translucent.count);
+                break;
+            }
+
+            if (show_alpha_center && type == OBJ_TYPE_TRANSLUCENT)
+                alpha_center.push_back(center);
+            if (show_mat_center && type == OBJ_TYPE_TRANSLUCENT && v50)
+                mat_center.push_back(center);
+
+            mat4_transform_point(view, &center, &center);
+            i->view_z = center.z;
+        }
+
+        if (show_alpha_center && type == OBJ_TYPE_TRANSLUCENT)
+            for (vec3& i : alpha_center) {
+                mdl::EtcObj etc;
+                etc.init(ETC_OBJ_SPHERE);
+                etc.color = { 0xFF, 0x00, 0x00, 0xFF };
+                etc.data.sphere.radius = 0.05f;
+                etc.data.sphere.slices = 8;
+                etc.data.sphere.stacks = 8;
+                etc.data.sphere.wire = false;
+
+                mat4 mat;
+                mat4_translate(&i, &mat);
+                mdl::DispManager::entry_obj_etc(&mat, &etc);
+            }
+
+        if (show_mat_center && type == OBJ_TYPE_TRANSLUCENT)
+            for (vec3& i : alpha_center) {
+                mdl::EtcObj etc;
+                etc.init(ETC_OBJ_SPHERE);
+                etc.color = { 0x00, 0x00, 0xFF, 0xFF };
+                etc.data.sphere.radius = 0.05f;
+                etc.data.sphere.slices = 8;
+                etc.data.sphere.stacks = 8;
+                etc.data.sphere.wire = false;
+
+                mat4 mat;
+                mat4_translate(&i, &mat);
+                mdl::DispManager::entry_obj_etc(&mat, &etc);
+            }
+    }
+
     void DispManager::check_vertex_arrays() {
         for (DispManager::vertex_array& i : vertex_array_cache)
             if (i.alive_time > 0 && --i.alive_time <= 0) {
@@ -1289,7 +1371,7 @@ namespace mdl {
                 i->args.user.func(i->args.user.data);
             } break;
             case OBJ_KIND_TRANSLUCENT: {
-                for (uint32_t j = 0; j < i->args.translucent.count; j++)
+                for (int32_t j = 0; j < i->args.translucent.count; j++)
                     draw_sub_mesh(i->args.translucent.sub_mesh[j], &i->mat, func);
             } break;
             }
@@ -1376,7 +1458,7 @@ namespace mdl {
                     draw_sub_mesh(&i->args.sub_mesh, &i->mat, func);
             } break;
             case OBJ_KIND_TRANSLUCENT: {
-                for (uint32_t j = 0; j < i->args.translucent.count; j++) {
+                for (int32_t j = 0; j < i->args.translucent.count; j++) {
                     ObjSubMeshArgs* args = i->args.translucent.sub_mesh[j];
                     int32_t a = (int32_t)(args->blend_color.w * 255.0f);
                     a = clamp_def(a, 0, 255);
@@ -1426,7 +1508,7 @@ namespace mdl {
                     &i->mat, show_vector);
             } break;
             case OBJ_KIND_TRANSLUCENT: {
-                for (uint32_t j = 0; j < i->args.translucent.count; j++)
+                for (int32_t j = 0; j < i->args.translucent.count; j++)
                     draw_sub_mesh_show_vector(i->args.translucent.sub_mesh[j],
                         &i->mat, show_vector);
             } break;
@@ -2074,17 +2156,34 @@ namespace mdl {
         return chara_color;
     }
 
-    ObjFlags DispManager::get_obj_flags() {
-        return obj_flags;
-    }
-
     void DispManager::get_morph(object_info& object, float_t& weight) {
         weight = morph.weight;
         object = morph.object;
     }
 
+    void DispManager::get_obj_center(mat4& mat, const mdl::ObjSubMeshArgs* args, vec3& center) {
+        const vec3 bounding_sphere_center = args->sub_mesh->bounding_sphere.center;
+        if (args->mat_count <= 0 || !args->sub_mesh->num_bone_index) {
+            mat4_transform_point(&mat, &bounding_sphere_center, &center);
+            return;
+        }
+
+        vec3 center_sum = 0.0f;
+        int32_t num_bone_index = args->sub_mesh->num_bone_index;
+        for (int32_t i = 0; i < num_bone_index; i++) {
+            vec3 _center;
+            mat4_transform_point(&args->mats[i], &bounding_sphere_center, &_center);
+            center_sum += _center;
+        }
+        center = center_sum * (1.0f / (float_t)num_bone_index);
+    }
+
     int32_t DispManager::get_obj_count(ObjType type) {
         return (int32_t)obj[type].size();
+    }
+
+    ObjFlags DispManager::get_obj_flags() {
+        return obj_flags;
     }
 
     shadow_type_enum DispManager::get_shadow_type() {
@@ -2130,34 +2229,7 @@ namespace mdl {
         if (list.size() < 1)
             return;
 
-        for (ObjData*& i : list) {
-            vec3 center;
-            mat4_get_translation(&i->mat, &center);
-            if (i->kind == OBJ_KIND_NORMAL) {
-                mat4 mat = i->mat;
-                if (i->args.sub_mesh.mesh->attrib.m.billboard)
-                    model_mat_face_camera_view(view, &mat, &mat);
-                else if (i->args.sub_mesh.mesh->attrib.m.billboard_y_axis)
-                    model_mat_face_camera_position(view, &mat, &mat);
-
-                const obj_sub_mesh* sub_mesh = i->args.sub_mesh.sub_mesh;
-                if (i->args.sub_mesh.mat_count < 1 || !sub_mesh->num_bone_index)
-                    mat4_transform_point(&mat, &sub_mesh->bounding_sphere.center, &center);
-                else {
-                    vec3 center_sum = 0.0f;
-                    for (uint32_t j = 0; j < sub_mesh->num_bone_index; j++) {
-                        center = sub_mesh->bounding_sphere.center;
-                        mat4_transform_point(&i->args.sub_mesh.mats[j], &center, &center);
-                        center_sum += center;
-                    }
-                    center_sum *= 1.0f / (float_t)sub_mesh->num_bone_index;
-                }
-                i->radius = i->args.sub_mesh.mesh->bounding_sphere.radius;
-            }
-
-            mat4_transform_point(view, &center, &center);
-            i->view_z = center.z;
-        }
+        calc_obj_radius(view, type);
 
         switch (compare_func) {
         case 0:
