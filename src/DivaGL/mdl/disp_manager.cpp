@@ -41,6 +41,56 @@ namespace mdl {
     prj::vector<DispManager::vertex_array> vertex_array_cache;
     prj::vector<DispManager::etc_vertex_array> etc_vertex_array_cache;
 
+    EtcObjTeapot::EtcObjTeapot() {
+        size = 1.0f;
+    }
+
+    EtcObjGrid::EtcObjGrid() {
+        w = 10;
+        h = 10;
+        ws = 20;
+        hs = 20;
+    }
+
+    EtcObjCube::EtcObjCube() : wire() {
+
+    }
+
+    EtcObjSphere::EtcObjSphere() : wire() {
+        radius = 1.0f;
+        slices = 8;
+        stacks = 8;
+    }
+
+    EtcObjPlane::EtcObjPlane() {
+        w = 10;
+        h = 10;
+    }
+
+    EtcObjCone::EtcObjCone() : wire() {
+        base = 1.0f;
+        height = 1.0f;
+        slices = 8;
+        stacks = 8;
+    }
+
+    EtcObjLine::EtcObjLine() {
+        pos[0] = { 0.0f, 0.0f, 0.0f };
+        pos[1] = { 0.0f, 0.0f, 1.0f };
+    }
+
+    EtcObjCross::EtcObjCross() {
+        size = 0.1f;
+    }
+
+    EtcObj::Data::Data() : line() {
+
+    }
+
+    EtcObj::EtcObj() : type(), fog(), count(), offset() {
+
+    }
+
     void EtcObj::init(EtcObjType type) {
         this->type = type;
         color = 0xFFFFFFFF;
