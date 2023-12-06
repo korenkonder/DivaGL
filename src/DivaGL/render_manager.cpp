@@ -629,6 +629,7 @@ namespace rndr {
         rend->bind_render_texture(true);
         glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
         glClearDLL(GL_COLOR_BUFFER_BIT);
+        sprite_manager_set_view_projection(true);
         gl_state_set_depth_mask(GL_FALSE);
         gl_state_disable_depth_test();
         gl_state_enable_blend();
@@ -891,6 +892,7 @@ namespace rndr {
         else
             rctx->screen_buffer.Bind();
 
+        sprite_manager_set_view_projection(false);
         gl_state_disable_depth_test();
         gl_state_enable_blend();
         gl_state_disable_cull_face();
@@ -964,6 +966,7 @@ namespace rndr {
 
         rndr::Render* rend = render;
 
+        sprite_manager_set_view_projection(false);
         gl_state_set_depth_mask(GL_FALSE);
         gl_state_disable_depth_test();
         gl_state_disable_depth_test();
