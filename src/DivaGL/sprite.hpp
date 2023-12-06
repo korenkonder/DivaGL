@@ -190,6 +190,8 @@ namespace spr {
     extern void(FASTCALL* put_rgb_cross)(mat4* mat);
 }
 
+extern vec4* spr_color;
+
 extern size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index);
 
 extern void sprite_manager_init();

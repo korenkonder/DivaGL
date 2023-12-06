@@ -7,6 +7,8 @@
 #include "../gl_state.hpp"
 #include "../render_manager.hpp"
 #include "../shader_glsl_ft.hpp"
+#include "../sprite.hpp"
+#include "../stage.hpp"
 #include "../uniform.hpp"
 #include "../wrap.hpp"
 #include "draw_object.hpp"
@@ -2394,6 +2396,31 @@ namespace mdl {
 
     static const mat4* rob_chara_item_equip_mat = 0;
 
+    HOOK(void, FASTCALL, sub_14031AF10, 0x000000014031AF10, obj_axis_aligned_bounding_box* aabb, color4u8_bgra color) {
+        mdl::EtcObj etc(mdl::ETC_OBJ_SPHERE);
+        etc.color = color;
+        etc.fog = false;
+        etc.data.cube.size = aabb->size * 2.0f;
+
+        mat4 mat;
+        mat4_translate(&aabb->center, &mat);
+        disp_manager->entry_obj_etc(&mat, &etc);
+    }
+
+    HOOK(void, FASTCALL, sub_14031AFE0, 0x000000014031AFE0, obj_bounding_sphere* bounding_sphere, color4u8_bgra color) {
+        mdl::EtcObj etc(mdl::ETC_OBJ_SPHERE);
+        etc.color = color;
+        etc.fog = false;
+        etc.data.sphere.radius = bounding_sphere->radius;
+        etc.data.sphere.slices = 0x20;
+        etc.data.sphere.stacks = 0x20;
+        etc.data.sphere.wire = false;
+
+        mat4 mat;
+        mat4_translate(&bounding_sphere->center, &mat);
+        disp_manager->entry_obj_etc(&mat, &etc);
+    }
+
     HOOK(void, FASTCALL, DispManager__entry_obj, 0x00000001404379E0,
         obj* obj_data, obj_mesh_vertex_buffer* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf,
         prj::vector<GLuint>* textures, vec4* blend_color, mat4* bone_mat, obj* obj_morph,
@@ -2401,6 +2428,10 @@ namespace mdl {
         int32_t instances_count, mat4* instances_mat, obj_mesh_vertex_buffer* a12, int32_t* a13,
         void(FASTCALL* func)(const mdl::ObjSubMeshArgs*), const mdl::ObjSubMeshArgs* func_data, bool enable_bone_mat) {
         abort();
+    }
+
+    HOOK(void, FASTCALL, DispManager__entry_obj_etc, 0x00000001404395C0, mdl::EtcObj* etc) {
+        disp_manager->entry_obj_etc(&mat4_identity, etc);
     }
 
     HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
@@ -2414,6 +2445,17 @@ namespace mdl {
         vec4* blend_color_ptr = alpha < 1.0f ? &blend_color : 0;
         disp_manager->entry_obj(obj_data, obj_vert_buf, obj_index_buf, rob_chara_item_equip_mat,
             textures, blend_color_ptr, bone_mat, 0, 0, 0, 0, 0, 0, 0, !!bone_mat);
+    }
+
+    HOOK(void, FASTCALL, sub_1404BCC60, 0x00000001404BCC60, vec3* pos, float_t width, float_t height) {
+        mdl::EtcObj etc(ETC_OBJ_PLANE);
+        etc.color = *spr_color;
+        etc.data.plane.w = (int)width;
+        etc.data.plane.h = (int)height;
+
+        mat4 mat;
+        mat4_translate(pos, &mat);
+        disp_manager->entry_obj_etc(&mat, &etc);
     }
 
     HOOK(void, FASTCALL, DispManager__entry_obj_by_object_info_object_skin, 0x00000001405E8E20,
@@ -2453,8 +2495,12 @@ namespace mdl {
 
         WRITE_NOP_6(0x0000000140512BE6);
 
+        INSTALL_HOOK(sub_14031AF10);
+        INSTALL_HOOK(sub_14031AFE0);
         INSTALL_HOOK(DispManager__entry_obj);
+        INSTALL_HOOK(DispManager__entry_obj_etc);
         INSTALL_HOOK(DispManager__entry_obj_by_obj);
+        INSTALL_HOOK(sub_1404BCC60);
         INSTALL_HOOK(DispManager__entry_obj_by_object_info_object_skin);
     }
 }

@@ -83,6 +83,7 @@ struct stage {
 
 static_assert(sizeof(stage) == 0x68, "\"stage\" struct should have a size of 0x68");
 
+extern size_t(FASTCALL* stage_data_handler_get_stage_data_count)() = (size_t(FASTCALL*)())0x000000014064AFC0;
 
 static bool object_bounding_sphere_check_visibility_shadow(obj_bounding_sphere* sphere, mat4* mat);
 static bool object_bounding_sphere_check_visibility_shadow_chara(obj_bounding_sphere* sphere);
