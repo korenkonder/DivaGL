@@ -1584,8 +1584,9 @@ namespace mdl {
         points[7] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f, 0.0f));
 
         mat4 view_mat;
-        mat4_transpose(&camera_data->view_matrix, &view_mat);
-        mat4_mul(mat, &view_mat, &view_mat);
+        mat4_mul(&camera_data->view_matrix, mat, &view_mat);
+        mat4_transpose(&view_mat, &view_mat);
+
         for (int32_t i = 0; i < 8; i++)
             mat4_transform_point(&view_mat, &points[i], &points[i]);
 
@@ -1620,13 +1621,14 @@ namespace mdl {
         if (disp_manager->culling_func)
             return disp_manager->culling_func(sphere);
 
-        mat4 view_mat;
-        mat4_transpose(&camera_data->view_matrix, &view_mat);
-
         vec3 center;
-        mat4_transform_point(mat, &sphere->center, &center);
-        mat4_transform_point(&view_mat, &center, &center);
-        float_t radius = mat4_get_max_scale(mat) * sphere->radius;
+        mat4 _mat;
+        mat4_transpose(mat, &_mat);
+        mat4_transform_point(&_mat, &sphere->center, &center);
+        float_t radius = mat4_get_max_scale(&_mat) * sphere->radius;
+
+        mat4_transpose(&camera_data->view_matrix, &_mat);
+        mat4_transform_point(&_mat, &center, &center);
 
         double_t min_depth = (double_t)center.z - (double_t)radius;
         double_t max_depth = (double_t)center.z + (double_t)radius;
