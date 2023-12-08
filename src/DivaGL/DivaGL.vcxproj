@@ -250,6 +250,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="color.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="file_handler.cpp" />
     <ClCompile Include="mdl\disp_manager.cpp" />
     <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="Glitter\glitter.cpp" />
@@ -281,6 +282,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="stage_param.cpp" />
+    <ClCompile Include="task_effect.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="uniform.cpp" />
     <ClCompile Include="hook.cpp" />
@@ -293,6 +295,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="auth_3d.hpp" />
     <ClInclude Include="camera.hpp" />
     <ClInclude Include="color.hpp" />
+    <ClInclude Include="file_handler.hpp" />
     <ClInclude Include="mdl\disp_manager.hpp" />
     <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="gl.hpp" />
@@ -324,6 +327,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="sprite.hpp" />
     <ClInclude Include="stage.hpp" />
     <ClInclude Include="stage_param.hpp" />
+    <ClInclude Include="task_effect.hpp" />
     <ClInclude Include="texture.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="uniform.hpp" />

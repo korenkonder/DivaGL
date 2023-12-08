@@ -81,6 +81,11 @@ HOOK(void, FASTCALL, camera_update, 0x00000001401F8970) {
     camera_data->fast_change = false;
 }
 
+void camera_struct::get_view_point(vec4& value) {
+    *(vec3*)&value = view_point;
+    value.w = 0.0f;
+}
+
 void camera_struct::update_data() {
     implOfcamera_data_update_projection();
     camera_struct__update_view(camera_data);

@@ -144,6 +144,8 @@ struct stage_param_data_star_utc {
     int32_t hour;
     int32_t minute;
     float_t second;
+
+    double_t to_julian_date() const;
 };
 
 static_assert(sizeof(stage_param_data_star_utc) == 0x18, "\"stage_param_data_star_utc\" struct should have a size of 0x18");
@@ -165,8 +167,11 @@ struct stage_param_data_star {
     float_t observer_north_latitude_deg;
     float_t observer_east_longitude_deg;
     stage_param_data_star_modifiers modifiers[2];
+
+    static void get_mat(mat4& mat, const float_t observer_north_latitude,
+        const float_t observer_east_longitude, const stage_param_data_star_utc& utc, const float_t rotation_y);
 };
 
 static_assert(sizeof(stage_param_data_star) == 0x50, "\"stage_param_data_star\" struct should have a size of 0x50");
 
-extern stage_param_data_litproj** stage_param_data_litproj_current;
+extern stage_param_data_litproj*& stage_param_data_litproj_current;

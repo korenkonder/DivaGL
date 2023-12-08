@@ -17,6 +17,7 @@
 #include "shader_glsl_ft.hpp"
 #include "sprite.hpp"
 #include "stage_param.hpp"
+#include "task_effect.hpp"
 #include "texture.hpp"
 #include <Helpers.h>
 
@@ -153,6 +154,16 @@ namespace rndr {
     }
 
     void RenderManager::render_all() {
+        static const GLfloat color_clear[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        static const GLfloat depth_clear = 1.0f;
+        static const GLint stencil_clear = 0;
+
+        gl_state_bind_framebuffer(0);
+        gl_state_set_depth_mask(GL_TRUE);
+        glClearBufferfv(GL_COLOR, 0, color_clear);
+        glClearDepthf(depth_clear);
+        gl_state_set_depth_mask(GL_FALSE);
+
         static const int32_t ibl_texture_index[] = {
             9, 10, 11, 12, 13
         };
@@ -721,7 +732,7 @@ namespace rndr {
             pass_3d_contour();
 
         render->draw_lens_flare();
-        //star_catalog_draw();
+        star_catalog_draw();
 
         draw_pass_3d_translucent(
             draw_pass_3d[DRAW_PASS_3D_OPAQUE],
@@ -731,10 +742,10 @@ namespace rndr {
             mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3,
             mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3);
 
-        //snow_particle_draw();
-        //rain_particle_draw();
-        //leaf_particle_draw();
-        //particle_draw();
+        snow_particle_draw();
+        rain_particle_draw();
+        leaf_particle_draw();
+        particle_draw();
         gl_state_disable_depth_test();
 
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
@@ -1012,7 +1023,7 @@ void draw_pass_set_camera() {
     mat4_transpose(&camera_data->projection_matrix, &rctx->proj_mat);
     mat4_transpose(&camera_data->view_projection_matrix, &rctx->vp_mat);
     rctx->obj_scene.set_projection_view(rctx->view_mat, rctx->proj_mat);
-    *(vec3*)&rctx->obj_scene.g_view_position = camera_data->view_point;
+    camera_data->get_view_point(rctx->obj_scene.g_view_position);
     rctx->obj_scene.g_view_position.w = 0.0f;
 
     float_t max_distance = camera_data->max_distance;
@@ -1292,10 +1303,10 @@ static void draw_pass_shadow_esm_filter(RenderTexture* dst, RenderTexture* buf, 
 }
 
 static bool draw_pass_shadow_litproj() {
-    if (!*stage_param_data_litproj_current)
+    if (!stage_param_data_litproj_current)
         return false;
 
-    texture* tex = texture_handler_get_texture((*stage_param_data_litproj_current)->tex_id);
+    texture* tex = texture_handler_get_texture(stage_param_data_litproj_current->tex_id);
     if (!tex)
         return false;
 
@@ -1321,7 +1332,7 @@ static bool draw_pass_shadow_litproj() {
 }
 
 static bool draw_pass_shadow_litproj_set() {
-    if (!*stage_param_data_litproj_current)
+    if (!stage_param_data_litproj_current)
         return 0;
 
     static const vec4 color_clear = 1.0f;
@@ -1781,5 +1792,5 @@ static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     rctx->filter_scene_ubo.Bind(0);
     rctx->imgfilter_batch_ubo.Bind(1);
     gl_state_active_bind_texture_2d(0, src->GetColorTex());
-    //shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, (GLint)(filter * 4LL), 4);
+    shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, (GLint)(filter * 4LL), 4);
 }
