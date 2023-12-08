@@ -69,6 +69,10 @@ struct draw_state_struct {
     void* program_buffer_matrix_data;
 };
 
+struct camera_blur_shader_data {
+    vec4 g_transform[4];
+};
+
 struct contour_coef_shader_data {
     vec4 g_contour;
     vec4 g_near_far;
@@ -275,6 +279,7 @@ struct render_context {
     RenderTexture screen_buffer;
     RenderTexture shadow_buffer;
 
+    GLUniformBuffer camera_blur_ubo;
     GLUniformBuffer contour_coef_ubo;
     GLUniformBuffer contour_params_ubo;
     GLUniformBuffer filter_scene_ubo;

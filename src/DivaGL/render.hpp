@@ -186,11 +186,12 @@ namespace rndr {
         void update_res(bool set, int32_t base_downsample);
 
     private:
-        void apply_mlaa(int32_t ss_alpha_mask);
+        void apply_mlaa(int32_t destination, int32_t source, int32_t mlaa);
         void apply_tone_map();
         void calc_exposure();
         void calc_gaussian_blur(float_t start, float_t step,
             int32_t kernel_size, float_t radius_scale, float_t intensity_scale);
+        void calc_taa_blend();
         void copy_to_frame_texture(GLuint pre_pp_tex, int32_t wight, int32_t height, GLuint post_pp_tex);
         void draw_lens_ghost();
         void downsample();

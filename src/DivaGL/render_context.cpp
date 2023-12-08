@@ -225,6 +225,7 @@ sprite_height(), screen_x_offset(), screen_y_offset(), screen_width(), screen_he
 
     glGenVertexArrays(1, &common_vao);
 
+    camera_blur_ubo.Create(sizeof(camera_blur_shader_data));
     contour_coef_ubo.Create(sizeof(contour_coef_shader_data));
     contour_params_ubo.Create(sizeof(contour_params_shader_data));
     filter_scene_ubo.Create(sizeof(filter_scene_shader_data));
@@ -385,6 +386,7 @@ render_context::~render_context() {
     filter_scene_ubo.Destroy();
     contour_params_ubo.Destroy();
     contour_coef_ubo.Destroy();
+    camera_blur_ubo.Destroy();
 
     if (common_vao) {
         glDeleteVertexArrays(1, &common_vao);
