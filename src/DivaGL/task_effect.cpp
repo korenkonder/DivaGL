@@ -1309,8 +1309,8 @@ bool star_catalog::init() {
     if (file_handler.get_data()) {
         struct stars_buffer_data {
             vec3 position;
-            vec4 color;
             float_t size;
+            vec4 color;
 
             inline stars_buffer_data() : size() {
 
@@ -1323,6 +1323,13 @@ bool star_catalog::init() {
         void (FASTCALL* star_catalog__parse_data)(prj::vector<stars_buffer_data>* vec, size_t data)
             = (void (FASTCALL*)(prj::vector<stars_buffer_data>*vec, size_t data))0x000000014036C6A0;
         star_catalog__parse_data(&vec, (size_t)data);
+
+        for (stars_buffer_data& i : vec) {
+            float_t size = i.color.w;
+            i.color = *(vec4*)&i.size;
+            i.size = size;
+        }
+
         std::sort(vec.begin(), vec.end(), [](stars_buffer_data a, stars_buffer_data b) {
             return a.size > b.size;
         });
