@@ -1239,6 +1239,8 @@ namespace rndr {
                 mat4 v43;
                 mat4_mul(&camera_data->view_matrix, &v44, &v42);
                 mat4_mul(&camera_data->projection_matrix, &v42, &v43);
+                mat4_transpose(&v42, &v42);
+                mat4_transpose(&v43, &v43);
 
                 vec4 v41;
                 vec4 v40;
@@ -1336,7 +1338,10 @@ namespace rndr {
                     exposure_measure.g_spot_coefficients[i * 8 + j] = chara_data->spot_coefficients[j];
             rctx->exposure_measure_ubo.WriteMemory(exposure_measure);
 
-            glViewportDLL(0, 0, 1, 1);
+            if (reset_exposure)
+                glViewportDLL(0, 0, 32, 1);
+            else
+                glViewportDLL(0, 0, 1, 1);
             downsample_texture.Bind();
 
             uniform->arr[U_EXPOSURE] = 1;
