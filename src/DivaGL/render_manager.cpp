@@ -155,14 +155,9 @@ namespace rndr {
 
     void RenderManager::render_all() {
         static const GLfloat color_clear[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        static const GLfloat depth_clear = 1.0f;
-        static const GLint stencil_clear = 0;
 
         gl_state_bind_framebuffer(0);
-        gl_state_set_depth_mask(GL_TRUE);
         glClearBufferfv(GL_COLOR, 0, color_clear);
-        glClearDepthf(depth_clear);
-        gl_state_set_depth_mask(GL_FALSE);
 
         static const int32_t ibl_texture_index[] = {
             9, 10, 11, 12, 13
@@ -342,12 +337,11 @@ namespace rndr {
             shad->curr_render_textures[1] = &shad->render_textures[1];
             shad->curr_render_textures[2] = &shad->render_textures[2];
 
-            for (int32_t i = 1; i < 3; i++)
-                for (int32_t j = 0; j < 4; j++) {
-                    shad->curr_render_textures[i]->Bind(j);
-                    glClearColorDLL(1.0f, 1.0f, 1.0f, 1.0f);
-                    glClearDLL(GL_COLOR_BUFFER_BIT);
-                }
+            for (int32_t i = 1; i < 3; i++) {
+                shad->curr_render_textures[i]->Bind();
+                glClearColorDLL(1.0f, 1.0f, 1.0f, 1.0f);
+                glClearDLL(GL_COLOR_BUFFER_BIT);
+            }
         }
         shader_glsl::unbind();
         gl_state_bind_framebuffer(0);
