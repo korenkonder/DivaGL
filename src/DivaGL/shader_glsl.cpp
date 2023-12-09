@@ -659,6 +659,7 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
                     bin_size += align_val(k.length, 0x04);
                 shader_cache_file->data = force_malloc(bin_size);
                 shader_cache_file->size = bin_size;
+                shader_cache_file->compressed = true;
                 shader_cache_file->data_changed = true;
 
                 ((uint64_t*)shader_cache_file->data)[0] = vert_data_hash;
@@ -697,7 +698,7 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
     free_def(temp_vert);
     free_def(temp_frag);
 
-    if (shader_cache_changed)
+    if (!ignore_cache && shader_cache_changed)
         shader_cache_farc.write(temp_buf, FARC_FArC, FARC_NONE, false);
 
     this->get_index_by_name_func = get_index_by_name;

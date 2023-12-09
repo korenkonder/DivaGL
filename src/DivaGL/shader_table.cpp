@@ -147,7 +147,7 @@ void FASTCALL shader_load_all_shaders() {
     {
         farc f;
         f.read("plugins\\divagl_ft_shaders.farc", true, false);
-        shaders_ft.load(&f, true, "ft", shader_ft_table, shader_ft_table_size,
+        shaders_ft.load(&f, false, "ft", shader_ft_table, shader_ft_table_size,
             shader_ft_bind_func_table, shader_ft_bind_func_table_size,
             shader_ft_get_index_by_name);
     }
