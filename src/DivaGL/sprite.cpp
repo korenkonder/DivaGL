@@ -5,7 +5,7 @@
 
 #include "sprite.hpp"
 #include "render_context.hpp"
-#include "shader_glsl_ft.hpp"
+#include "shader_ft.hpp"
 #include <Helpers.h>
 
 struct sprite_draw_vertex {

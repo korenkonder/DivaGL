@@ -9,7 +9,7 @@
 #include "../KKdLib/vec.hpp"
 #include "inject.hpp"
 #include "print.hpp"
-#include "shader_glsl_ft.hpp"
+#include "uniform.hpp"
 #include <Helpers.h>
 #include <time.h>
 

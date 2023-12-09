@@ -8,7 +8,6 @@
 #include "hook.hpp"
 #include "inject.hpp"
 #include "print.hpp"
-#include "shader_table.hpp"
 #include "wrap.hpp"
 #include <intrin.h>
 #include <knownfolders.h>
@@ -88,6 +87,7 @@ void FASTCALL divagl_main() {
 #if defined(DINPUT8_DLL)
     load_original_dll();
     LoadLibraryW(L"plugins\\DivaSound.dva");
+    LoadLibraryW(L"plugins\\Patches.dva");
     LoadLibraryW(L"plugins\\TLAC.dva");
 #endif
     //Sleep(5000);

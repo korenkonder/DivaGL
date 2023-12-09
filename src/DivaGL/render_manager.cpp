@@ -14,7 +14,7 @@
 #include "render.hpp"
 #include "render_context.hpp"
 #include "render_texture.hpp"
-#include "shader_glsl_ft.hpp"
+#include "shader_ft.hpp"
 #include "sprite.hpp"
 #include "stage_param.hpp"
 #include "task_effect.hpp"
@@ -343,7 +343,7 @@ namespace rndr {
                 glClearDLL(GL_COLOR_BUFFER_BIT);
             }
         }
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
@@ -439,7 +439,7 @@ namespace rndr {
         }
 
         draw_pass_sss_filter(sss);
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
@@ -512,7 +512,7 @@ namespace rndr {
             glClearDLL(GL_COLOR_BUFFER_BIT);
             glClearColorDLL(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         }
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
@@ -559,7 +559,7 @@ namespace rndr {
             glClearDLL(GL_COLOR_BUFFER_BIT);
             glClearColorDLL(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         }
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
@@ -570,7 +570,7 @@ namespace rndr {
         for (draw_pre_process& i : pre_process)
             if (i.func)
                 i.func(i.data);
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
@@ -645,7 +645,7 @@ namespace rndr {
         gl_state_disable_blend();
         gl_state_enable_depth_test();
         gl_state_set_depth_mask(GL_TRUE);
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_get_error();
         gl_state_end_event();
@@ -831,7 +831,7 @@ namespace rndr {
         if (shadow)
             draw_pass_3d_shadow_reset();
         pass_sprite_surf();
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
     }
 
@@ -923,7 +923,7 @@ namespace rndr {
             0, 0, rctx->sprite_width, rctx->sprite_height,
             rctx->screen_x_offset, rctx->screen_y_offset,
             rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
@@ -1244,7 +1244,7 @@ static void draw_pass_shadow_filter(RenderTexture* a1, RenderTexture* a2,
     gl_state_active_bind_texture_2d(0, v9);
     gl_state_bind_vertex_array(rctx->common_vao);
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
-    shader_glsl::unbind();
+    shader::unbind();
 
     texture_params_restore(&tex_params[0], &tex_params[1], 0);
 }

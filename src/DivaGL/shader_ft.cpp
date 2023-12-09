@@ -3,7 +3,7 @@
     GitHub/GitLab: korenkonder
 */
 
-#include "shader_glsl_ft.hpp"
+#include "shader_ft.hpp"
 #include "../KKdLib/str_utils.hpp"
 #include "gl_state.hpp"
 #include "render_context.hpp"
@@ -1002,7 +1002,7 @@ static const int32_t sprite_fpt_unival_max[] = {
     3, 3, 2,
 };
 
-static const shader_glsl_sub_table BLINN_table[] = {
+static const shader_sub_table BLINN_table[] = {
     {
         SHADER_FT_SUB_BLINN_VERT,
         blinn_vert_vpt_unival_max,
@@ -1019,7 +1019,7 @@ static const shader_glsl_sub_table BLINN_table[] = {
     },
 };
 
-static const shader_glsl_sub_table ITEM_table[] = {
+static const shader_sub_table ITEM_table[] = {
     {
         SHADER_FT_SUB_ITEM_BLINN,
         item_blinn_vpt_unival_max,
@@ -1029,7 +1029,7 @@ static const shader_glsl_sub_table ITEM_table[] = {
     },
 };
 
-static const shader_glsl_sub_table STAGE_table[] = {
+static const shader_sub_table STAGE_table[] = {
     {
         SHADER_FT_SUB_STAGE_BLINN,
         stage_blinn_vpt_unival_max,
@@ -1039,7 +1039,7 @@ static const shader_glsl_sub_table STAGE_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SKIN_table[] = {
+static const shader_sub_table SKIN_table[] = {
     {
         SHADER_FT_SUB_SKIN_DEFAULT,
         skin_default_vpt_unival_max,
@@ -1049,7 +1049,7 @@ static const shader_glsl_sub_table SKIN_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SSS_SKIN_table[] = {
+static const shader_sub_table SSS_SKIN_table[] = {
     {
         SHADER_FT_SUB_SSS_SKIN,
         sss_skin_vpt_unival_max,
@@ -1059,7 +1059,7 @@ static const shader_glsl_sub_table SSS_SKIN_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table SSS_FILT_table[] = {
+/*static const shader_sub_table SSS_FILT_table[] = {
     {
         SHADER_FT_SUB_SSS_FILTER,
         sss_filter_vpt_unival_max,
@@ -1069,7 +1069,7 @@ static const shader_glsl_sub_table SSS_SKIN_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table SSS_FILT_table[] = {
+static const shader_sub_table SSS_FILT_table[] = {
     {
         SHADER_FT_SUB_SSS_FILTER_MIN,
         sss_filter_min_vpt_unival_max,
@@ -1093,7 +1093,7 @@ static const shader_glsl_sub_table SSS_FILT_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table HAIR_table[] = {
+/*static const shader_sub_table HAIR_table[] = {
     {
         SHADER_FT_SUB_HAIR_DEFAULT,
         hair_default_vpt_unival_max,
@@ -1117,7 +1117,7 @@ static const shader_glsl_sub_table SSS_FILT_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table HAIR_table[] = {
+static const shader_sub_table HAIR_table[] = {
     {
         SHADER_FT_SUB_HAIR_DEFAULT,
         hair_default_vpt_unival_max,
@@ -1134,7 +1134,7 @@ static const shader_glsl_sub_table HAIR_table[] = {
     },
 };
 
-static const shader_glsl_sub_table CLOTH_table[] = {
+static const shader_sub_table CLOTH_table[] = {
     {
         SHADER_FT_SUB_CLOTH_DEFAULT,
         cloth_default_vpt_unival_max,
@@ -1158,7 +1158,7 @@ static const shader_glsl_sub_table CLOTH_table[] = {
     },
 };
 
-static const shader_glsl_sub_table TIGHTS_table[] = {
+static const shader_sub_table TIGHTS_table[] = {
     {
         SHADER_FT_SUB_TIGHTS,
         tights_vpt_unival_max,
@@ -1168,7 +1168,7 @@ static const shader_glsl_sub_table TIGHTS_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SKY_table[] = {
+static const shader_sub_table SKY_table[] = {
     {
         SHADER_FT_SUB_SKY_DEFAULT,
         sky_default_vpt_unival_max,
@@ -1178,7 +1178,7 @@ static const shader_glsl_sub_table SKY_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table EYEBALL_table[] = {
+/*static const shader_sub_table EYEBALL_table[] = {
     {
         SHADER_FT_SUB_EYE_BALL,
         eye_ball_vpt_unival_max,
@@ -1188,7 +1188,7 @@ static const shader_glsl_sub_table SKY_table[] = {
     },
 };*/
 
-/*static const shader_glsl_sub_table EYELENS_table[] = {
+/*static const shader_sub_table EYELENS_table[] = {
     {
         SHADER_FT_SUB_EYE_LENS,
         eye_lens_vpt_unival_max,
@@ -1198,7 +1198,7 @@ static const shader_glsl_sub_table SKY_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table GLASEYE_table[] = {
+static const shader_sub_table GLASEYE_table[] = {
     {
         SHADER_FT_SUB_GLASS_EYE,
         glass_eye_vpt_unival_max,
@@ -1208,7 +1208,7 @@ static const shader_glsl_sub_table GLASEYE_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table MEMBRAN_table[] = {
+/*static const shader_sub_table MEMBRAN_table[] = {
     {
         SHADER_FT_SUB_MEMBRANE,
         membrane_vpt_unival_max,
@@ -1218,7 +1218,7 @@ static const shader_glsl_sub_table GLASEYE_table[] = {
     },
 };*/
 
-/*static const shader_glsl_sub_table SHDMAP_table[] = {
+/*static const shader_sub_table SHDMAP_table[] = {
     {
         SHADER_FT_SUB_SHADOWMAP,
         shadowmap_vpt_unival_max,
@@ -1228,7 +1228,7 @@ static const shader_glsl_sub_table GLASEYE_table[] = {
     },
 };*/
 
-/*static const shader_glsl_sub_table ESM_table[] = {
+/*static const shader_sub_table ESM_table[] = {
     {
         SHADER_FT_SUB_ESM,
         esm_vpt_unival_max,
@@ -1238,7 +1238,7 @@ static const shader_glsl_sub_table GLASEYE_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table ESMGAUSS_table[] = {
+static const shader_sub_table ESMGAUSS_table[] = {
     {
         SHADER_FT_SUB_ESM_GAUSS,
         esm_gauss_vpt_unival_max,
@@ -1248,7 +1248,7 @@ static const shader_glsl_sub_table ESMGAUSS_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table ESMFILT_table[] = {
+/*static const shader_sub_table ESMFILT_table[] = {
     {
         SHADER_FT_SUB_ESM_FILTER,
         esm_filter_vpt_unival_max,
@@ -1258,7 +1258,7 @@ static const shader_glsl_sub_table ESMGAUSS_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table ESMFILT_table[] = {
+static const shader_sub_table ESMFILT_table[] = {
     {
         SHADER_FT_SUB_ESM_FILTER_MIN,
         esm_filter_min_vpt_unival_max,
@@ -1275,7 +1275,7 @@ static const shader_glsl_sub_table ESMFILT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table LITPROJ_table[] = {
+static const shader_sub_table LITPROJ_table[] = {
     {
         SHADER_FT_SUB_LIT_PROJ,
         lit_proj_vpt_unival_max,
@@ -1285,7 +1285,7 @@ static const shader_glsl_sub_table LITPROJ_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SIMPLE_table[] = {
+static const shader_sub_table SIMPLE_table[] = {
     {
         SHADER_FT_SUB_SIMPLE,
         simple_vpt_unival_max,
@@ -1295,7 +1295,7 @@ static const shader_glsl_sub_table SIMPLE_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SIL_table[] = {
+static const shader_sub_table SIL_table[] = {
     {
         SHADER_FT_SUB_SILHOUETTE,
         silhouette_vpt_unival_max,
@@ -1305,7 +1305,7 @@ static const shader_glsl_sub_table SIL_table[] = {
     },
 };
 
-static const shader_glsl_sub_table LAMBERT_table[] = {
+static const shader_sub_table LAMBERT_table[] = {
     {
         SHADER_FT_SUB_LAMBERT,
         lambert_vpt_unival_max,
@@ -1315,7 +1315,7 @@ static const shader_glsl_sub_table LAMBERT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table CONSTANT_table[] = {
+static const shader_sub_table CONSTANT_table[] = {
     {
         SHADER_FT_SUB_CONSTANT,
         constant_vpt_unival_max,
@@ -1325,7 +1325,7 @@ static const shader_glsl_sub_table CONSTANT_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table PEEL_table[] = {
+/*static const shader_sub_table PEEL_table[] = {
     {
         SHADER_FT_SUB_PEEL,
         peel_vpt_unival_max,
@@ -1335,7 +1335,7 @@ static const shader_glsl_sub_table CONSTANT_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table TONEMAP_table[] = {
+static const shader_sub_table TONEMAP_table[] = {
     {
         SHADER_FT_SUB_TONEMAP,
         tone_map_vpt_unival_max,
@@ -1352,7 +1352,7 @@ static const shader_glsl_sub_table TONEMAP_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table REDUCE_table[] = {
+/*static const shader_sub_table REDUCE_table[] = {
     {
         SHADER_FT_SUB_REDUCE_TEX,
         reduce_tex_vpt_unival_max,
@@ -1362,7 +1362,7 @@ static const shader_glsl_sub_table TONEMAP_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table REDUCE_table[] = {
+static const shader_sub_table REDUCE_table[] = {
     {
         SHADER_FT_SUB_REDUCE_TEX_REDUCE_2,
         reduce_tex_reduce_2_vpt_unival_max,
@@ -1421,7 +1421,7 @@ static const shader_glsl_sub_table REDUCE_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table MAGNIFY_table[] = {
+/*static const shader_sub_table MAGNIFY_table[] = {
     {
         SHADER_FT_SUB_MAGNIFY,
         magnify_vpt_unival_max,
@@ -1431,7 +1431,7 @@ static const shader_glsl_sub_table REDUCE_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table MAGNIFY_table[] = {
+static const shader_sub_table MAGNIFY_table[] = {
     {
         SHADER_FT_SUB_MAGNIFY_LINEAR,
         magnify_linear_vpt_unival_max,
@@ -1469,7 +1469,7 @@ static const shader_glsl_sub_table MAGNIFY_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table MLAA_table[] = {
+/*static const shader_sub_table MLAA_table[] = {
     {
         SHADER_FT_SUB_MLAA,
         mlaa_vpt_unival_max,
@@ -1479,7 +1479,7 @@ static const shader_glsl_sub_table MAGNIFY_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table MLAA_table[] = {
+static const shader_sub_table MLAA_table[] = {
     {
         SHADER_FT_SUB_MLAA_EDGE,
         mlaa_edge_vpt_unival_max,
@@ -1503,7 +1503,7 @@ static const shader_glsl_sub_table MLAA_table[] = {
     },
 };
 
-static const shader_glsl_sub_table CONTOUR_table[] = {
+static const shader_sub_table CONTOUR_table[] = {
     {
         SHADER_FT_SUB_CONTOUR,
         contour_vpt_unival_max,
@@ -1513,7 +1513,7 @@ static const shader_glsl_sub_table CONTOUR_table[] = {
     },
 };
 
-static const shader_glsl_sub_table CONTOUR_NPR_table[] = {
+static const shader_sub_table CONTOUR_NPR_table[] = {
     {
         SHADER_FT_SUB_CONTOUR_NPR,
         contour_npr_vpt_unival_max,
@@ -1523,7 +1523,7 @@ static const shader_glsl_sub_table CONTOUR_NPR_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table EXPOSURE_table[] = {
+/*static const shader_sub_table EXPOSURE_table[] = {
     {
         SHADER_FT_SUB_EXPOSURE,
         exposure_vpt_unival_max,
@@ -1533,7 +1533,7 @@ static const shader_glsl_sub_table CONTOUR_NPR_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table EXPOSURE_table[] = {
+static const shader_sub_table EXPOSURE_table[] = {
     {
         SHADER_FT_SUB_EXPOSURE_MINIFY,
         exposure_minify_vpt_unival_max,
@@ -1557,7 +1557,7 @@ static const shader_glsl_sub_table EXPOSURE_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table GAUSS_table[] = {
+/*static const shader_sub_table GAUSS_table[] = {
     {
         SHADER_FT_SUB_PP_GAUSS,
         pp_gauss_vpt_unival_max,
@@ -1567,7 +1567,7 @@ static const shader_glsl_sub_table EXPOSURE_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table GAUSS_table[] = {
+static const shader_sub_table GAUSS_table[] = {
     {
         SHADER_FT_SUB_PP_GAUSS_USUAL,
         pp_gauss_usual_vpt_unival_max,
@@ -1584,7 +1584,7 @@ static const shader_glsl_sub_table GAUSS_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SUN_table[] = {
+static const shader_sub_table SUN_table[] = {
     {
         SHADER_FT_SUB_SUN,
         sun_vpt_unival_max,
@@ -1594,7 +1594,7 @@ static const shader_glsl_sub_table SUN_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SUN_NO_TEXTURED_table[] = {
+static const shader_sub_table SUN_NO_TEXTURED_table[] = {
     {
         SHADER_FT_SUB_SUN_NO_TEXTURED,
         sun_no_textured_vpt_unival_max,
@@ -1604,7 +1604,7 @@ static const shader_glsl_sub_table SUN_NO_TEXTURED_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table FADE_table[] = {
+/*static const shader_sub_table FADE_table[] = {
     {
         SHADER_FT_SUB_FADE,
         fade_vpt_unival_max,
@@ -1614,7 +1614,7 @@ static const shader_glsl_sub_table SUN_NO_TEXTURED_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table WATER01_table[] = {
+static const shader_sub_table WATER01_table[] = {
     {
         SHADER_FT_SUB_WATER01,
         water01_vpt_unival_max,
@@ -1624,7 +1624,7 @@ static const shader_glsl_sub_table WATER01_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table WATER02_table[] = {
+/*static const shader_sub_table WATER02_table[] = {
     {
         SHADER_FT_SUB_WATER02,
         water02_vpt_unival_max,
@@ -1634,7 +1634,7 @@ static const shader_glsl_sub_table WATER01_table[] = {
     },
 };*/
 
-/*static const shader_glsl_sub_table WATRING_table[] = {
+/*static const shader_sub_table WATRING_table[] = {
     {
         SHADER_FT_SUB_WATER_RING,
         water_ring_vpt_unival_max,
@@ -1644,7 +1644,7 @@ static const shader_glsl_sub_table WATER01_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table W_PTCL_table[] = {
+static const shader_sub_table W_PTCL_table[] = {
     {
         SHADER_FT_SUB_WATER_PARTICLE,
         water_particle_vpt_unival_max,
@@ -1654,7 +1654,7 @@ static const shader_glsl_sub_table W_PTCL_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table SNOW_PT_table[] = {
+/*static const shader_sub_table SNOW_PT_table[] = {
     {
         SHADER_FT_SUB_SNOW_PARTICLE,
         snow_particle_vpt_unival_max,
@@ -1664,7 +1664,7 @@ static const shader_glsl_sub_table W_PTCL_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table SNOW_PT_table[] = {
+static const shader_sub_table SNOW_PT_table[] = {
     {
         SHADER_FT_SUB_SNOW_PARTICLE,
         snow_particle_vpt_unival_max,
@@ -1681,7 +1681,7 @@ static const shader_glsl_sub_table SNOW_PT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table LEAF_PT_table[] = {
+static const shader_sub_table LEAF_PT_table[] = {
     {
         SHADER_FT_SUB_LEAF_PARTICLE,
         leaf_particle_vpt_unival_max,
@@ -1691,7 +1691,7 @@ static const shader_glsl_sub_table LEAF_PT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table STAR_table[] = {
+static const shader_sub_table STAR_table[] = {
     {
         SHADER_FT_SUB_STAR,
         star_vpt_unival_max,
@@ -1708,7 +1708,7 @@ static const shader_glsl_sub_table STAR_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table SNORING_table[] = {
+/*static const shader_sub_table SNORING_table[] = {
     {
         SHADER_FT_SUB_SNOW_RING,
         snow_ring_vpt_unival_max,
@@ -1718,7 +1718,7 @@ static const shader_glsl_sub_table STAR_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SN_FOOT_table[] = {
+static const shader_sub_table SN_FOOT_table[] = {
     {
         SHADER_FT_SUB_SNOW_FOOTPRINT,
         snow_footprint_vpt_unival_max,
@@ -1728,7 +1728,7 @@ static const shader_glsl_sub_table SN_FOOT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SN_TSL_table[] = {
+static const shader_sub_table SN_TSL_table[] = {
     {
         SHADER_FT_SUB_SNOW_TEX_SPACE_LIGHT,
         snow_tex_space_light_vpt_unival_max,
@@ -1738,7 +1738,7 @@ static const shader_glsl_sub_table SN_TSL_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SN_NRM_table[] = {
+static const shader_sub_table SN_NRM_table[] = {
     {
         SHADER_FT_SUB_SNOW_CALC_NORMAL,
         snow_calc_normal_vpt_unival_max,
@@ -1748,7 +1748,7 @@ static const shader_glsl_sub_table SN_NRM_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table FLOOR_table[] = {
+static const shader_sub_table FLOOR_table[] = {
     {
         SHADER_FT_SUB_FLOOR,
         floor_vpt_unival_max,
@@ -1758,7 +1758,7 @@ static const shader_glsl_sub_table FLOOR_table[] = {
     },
 };
 
-static const shader_glsl_sub_table PUDDLE_table[] = {
+static const shader_sub_table PUDDLE_table[] = {
     {
         SHADER_FT_SUB_PUDDLE,
         puddle_vpt_unival_max,
@@ -1768,7 +1768,7 @@ static const shader_glsl_sub_table PUDDLE_table[] = {
     },
 };
 
-static const shader_glsl_sub_table S_REFL_table[] = {
+static const shader_sub_table S_REFL_table[] = {
     {
         SHADER_FT_SUB_SIMPLE_REFLECT,
         simple_reflect_vpt_unival_max,
@@ -1778,7 +1778,7 @@ static const shader_glsl_sub_table S_REFL_table[] = {
     },
 };
 
-static const shader_glsl_sub_table S_REFR_table[] = {
+static const shader_sub_table S_REFR_table[] = {
     {
         SHADER_FT_SUB_SIMPLE_REFRACT,
         simple_refract_vpt_unival_max,
@@ -1788,7 +1788,7 @@ static const shader_glsl_sub_table S_REFR_table[] = {
     },
 };
 
-static const shader_glsl_sub_table RIPEMIT_table[] = {
+static const shader_sub_table RIPEMIT_table[] = {
     {
         SHADER_FT_SUB_RIPPLE_EMIT,
         ripple_emit_vpt_unival_max,
@@ -1798,7 +1798,7 @@ static const shader_glsl_sub_table RIPEMIT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table RAIN_table[] = {
+static const shader_sub_table RAIN_table[] = {
     {
         SHADER_FT_SUB_RAIN,
         rain_vpt_unival_max,
@@ -1808,7 +1808,7 @@ static const shader_glsl_sub_table RAIN_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table VOLLIT_table[] = {
+/*static const shader_sub_table VOLLIT_table[] = {
     {
         SHADER_FT_SUB_VOLUME_LIGHT,
         volume_light_vpt_unival_max,
@@ -1818,7 +1818,7 @@ static const shader_glsl_sub_table RAIN_table[] = {
     },
 };*/
 
-/*static const shader_glsl_sub_table FENCE_table[] = {
+/*static const shader_sub_table FENCE_table[] = {
     {
         SHADER_FT_SUB_FENCE_ALPHA,
         fence_alpha_vpt_unival_max,
@@ -1828,7 +1828,7 @@ static const shader_glsl_sub_table RAIN_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table RIPPLE_table[] = {
+static const shader_sub_table RIPPLE_table[] = {
     {
         SHADER_FT_SUB_RIPPLE,
         ripple_vpt_unival_max,
@@ -1838,7 +1838,7 @@ static const shader_glsl_sub_table RIPPLE_table[] = {
     },
 };
 
-static const shader_glsl_sub_table FOGPTCL_table[] = {
+static const shader_sub_table FOGPTCL_table[] = {
     {
         SHADER_FT_SUB_FOG_PTCL,
         fog_ptcl_vpt_unival_max,
@@ -1848,7 +1848,7 @@ static const shader_glsl_sub_table FOGPTCL_table[] = {
     },
 };
 
-static const shader_glsl_sub_table PARTICL_table[] = {
+static const shader_sub_table PARTICL_table[] = {
     {
         SHADER_FT_SUB_PARTICLE,
         particle_vpt_unival_max,
@@ -1858,7 +1858,7 @@ static const shader_glsl_sub_table PARTICL_table[] = {
     },
 };
 
-static const shader_glsl_sub_table GLITTER_PT_table[] = {
+static const shader_sub_table GLITTER_PT_table[] = {
     {
         SHADER_FT_SUB_GLITTER_PARTICLE,
         glitter_particle_vpt_unival_max,
@@ -1868,7 +1868,7 @@ static const shader_glsl_sub_table GLITTER_PT_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table SHOW_VEC_table[] = {
+/*static const shader_sub_table SHOW_VEC_table[] = {
     {
         SHADER_FT_SUB_SHOW_VECTOR,
         show_vector_vpt_unival_max,
@@ -1878,7 +1878,7 @@ static const shader_glsl_sub_table GLITTER_PT_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table FONT_table[] = {
+static const shader_sub_table FONT_table[] = {
     {
         SHADER_FT_SUB_FONT,
         font_vpt_unival_max,
@@ -1888,7 +1888,7 @@ static const shader_glsl_sub_table FONT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table MOVIE_table[] = {
+static const shader_sub_table MOVIE_table[] = {
     {
         SHADER_FT_SUB_MOVIE,
         movie_vpt_unival_max,
@@ -1898,7 +1898,7 @@ static const shader_glsl_sub_table MOVIE_table[] = {
     },
 };
 
-/*static const shader_glsl_sub_table IMGFILT_table[] = {
+/*static const shader_sub_table IMGFILT_table[] = {
     {
         SHADER_FT_SUB_IMGFILTER,
         imgfilter_vpt_unival_max,
@@ -1908,7 +1908,7 @@ static const shader_glsl_sub_table MOVIE_table[] = {
     },
 };*/
 
-static const shader_glsl_sub_table IMGFILT_table[] = {
+static const shader_sub_table IMGFILT_table[] = {
     {
         SHADER_FT_SUB_BOX4,
         box4_vpt_unival_max,
@@ -1932,7 +1932,7 @@ static const shader_glsl_sub_table IMGFILT_table[] = {
     },
 };
 
-static const shader_glsl_sub_table SPRITE_table[] = {
+static const shader_sub_table SPRITE_table[] = {
     {
         SHADER_FT_SUB_SPRITE,
         sprite_vpt_unival_max,
@@ -2883,14 +2883,14 @@ struct glass_eye_struct {
 { \
     #n, \
     SHADER_FT_##n, \
-    sizeof(n##_table) / sizeof(shader_glsl_sub_table), \
+    sizeof(n##_table) / sizeof(shader_sub_table), \
     n##_table, \
     sizeof(n##_uniform) / sizeof(uniform_name), \
     n##_uniform, \
     n##_permut, \
 }
 
-const shader_glsl_table shader_ft_table[] = {
+const shader_table shader_ft_table[] = {
     {
         "SHADER_FFP",
         SHADER_FT_FFP,
@@ -2969,27 +2969,27 @@ const shader_glsl_table shader_ft_table[] = {
 #undef shader_table_struct
 
 const size_t shader_ft_table_size =
-    sizeof(shader_ft_table) / sizeof(shader_glsl_table);
+    sizeof(shader_ft_table) / sizeof(shader_table);
 
 static void glass_eye_calc(glass_eye_struct* glass_eye);
 static void glass_eye_set(glass_eye_struct* glass_eye);
-static void shader_bind_blinn(shader_glsl_set_data* set, shader_glsl* shad);
-static void shader_bind_cloth(shader_glsl_set_data* set, shader_glsl* shad);
-static void shader_bind_hair(shader_glsl_set_data* set, shader_glsl* shad);
-static void shader_bind_eye_ball(shader_glsl_set_data* set, shader_glsl* shad);
-static void shader_bind_tone_map(shader_glsl_set_data* set, shader_glsl* shad);
-static void shader_bind_sss_filter(shader_glsl_set_data* set, shader_glsl* shad);    // Added
-static void shader_bind_esm_filter(shader_glsl_set_data* set, shader_glsl* shad);    // Added
-static void shader_bind_reduce_tex(shader_glsl_set_data* set, shader_glsl* shad);    // Added
-static void shader_bind_magnify(shader_glsl_set_data* set, shader_glsl* shad);       // Added
-static void shader_bind_mlaa(shader_glsl_set_data* set, shader_glsl* shad);          // Added
-static void shader_bind_exposure(shader_glsl_set_data* set, shader_glsl* shad);      // Added
-static void shader_bind_gauss(shader_glsl_set_data* set, shader_glsl* shad);         // Added
-static void shader_bind_snow_particle(shader_glsl_set_data* set, shader_glsl* shad); // Added
-static void shader_bind_star(shader_glsl_set_data* set, shader_glsl* shad);          // Added
-static void shader_bind_imgfilter(shader_glsl_set_data* set, shader_glsl* shad);     // Added
+static void shader_bind_blinn(shader_set_data* set, shader* shad);
+static void shader_bind_cloth(shader_set_data* set, shader* shad);
+static void shader_bind_hair(shader_set_data* set, shader* shad);
+static void shader_bind_eye_ball(shader_set_data* set, shader* shad);
+static void shader_bind_tone_map(shader_set_data* set, shader* shad);
+static void shader_bind_sss_filter(shader_set_data* set, shader* shad);    // Added
+static void shader_bind_esm_filter(shader_set_data* set, shader* shad);    // Added
+static void shader_bind_reduce_tex(shader_set_data* set, shader* shad);    // Added
+static void shader_bind_magnify(shader_set_data* set, shader* shad);       // Added
+static void shader_bind_mlaa(shader_set_data* set, shader* shad);          // Added
+static void shader_bind_exposure(shader_set_data* set, shader* shad);      // Added
+static void shader_bind_gauss(shader_set_data* set, shader* shad);         // Added
+static void shader_bind_snow_particle(shader_set_data* set, shader* shad); // Added
+static void shader_bind_star(shader_set_data* set, shader* shad);          // Added
+static void shader_bind_imgfilter(shader_set_data* set, shader* shad);     // Added
 
-const shader_glsl_bind_func shader_ft_bind_func_table[] = {
+const shader_bind_func shader_ft_bind_func_table[] = {
     {
         SHADER_FT_BLINN,
         shader_bind_blinn,
@@ -3054,9 +3054,9 @@ const shader_glsl_bind_func shader_ft_bind_func_table[] = {
 };
 
 const size_t shader_ft_bind_func_table_size =
-    sizeof(shader_ft_bind_func_table) / sizeof(shader_glsl_bind_func);
+    sizeof(shader_ft_bind_func_table) / sizeof(shader_bind_func);
 
-shader_glsl_set_data shaders_ft;
+shader_set_data shaders_ft;
 
 static glass_eye_struct glass_eye = {
     { 5.0f, 5.0f, 0.5f, 0.5f },
@@ -3184,21 +3184,21 @@ static void glass_eye_set(glass_eye_struct* glass_eye) {
     rctx->glass_eye_batch_ubo.Bind(4);
 }
 
-static void shader_bind_blinn(shader_glsl_set_data* set, shader_glsl* shad) {
+static void shader_bind_blinn(shader_set_data* set, shader* shad) {
     shad->bind(set, uniform->arr[U_NORMAL]
         ? SHADER_FT_SUB_BLINN_FRAG : SHADER_FT_SUB_BLINN_VERT);
 }
 
-static void shader_bind_cloth(shader_glsl_set_data* set, shader_glsl* shad) {
+static void shader_bind_cloth(shader_set_data* set, shader* shad) {
     shad->bind(set, uniform->arr[U_NPR] ? SHADER_FT_SUB_CLOTH_NPR1
         : (uniform->arr[U_ANISO] ? SHADER_FT_SUB_CLOTH_ANISO : SHADER_FT_SUB_CLOTH_DEFAULT));
 }
 
-static void shader_bind_hair(shader_glsl_set_data* set, shader_glsl* shad) {
+static void shader_bind_hair(shader_set_data* set, shader* shad) {
     shad->bind(set, uniform->arr[U_NPR] ? SHADER_FT_SUB_HAIR_NPR1 : SHADER_FT_SUB_HAIR_DEFAULT);
 }
 
-static void shader_bind_eye_ball(shader_glsl_set_data* set, shader_glsl* shad) {
+static void shader_bind_eye_ball(shader_set_data* set, shader* shad) {
     uniform->arr[U18] = 0;
     if (set->shaders[SHADER_FT_GLASEYE].bind(set, SHADER_FT_SUB_GLASS_EYE) >= 0) {
         glass_eye_calc(&glass_eye);
@@ -3206,12 +3206,12 @@ static void shader_bind_eye_ball(shader_glsl_set_data* set, shader_glsl* shad) {
     }
 }
 
-static void shader_bind_tone_map(shader_glsl_set_data* set, shader_glsl* shad) {
+static void shader_bind_tone_map(shader_set_data* set, shader* shad) {
     shad->bind(set, uniform->arr[U_NPR] == 1
         ? SHADER_FT_SUB_TONEMAP_NPR1 : SHADER_FT_SUB_TONEMAP);
 }
 
-static void shader_bind_sss_filter(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_sss_filter(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_SSS_FILTER]) {
     case 0:
         shad->bind(set, uniform->arr[U_NPR]
@@ -3223,7 +3223,7 @@ static void shader_bind_sss_filter(shader_glsl_set_data* set, shader_glsl* shad)
     }
 }
 
-static void shader_bind_esm_filter(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_esm_filter(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_ESM_FILTER]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_ESM_FILTER_MIN);
@@ -3234,7 +3234,7 @@ static void shader_bind_esm_filter(shader_glsl_set_data* set, shader_glsl* shad)
     }
 }
 
-static void shader_bind_reduce_tex(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_reduce_tex(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_REDUCE]) {
     case 0:
         switch (uniform->arr[U_ALPHA_MASK]) {
@@ -3291,7 +3291,7 @@ static void shader_bind_reduce_tex(shader_glsl_set_data* set, shader_glsl* shad)
     }
 }
 
-static void shader_bind_magnify(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_magnify(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_MAGNIFY]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_MAGNIFY_LINEAR);
@@ -3311,7 +3311,7 @@ static void shader_bind_magnify(shader_glsl_set_data* set, shader_glsl* shad) { 
     }
 }
 
-static void shader_bind_mlaa(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_mlaa(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_MLAA]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_MLAA_EDGE);
@@ -3325,7 +3325,7 @@ static void shader_bind_mlaa(shader_glsl_set_data* set, shader_glsl* shad) { // 
     }
 }
 
-static void shader_bind_exposure(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_exposure(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_EXPOSURE]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_EXPOSURE_MINIFY);
@@ -3339,7 +3339,7 @@ static void shader_bind_exposure(shader_glsl_set_data* set, shader_glsl* shad) {
     }
 }
 
-static void shader_bind_gauss(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_gauss(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_GAUSS]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_PP_GAUSS_USUAL);
@@ -3350,7 +3350,7 @@ static void shader_bind_gauss(shader_glsl_set_data* set, shader_glsl* shad) { //
     }
 }
 
-static void shader_bind_snow_particle(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_snow_particle(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_SNOW_PARTICLE]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_SNOW_PARTICLE_CPU);
@@ -3361,7 +3361,7 @@ static void shader_bind_snow_particle(shader_glsl_set_data* set, shader_glsl* sh
     }
 }
 
-static void shader_bind_star(shader_glsl_set_data* set, shader_glsl* shad) { // Added
+static void shader_bind_star(shader_set_data* set, shader* shad) { // Added
     switch (uniform->arr[U_STAR]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_STAR);
@@ -3372,7 +3372,7 @@ static void shader_bind_star(shader_glsl_set_data* set, shader_glsl* shad) { // 
     }
 }
 
-static void shader_bind_imgfilter(shader_glsl_set_data* set, shader_glsl* shad) {
+static void shader_bind_imgfilter(shader_set_data* set, shader* shad) {
     switch (uniform->arr[U_IMAGE_FILTER]) {
     case 0:
         shad->bind(set, SHADER_FT_SUB_BOX4);

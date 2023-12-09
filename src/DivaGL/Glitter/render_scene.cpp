@@ -6,7 +6,7 @@
 #include "glitter.hpp"
 #include "../gl_state.hpp"
 #include "../render_context.hpp"
-#include "../shader_glsl_ft.hpp"
+#include "../shader_ft.hpp"
 #include "../wrap.hpp"
 
 namespace Glitter {

@@ -3,7 +3,7 @@
     GitHub/GitLab: korenkonder
 */
 
-#include "shader_glsl.hpp"
+#include "shader.hpp"
 #include "../KKdLib/io/file_stream.hpp"
 #include "../KKdLib/io/path.hpp"
 #include "../KKdLib/hash.hpp"
@@ -32,20 +32,20 @@ static GLuint shader_compile(const char* vert, const char* frag, const char* vp,
 static GLuint shader_compile_binary(const char* vert, const char* frag, const char* vp, const char* fp,
     program_binary* bin, GLsizei* buffer_size, void** binary);
 static bool shader_load_binary_shader(program_binary* bin, GLuint* program);
-static void shader_glsl_update_data(shader_glsl_set_data* set);
+static void shader_update_data(shader_set_data* set);
 
-int32_t shader_glsl::bind(shader_glsl_set_data* set, uint32_t sub_index) {
+int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
     set->curr_shader = 0;
 
     if (num_sub < 1)
         return -1;
 
     int32_t sub_shader_index = 0;
-    for (shader_glsl_sub* i = sub; i->sub_index != sub_index; i++)
+    for (shader_sub* i = sub; i->sub_index != sub_index; i++)
         if (++sub_shader_index >= num_sub)
             return -1;
 
-    shader_glsl_sub* sub_shader = &sub[sub_shader_index];
+    shader_sub* sub_shader = &sub[sub_shader_index];
 
     int32_t unival_shad_curr = 1;
     int32_t unival_shad = 0;
@@ -67,7 +67,7 @@ int32_t shader_glsl::bind(shader_glsl_set_data* set, uint32_t sub_index) {
         }
     }
 
-    shader_glsl_sub_shader* shader = &sub_shader->shaders[unival_shad];
+    shader_sub_shader* shader = &sub_shader->shaders[unival_shad];
     set->curr_shader = shader;
 
     gl_state_use_program(shader->program);
@@ -78,7 +78,7 @@ int32_t shader_glsl::bind(shader_glsl_set_data* set, uint32_t sub_index) {
     return 0;
 }
 
-bool shader_glsl::parse_define(const char* data, char** temp, size_t* temp_size) {
+bool shader::parse_define(const char* data, char** temp, size_t* temp_size) {
     if (!data)
         return false;
 
@@ -120,7 +120,7 @@ bool shader_glsl::parse_define(const char* data, char** temp, size_t* temp_size)
     return true;
 }
 
-bool shader_glsl::parse_define(const char* data, int32_t num_uniform,
+bool shader::parse_define(const char* data, int32_t num_uniform,
     int32_t* uniform_value, char** temp, size_t* temp_size) {
     if (!data)
         return false;
@@ -179,7 +179,7 @@ bool shader_glsl::parse_define(const char* data, int32_t num_uniform,
     return true;
 }
 
-char* shader_glsl::parse_include(char* data, farc* f) {
+char* shader::parse_include(char* data, farc* f) {
     if (!data || !f)
         return data;
 
@@ -290,25 +290,25 @@ char* shader_glsl::parse_include(char* data, farc* f) {
     return temp_data;
 }
 
-void shader_glsl::unbind() {
+void shader::unbind() {
     gl_state_use_program(0);
 }
 
-shader_glsl_set_data::shader_glsl_set_data() : size(), shaders(), curr_shader(),
+shader_set_data::shader_set_data() : size(), shaders(), curr_shader(),
 primitive_restart(), primitive_restart_index(), get_index_by_name_func() {
 
 }
 
-void shader_glsl_set_data::disable_primitive_restart() {
+void shader_set_data::disable_primitive_restart() {
     primitive_restart = false;
 }
 
-void shader_glsl_set_data::draw_arrays(GLenum mode, GLint first, GLsizei count) {
-    shader_glsl_update_data(this);
+void shader_set_data::draw_arrays(GLenum mode, GLint first, GLsizei count) {
+    shader_update_data(this);
     glDrawArraysDLL(mode, first, count);
 }
 
-void shader_glsl_set_data::draw_elements(GLenum mode,
+void shader_set_data::draw_elements(GLenum mode,
     GLsizei count, GLenum type, const void* indices) {
     switch (mode) {
     case GL_TRIANGLE_STRIP:
@@ -333,7 +333,7 @@ void shader_glsl_set_data::draw_elements(GLenum mode,
         break;
     }
 
-    shader_glsl_update_data(this);
+    shader_update_data(this);
     glDrawElementsDLL(mode, count, type, indices);
 
     switch (mode) {
@@ -343,7 +343,7 @@ void shader_glsl_set_data::draw_elements(GLenum mode,
     }
 }
 
-void shader_glsl_set_data::draw_range_elements(GLenum mode,
+void shader_set_data::draw_range_elements(GLenum mode,
     GLuint start, GLuint end, GLsizei count, GLenum type, const void* indices) {
     switch (mode) {
     case GL_TRIANGLE_STRIP:
@@ -368,7 +368,7 @@ void shader_glsl_set_data::draw_range_elements(GLenum mode,
         break;
     }
 
-    shader_glsl_update_data(this);
+    shader_update_data(this);
     glDrawRangeElements(mode, start, end, count, type, indices);
 
     switch (mode) {
@@ -378,11 +378,11 @@ void shader_glsl_set_data::draw_range_elements(GLenum mode,
     }
 }
 
-void shader_glsl_set_data::enable_primitive_restart() {
+void shader_set_data::enable_primitive_restart() {
     primitive_restart = true;
 }
 
-int32_t shader_glsl_set_data::get_index_by_name(const char* name) {
+int32_t shader_set_data::get_index_by_name(const char* name) {
     if (get_index_by_name_func) {
         int32_t index = get_index_by_name_func(name);
         if (index != -1)
@@ -395,9 +395,9 @@ int32_t shader_glsl_set_data::get_index_by_name(const char* name) {
     return -1;
 }
 
-void shader_glsl_set_data::load(farc* f, bool ignore_cache,
-    const char* name, const shader_glsl_table* shaders_table, const size_t size,
-    const shader_glsl_bind_func* bind_func_table, const size_t bind_func_table_size,
+void shader_set_data::load(farc* f, bool ignore_cache,
+    const char* name, const shader_table* shaders_table, const size_t size,
+    const shader_bind_func* bind_func_table, const size_t bind_func_table_size,
     PFNSHADERGLSLGETINDEXFUNCPROC get_index_by_name) {
     if (!this || !f || !shaders_table || !size)
         return;
@@ -433,22 +433,22 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
     std::vector<int32_t> vec_vert;
     std::vector<int32_t> vec_frag;
     std::vector<program_binary> program_data_binary;
-    shader_glsl* shaders = force_malloc<shader_glsl>(size);
+    shader* shaders = force_malloc<shader>(size);
     this->shaders = shaders;
     this->size = size;
     for (size_t i = 0; i < size; i++) {
-        shader_glsl* shader = &shaders[i];
+        shader* shader = &shaders[i];
         shader->name = shaders_table[i].name;
         shader->name_index = shaders_table[i].name_index;
         shader->num_sub = shaders_table[i].num_sub;
-        shader->sub = force_malloc<shader_glsl_sub>(shader->num_sub);
+        shader->sub = force_malloc<shader_sub>(shader->num_sub);
         shader->num_uniform = shaders_table[i].num_uniform;
         shader->use_uniform = shaders_table[i].use_uniform;
         shader->use_permut = shaders_table[i].use_permut;
 
         int32_t num_sub = shader->num_sub;
-        const shader_glsl_sub_table* sub_table = shaders_table[i].sub;
-        shader_glsl_sub* sub = shader->sub;
+        const shader_sub_table* sub_table = shaders_table[i].sub;
+        shader_sub* sub = shader->sub;
         vec_vert.resize(shader->num_uniform);
         vec_frag.resize(shader->num_uniform);
         int32_t* vec_vert_data = vec_vert.data();
@@ -508,8 +508,8 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
             }
             strcat_s(shader_cache_file_name, sizeof(shader_cache_file_name), ".bin");
 
-            vert_data = shader_glsl::parse_include(vert_data, f);
-            frag_data = shader_glsl::parse_include(frag_data, f);
+            vert_data = shader::parse_include(vert_data, f);
+            frag_data = shader::parse_include(frag_data, f);
             uint64_t vert_data_hash = hash_utf8_fnv1a64m(vert_data);
             uint64_t frag_data_hash = hash_utf8_fnv1a64m(frag_data);
 
@@ -541,7 +541,7 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
 
                 if (!ignore_cache)
                     program_data_binary.reserve(unival_shad_count);
-                shader_glsl_sub_shader* shaders = force_malloc<shader_glsl_sub_shader>(unival_shad_count);
+                shader_sub_shader* shaders = force_malloc<shader_sub_shader>(unival_shad_count);
                 sub->shaders = shaders;
                 if (shaders) {
                     strcpy_s(vert_buf, sizeof(vert_buf), sub_table->vp);
@@ -578,9 +578,9 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
                         }
 
                         if (!bin || !shader_load_binary_shader(bin, &shaders[k].program)) {
-                            bool vert_succ = shader_glsl::parse_define(vert_data, num_uniform,
+                            bool vert_succ = shader::parse_define(vert_data, num_uniform,
                                 vec_vert_data, &temp_vert, &temp_vert_size);
-                            bool frag_succ = shader_glsl::parse_define(frag_data, num_uniform,
+                            bool frag_succ = shader::parse_define(frag_data, num_uniform,
                                 vec_frag_data, &temp_frag, &temp_frag_size);
 
                             if (ignore_cache)
@@ -610,7 +610,7 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
             }
             else {
                 program_data_binary.reserve(1);
-                shader_glsl_sub_shader* shaders = force_malloc<shader_glsl_sub_shader>();
+                shader_sub_shader* shaders = force_malloc<shader_sub_shader>();
                 sub->shaders = shaders;
                 if (shaders) {
                     strcpy_s(vert_buf, sizeof(vert_buf), sub_table->vp);
@@ -619,8 +619,8 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
                     strcat_s(frag_buf, sizeof(vert_buf), "..frag");
 
                     if (!bin || !shader_load_binary_shader(bin, &shaders[0].program)) {
-                        bool vert_succ = shader_glsl::parse_define(vert_data, &temp_vert, &temp_vert_size);
-                        bool frag_succ = shader_glsl::parse_define(frag_data, &temp_frag, &temp_frag_size);
+                        bool vert_succ = shader::parse_define(vert_data, &temp_vert, &temp_vert_size);
+                        bool frag_succ = shader::parse_define(frag_data, &temp_frag, &temp_frag_size);
 
                         if (ignore_cache)
                             shaders[0].program = shader_compile(vert_succ ? temp_vert : 0,
@@ -704,28 +704,28 @@ void shader_glsl_set_data::load(farc* f, bool ignore_cache,
     this->get_index_by_name_func = get_index_by_name;
 }
 
-void shader_glsl_set_data::set(uint32_t index) {
+void shader_set_data::set(uint32_t index) {
     if (this && index && index != -1) {
-        shader_glsl* shader = &shaders[index];
+        shader* shader = &shaders[index];
         if (shader->bind_func)
             shader->bind_func(this, shader);
         else
             shader->bind(this, shader->sub[0].sub_index);
     }
     else
-        shader_glsl::unbind();
+        shader::unbind();
 }
 
-void shader_glsl_set_data::unload() {
+void shader_set_data::unload() {
     size_t size = this->size;
-    shader_glsl* shaders = this->shaders;
+    shader* shaders = this->shaders;
     for (size_t i = 0; i < size; i++) {
-        shader_glsl* shader = &shaders[i];
+        shader* shader = &shaders[i];
         if (!shader->sub)
             continue;
 
         int32_t num_sub = shader->num_sub;
-        shader_glsl_sub* sub = shader->sub;
+        shader_sub* sub = shader->sub;
         for (size_t j = 0; j < num_sub; j++, sub++) {
             int32_t unival_shad_count = 1;
             if (shader->num_uniform > 0) {
@@ -742,7 +742,7 @@ void shader_glsl_set_data::unload() {
             }
 
             if (sub->shaders) {
-                shader_glsl_sub_shader* shaders = sub->shaders;
+                shader_sub_shader* shaders = sub->shaders;
                 for (size_t k = 0; k < unival_shad_count; k++)
                     glDeleteProgram(shaders[k].program);
                 free(shaders);
@@ -973,12 +973,12 @@ static bool shader_load_binary_shader(program_binary* bin, GLuint* program) {
     return true;
 }
 
-static void shader_glsl_update_data(shader_glsl_set_data* set) {
+static void shader_update_data(shader_set_data* set) {
     if (!set)
         return;
 
     if (set->curr_shader) {
-        shader_glsl_sub_shader* shader = set->curr_shader;
+        shader_sub_shader* shader = set->curr_shader;
         if (shader->uniform_val_update) {
             glUniform1iv(0, SHADER_MAX_UNIFORM_VALUES, (GLint*)shader->uniform_val);
             shader->uniform_val_update = false;

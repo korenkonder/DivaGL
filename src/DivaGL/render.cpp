@@ -8,7 +8,7 @@
 #include "gl_state.hpp"
 #include "render_context.hpp"
 #include "render_context.hpp"
-#include "shader_glsl_ft.hpp"
+#include "shader_ft.hpp"
 #include "texture.hpp"
 
 extern bool task_stage_is_modern;
@@ -188,7 +188,7 @@ namespace rndr {
                 render_post_width_scale, render_post_height_scale,
                 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
         }
-        shader_glsl::unbind();
+        shader::unbind();
 
         for (int32_t i = 0; i < 8; i++)
             gl_state_bind_sampler(i, 0);
@@ -207,7 +207,7 @@ namespace rndr {
     }
 
     void Render::calc_exposure_chara_data() {
-        shader_glsl::unbind();
+        shader::unbind();
 
         gl_state_set_color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         gl_state_set_depth_mask(GL_FALSE);

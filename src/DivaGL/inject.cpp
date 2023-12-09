@@ -6,8 +6,7 @@
 #include "inject.hpp"
 #include "gl.hpp"
 #include "print.hpp"
-#include "shader_table.hpp"
-#include "shader_glsl_ft.hpp"
+#include "shader_ft.hpp"
 #include "sprite.hpp"
 #include <Windows.h>
 
@@ -54,10 +53,6 @@ void inject_uint64_t(void* address, uint64_t data) {
 extern size_t glut_handle;
 
 static patch_struct patch_data[] = {
-    { (void*)0x00000001405E4CE0, (uint64_t)&shader_set, },
-    { (void*)0x00000001405E4FC0, (uint64_t)&shader_load_all_shaders, },
-    { (void*)0x00000001405E4DB0, (uint64_t)&shader_free, },
-    { (void*)0x00000001405E4B50, (uint64_t)&shader_bind, },
     { (void*)0x00000001401D3860, (uint64_t)&printf_proxy, },
     { (void*)0x00000001400DE640, (uint64_t)&printf_proxy, },
     { (void*)0x0000000140442FB4, (uint64_t)&gl_state_get, },
@@ -86,13 +81,6 @@ void inject_patches() {
 
     *(uint64_t*)&buf[0x02] = (uint64_t)&glut_create_context;
     inject_data((void*)(glut_handle + 0x0000A970), buf, 0x0C);
-
-    inject_uint64_t((void*)&shader_name_bind_func_table[0].bind_func, (uint64_t)&shader_bind_blinn);
-    inject_uint64_t((void*)&shader_name_bind_func_table[1].bind_func, (uint64_t)&shader_bind_cloth);
-    inject_uint64_t((void*)&shader_name_bind_func_table[2].bind_func, (uint64_t)&shader_bind_hair);
-    inject_uint64_t((void*)&shader_name_bind_func_table[3].bind_func, (uint64_t)&shader_bind_membrane);
-    inject_uint64_t((void*)&shader_name_bind_func_table[4].bind_func, (uint64_t)&shader_bind_eye_ball);
-    inject_uint64_t((void*)&shader_name_bind_func_table[5].bind_func, (uint64_t)&shader_bind_tone_map);
 
     // Patch font shader index
     inject_uint32_t((void*)0x00000001401982D8, SHADER_FT_FONT);

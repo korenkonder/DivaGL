@@ -24,7 +24,7 @@
 #define SHADER_MAX_UNIFORM_BLOCK_SIZE 65536
 #define SHADER_MAX_UNIFORM_VALUES 16
 
-struct shader_glsl_sub_table {
+struct shader_sub_table {
     uint32_t sub_index;
     const int32_t* vp_unival_max;
     const int32_t* fp_unival_max;
@@ -32,52 +32,52 @@ struct shader_glsl_sub_table {
     const char* fp;
 };
 
-struct shader_glsl_table {
+struct shader_table {
     const char* name;
     uint32_t name_index;
     int32_t num_sub;
-    const shader_glsl_sub_table* sub;
+    const shader_sub_table* sub;
     int32_t num_uniform;
     const uniform_name* use_uniform;
     const bool* use_permut;
 };
 
-struct shader_glsl;
-struct shader_glsl_set_data;
+struct shader;
+struct shader_set_data;
 
 typedef int32_t (*PFNSHADERGLSLGETINDEXFUNCPROC)(const char* name);
 
-typedef void (*PFNSHADERGLSLBINDFUNCPROC)(shader_glsl_set_data* set, shader_glsl* shad);
+typedef void (*PFNSHADERGLSLBINDFUNCPROC)(shader_set_data* set, shader* shad);
 
-struct shader_glsl_bind_func {
+struct shader_bind_func {
     uint32_t name_index;
     PFNSHADERGLSLBINDFUNCPROC bind_func;
 };
 
-struct shader_glsl_sub_shader {
+struct shader_sub_shader {
     GLuint program;
     int32_t uniform_val[SHADER_MAX_UNIFORM_VALUES];
     bool uniform_val_update;
 };
 
-struct shader_glsl_sub {
+struct shader_sub {
     uint32_t sub_index;
     const int32_t* vp_unival_max;
     const int32_t* fp_unival_max;
-    shader_glsl_sub_shader* shaders;
+    shader_sub_shader* shaders;
 };
 
-struct shader_glsl {
+struct shader {
     const char* name;
     uint32_t name_index;
     int32_t num_sub;
-    shader_glsl_sub* sub;
+    shader_sub* sub;
     int32_t num_uniform;
     const uniform_name* use_uniform;
     const bool* use_permut;
     PFNSHADERGLSLBINDFUNCPROC bind_func;
 
-    int32_t bind(shader_glsl_set_data* set, uint32_t sub_index);
+    int32_t bind(shader_set_data* set, uint32_t sub_index);
 
     static bool parse_define(const char* data, char** temp, size_t* temp_size);
     static bool parse_define(const char* data, int32_t num_uniform,
@@ -86,16 +86,16 @@ struct shader_glsl {
     static void unbind();
 };
 
-struct shader_glsl_set_data {
+struct shader_set_data {
     size_t size;
-    shader_glsl* shaders;
-    shader_glsl_sub_shader* curr_shader;
+    shader* shaders;
+    shader_sub_shader* curr_shader;
     GLboolean primitive_restart;
     GLuint primitive_restart_index;
 
     PFNSHADERGLSLGETINDEXFUNCPROC get_index_by_name_func;
 
-    shader_glsl_set_data();
+    shader_set_data();
 
     void disable_primitive_restart();
     void draw_arrays(GLenum mode, GLint first, GLsizei count);
@@ -106,8 +106,8 @@ struct shader_glsl_set_data {
     void enable_primitive_restart();
     int32_t get_index_by_name(const char* name);
     void load(farc* f, bool ignore_cache, const char* name,
-        const shader_glsl_table* shaders_table, const size_t size,
-        const shader_glsl_bind_func* bind_func_table, const size_t bind_func_table_size,
+        const shader_table* shaders_table, const size_t size,
+        const shader_bind_func* bind_func_table, const size_t bind_func_table_size,
         PFNSHADERGLSLGETINDEXFUNCPROC get_index_by_name);
     void set(uint32_t index);
     void unload();

@@ -12,7 +12,7 @@
 #include "gl_element_array_buffer.hpp"
 #include "render_context.hpp"
 #include "render_manager.hpp"
-#include "shader_glsl_ft.hpp"
+#include "shader_ft.hpp"
 #include "stage_param.hpp"
 #include "texture.hpp"
 #include <Helpers.h>

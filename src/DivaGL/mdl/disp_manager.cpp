@@ -7,7 +7,7 @@
 #include "../gl_state.hpp"
 #include "../object.hpp"
 #include "../render_manager.hpp"
-#include "../shader_glsl_ft.hpp"
+#include "../shader_ft.hpp"
 #include "../sprite.hpp"
 #include "../stage.hpp"
 #include "../uniform.hpp"
@@ -1449,7 +1449,7 @@ namespace mdl {
 
         uniform_value_reset();
         gl_state_bind_vertex_array(0);
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_set_blend_func(GL_ONE, GL_ZERO);
         for (int32_t i = 0; i < 5; i++)
             gl_state_bind_sampler(i, 0);
@@ -1533,7 +1533,7 @@ namespace mdl {
         }
 
         uniform_value_reset();
-        shader_glsl::unbind();
+        shader::unbind();
         gl_state_set_blend_func(GL_ONE, GL_ZERO);
     }
 

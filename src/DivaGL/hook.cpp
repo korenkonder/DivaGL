@@ -9,7 +9,8 @@
 #include "rob/rob.hpp"
 #include "auth_3d.hpp"
 #include "camera.hpp"
-#include "shader_glsl_ft.hpp"
+#include "resource.h"
+#include "shader_ft.hpp"
 #include "sprite.hpp"
 #include "stage.hpp"
 #include "task_effect.hpp"
@@ -87,6 +88,25 @@ HOOK(void, FASTCALL, rndr__RenderManager__render_all, 0x0000000140502CA0) {
     render_manager->render_all();
 }
 
+HOOK(void, FASTCALL, shader_free, 0x00000001405E4DB0) {
+    shaders_ft.unload();
+}
+
+HOOK(void, FASTCALL, shader_load_all_shaders, 0x00000001405E4FC0) {
+    extern size_t dll_handle;
+    HRSRC res = FindResourceA((HMODULE)dll_handle, MAKEINTRESOURCEA(IDR_FT_SHADERS_FARC1), "ft_shaders_farc");
+    if (res) {
+        DWORD size = SizeofResource((HMODULE)dll_handle, res);
+        HGLOBAL data = LoadResource((HMODULE)dll_handle, res);
+
+        farc f;
+        f.read(data, size);
+        shaders_ft.load(&f, false, "ft", shader_ft_table, shader_ft_table_size,
+            shader_ft_bind_func_table, shader_ft_bind_func_table_size,
+            shader_ft_get_index_by_name);
+    }
+}
+
 HOOK(int32_t, FASTCALL, shader_get_index_by_name, 0x00000001405E4ED0, const char* name) {
     return shaders_ft.get_index_by_name(name);
 }
@@ -117,6 +137,8 @@ void hook_funcs() {
     INSTALL_HOOK(rndr__RenderManager__render_ctrl);
     INSTALL_HOOK(rndr__RenderManager__render_all);
 
+    INSTALL_HOOK(shader_free);
+    INSTALL_HOOK(shader_load_all_shaders);
     INSTALL_HOOK(shader_get_index_by_name);
 
     INSTALL_HOOK(env_set_blend_color);

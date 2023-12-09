@@ -5,7 +5,7 @@
 
 #include "draw_object.hpp"
 #include "../light_param/light.hpp"
-#include "../shader_glsl_ft.hpp"
+#include "../shader_ft.hpp"
 #include "../texture.hpp"
 
 static bool draw_object_blend_set(
@@ -146,7 +146,7 @@ namespace mdl {
             shaders_ft.draw_arrays(GL_LINES, 0, etc->count);
             break;
         }
-        shader_glsl::unbind();
+        shader::unbind();
         uniform_value_reset();
 
         rctx->obj_batch.g_material_state_diffuse = g_material_state_diffuse;

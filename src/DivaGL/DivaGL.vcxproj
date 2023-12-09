@@ -274,9 +274,8 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="render_texture.cpp" />
     <ClCompile Include="resolution_mode.cpp" />
     <ClCompile Include="rob\rob.cpp" />
-    <ClCompile Include="shader_glsl.cpp" />
-    <ClCompile Include="shader_glsl_ft.cpp" />
-    <ClCompile Include="shader_table.cpp" />
+    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="shader_ft.cpp" />
     <ClCompile Include="shadow.cpp" />
     <ClCompile Include="shared.cpp" />
     <ClCompile Include="sprite.cpp" />
@@ -318,10 +317,10 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="render_manager.hpp" />
     <ClInclude Include="render_texture.hpp" />
     <ClInclude Include="resolution_mode.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="rob\rob.hpp" />
-    <ClInclude Include="shader_glsl.hpp" />
-    <ClInclude Include="shader_glsl_ft.hpp" />
-    <ClInclude Include="shader_table.hpp" />
+    <ClInclude Include="shader.hpp" />
+    <ClInclude Include="shader_ft.hpp" />
     <ClInclude Include="shadow.hpp" />
     <ClInclude Include="shared.hpp" />
     <ClInclude Include="sprite.hpp" />
@@ -338,6 +337,9 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ProjectReference Include="..\KKdLib\KKdLib.vcxproj">
       <Project>{4c9636b9-e5b6-41e5-9afc-5b33cc9633de}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\res\ft_shaders.farc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
