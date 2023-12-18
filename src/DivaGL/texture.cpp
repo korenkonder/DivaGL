@@ -30,6 +30,20 @@ int32_t(FASTCALL* texture_info_get_id)(const char* name)
 texture* (FASTCALL* texture_handler_get_texture)(uint32_t id)
     = (texture * (FASTCALL*)(uint32_t id))0x000000014069CD70;
 
+uint32_t texture::get_height_align_mip_level(uint8_t mip_level) {
+    if (flags & TEXTURE_BLOCK_COMPRESSION)
+        return max_def((uint32_t)height >> mip_level, 4u);
+    else
+        return max_def((uint32_t)height >> mip_level, 1u);
+}
+
+uint32_t texture::get_width_align_mip_level(uint8_t mip_level) {
+    if (flags & TEXTURE_BLOCK_COMPRESSION)
+        return max_def((uint32_t)width >> mip_level, 4u);
+    else
+        return max_def((uint32_t)width >> mip_level, 1u);
+}
+
 void texture_set_params(GLenum target, int32_t max_mipmap_level, bool use_high_anisotropy) {
     glTexParameteriDLL(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteriDLL(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

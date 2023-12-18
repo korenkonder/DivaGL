@@ -1417,8 +1417,7 @@ namespace mdl {
                 draw_etc_obj(&i->args.etc);
             } break;
             case OBJ_KIND_USER: {
-                draw_object_model_mat_load(i->mat);
-                i->args.user.func(i->args.user.data);
+                i->args.user.func(i->args.user.data, &i->mat);
             } break;
             case OBJ_KIND_TRANSLUCENT: {
                 for (int32_t j = 0; j < i->args.translucent.count; j++)

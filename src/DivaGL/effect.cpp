@@ -3,8 +3,9 @@
     GitHub/GitLab: korenkonder
 */
 
-#include "task_effect.hpp"
+#include "effect.hpp"
 #include "../KKdLib/prj/algorithm.hpp"
+#include "../KKdLib/prj/vector_pair.hpp"
 #include "../KKdLib/hash.hpp"
 #include "auth_3d.hpp"
 #include "file_handler.hpp"
@@ -16,6 +17,160 @@
 #include "stage_param.hpp"
 #include "texture.hpp"
 #include <Helpers.h>
+
+struct fog_ring_data {
+    vec3 position;
+    vec3 direction;
+    vec3 field_18;
+    float_t size;
+    float_t density;
+};
+
+static_assert(sizeof(fog_ring_data) == 0x2C, "\"point_particle_data\" struct should have a size of 0x2C");
+
+struct point_particle_data {
+    vec3 position;
+    vec4 color;
+    float_t size;
+};
+
+static_assert(sizeof(point_particle_data) == 0x20, "\"point_particle_data\" struct should have a size of 0x20");
+
+struct struc_573 {
+    int32_t chara_index;
+    int32_t bone_index;
+    vec3 position;
+};
+
+static_assert(sizeof(struc_573) == 0x14, "\"struc_573\" struct should have a size of 0x14");
+
+struct struc_371 {
+    int32_t field_0;
+    vec3 position;
+    float_t field_10;
+    float_t field_14;
+    vec3 direction;
+    float_t field_24;
+};
+
+static_assert(sizeof(struc_371) == 0x28, "\"struc_371\" struct should have a size of 0x28");
+
+struct EffectFogRing {
+    bool enable;
+    float_t delta_frame;
+    bool field_8;
+    float_t ring_size;
+    vec3 wind_dir;
+    int32_t tex_id;
+    vec4 color;
+    float_t ptcl_size;
+    int32_t max_ptcls;
+    int32_t num_ptcls;
+    float_t density;
+    float_t density_offset;
+    fog_ring_data* ptcl_data;
+    point_particle_data* ptcl_vtx_data;
+    int32_t num_vtx;
+    struc_573 field_5C[2][5];
+    int32_t field_124;
+    struc_371 field_128[10];
+    char field_2B8;
+    char field_2B9;
+    bool display;
+    int32_t current_stage_index;
+    prj::vector<int32_t> stage_indices;
+    void* frame_rate_control; // FrameRateControl
+
+    void draw();
+};
+
+static_assert(sizeof(EffectFogRing) == 0x2E0, "\"EffectFogRing\" struct should have a size of 0x2E0");
+
+struct ripple_struct {
+    int32_t ripple_uniform;
+    int32_t ripple_emit_uniform;
+    int32_t count;
+    vec3* position;
+    color4u8* color;
+    float_t size;
+};
+
+static_assert(sizeof(ripple_struct) == 0x28, "\"ripple_struct\" struct should have a size of 0x28");
+
+struct struc_192 {
+    int32_t index;
+    vec3 trans;
+};
+
+static_assert(sizeof(struc_192) == 0x10, "\"struc_192\" struct should have a size of 0x10");
+
+struct struc_207 {
+    struc_192 field_0[18];
+};
+
+static_assert(sizeof(struc_207) == 0x120, "\"struc_207\" struct should have a size of 0x120");
+
+struct EffectRipple {
+    struct Params {
+        float_t wake_attn;
+        float_t speed;
+        float_t field_8;
+        float_t field_C;
+    };
+
+    static_assert(sizeof(EffectRipple::Params) == 0x10, "\"EffectRipple::Params\" struct should have a size of 0x10");
+
+    struct DrawData {
+        ripple_struct data;
+        vec3 position[16];
+        color4u8 color[16];
+    };
+
+    static_assert(sizeof(EffectRipple::DrawData) == 0x128, "\"EffectRipple::DrawData\" struct should have a size of 0x128");
+
+    float_t delta_frame;
+    bool update;
+    int32_t rain_ripple_num;
+    float_t rain_ripple_min_value;
+    float_t rain_ripple_max_value;
+    int32_t field_14;
+    float_t ground_y;
+    float_t emit_pos_scale;
+    float_t emit_pos_ofs_x;
+    float_t emit_pos_ofs_z;
+    int32_t ripple_tex_id;
+    bool use_float_ripplemap;
+    int32_t field_30;
+    float_t rob_emitter_size;
+    size_t emitter_num;
+    const vec3* emitter_list;
+    float_t emitter_size;
+    DrawData field_50;
+    DrawData field_178;
+    DrawData field_2A0;
+    DrawData field_3C8;
+    int32_t field_4F0;
+    struc_207 field_4F4[6];
+    RenderTexture field_BB8;
+    int32_t counter;
+    bool field_BEC;
+    EffectRipple::Params params;
+    bool stage_set;
+    int32_t current_stage_index;
+    prj::vector<int32_t> stage_indices;
+
+    void draw();
+
+    void sub_1403584A0(RenderTexture* rt);
+};
+
+static_assert(sizeof(EffectRipple) == 0xC20, "\"EffectRipple\" struct should have a size of 0xC20");
+
+struct for_ring_vertex_data {
+    vec2 position;
+    vec4 color;
+    float_t size;
+};
 
 struct __declspec(align(16)) leaf_particle_data {
     vec4 position;
@@ -117,6 +272,57 @@ struct star_catalog {
 
 static_assert(sizeof(star_catalog) == 0xB8, "\"star_catalog\" struct should have a size of 0xB8");
 
+struct splash_particle_data {
+    vec3 position;
+    vec3 direction;
+    float_t size;
+    float_t life_time;
+    float_t field_20;
+    int32_t index;
+    uint32_t flags;
+    float_t alpha;
+};
+static_assert(sizeof(splash_particle_data) == 0x30, "\"splash_particle_data\" struct should have a size of 0x30");
+
+struct splash_particle {
+    int32_t count;
+    int32_t alive;
+    prj::vector<splash_particle_data> data;
+    int32_t dead;
+    prj::vector<int32_t> available;
+};
+
+static_assert(sizeof(splash_particle) == 0x40, "\"splash_particle\" struct should have a size of 0x40");
+
+struct water_particle {
+    splash_particle* splash;
+    vec4 color;
+    float_t particle_size;
+    int32_t splash_count;
+    prj::vector<point_particle_data> ptcl_data;
+    int32_t count;
+    int32_t splash_tex_id;
+    bool blink;
+    prj::vector<vec3> position_data;
+    prj::vector<color4u8> color_data;
+    ripple_struct ripple;
+    float_t ripple_emission;
+
+    void draw(mat4* mat);
+};
+
+static_assert(sizeof(water_particle) == 0xA8, "\"water_particle\" struct should have a size of 0xA8");
+
+struct water_particle_vertex_data {
+    vec3 position;
+    float_t size;
+    vec4 color;
+
+    inline water_particle_vertex_data() : size() {
+
+    }
+};
+
 struct leaf_particle_scene_shader_data {
     vec4 g_transform[4];
     vec4 g_view_pos;
@@ -200,6 +406,15 @@ struct star_catalog_batch_shader_data {
     vec4 g_thresholds;
 };
 
+struct water_particle_scene_shader_data {
+    vec4 g_transform[4];
+    vec4 g_view_world_row2;
+    vec4 g_size_in_projection;
+    vec4 g_state_point_attenuation;
+};
+
+static prj::vector_pair<EffectFogRing*, GLShaderStorageBuffer> fog_ring_ssbo;
+
 static GLuint leaf_ptcl_vao;
 static GLArrayBuffer leaf_ptcl_vbo;
 static GLElementArrayBuffer leaf_ptcl_ebo;
@@ -221,6 +436,7 @@ static GLUniformBuffer ripple_scene_ubo;
 
 static GLShaderStorageBuffer ripple_emit_ssbo;
 static GLUniformBuffer ripple_emit_scene_ubo;
+static const size_t ripple_emit_count = 5000;
 
 static GLShaderStorageBuffer snow_ssbo;
 static GLShaderStorageBuffer snow_gpu_ssbo;
@@ -236,6 +452,9 @@ static GLUniformBuffer stars_batch_ubo;
 static int32_t star_count;
 static int32_t star_b_count;
 static GLuint star_sampler;
+
+static prj::vector_pair<water_particle*, GLShaderStorageBuffer> water_particle_ssbo;
+static GLUniformBuffer water_particle_scene_ubo;
 
 static float_t& snow_particle_delta_frame = *(float_t*)0x0000000140C9A4E0;
 
@@ -278,16 +497,27 @@ static float_t(FASTCALL* rand_state_array_get_float)(int32_t id)
 static int32_t(FASTCALL* rand_state_array_get_int)(uint32_t min, uint32_t max, int32_t id)
     = (int32_t(FASTCALL*)(uint32_t min, uint32_t max, int32_t id))0x00000001404FFD80;
 
+static EffectRipple* (FASTCALL* effect_ripple_data_get)() = (EffectRipple * (FASTCALL*)())0x00000001403595B0;
+
 static void (FASTCALL* snow_particle_data_init)() = (void (FASTCALL*)())0x000000014035C930;
 static void (FASTCALL* snow_particle_data_free)() = (void (FASTCALL*)())0x000000014035DB90;
 
 extern render_context* rctx;
+
+static void draw_fog_particle(EffectFogRing* data, mat4* mat);
+
+static void draw_ripple_particles(ripple_struct* data, mat4* mat);
+
+static void draw_water_particle(water_particle* data, mat4* mat);
 
 static int32_t leaf_particle_disp();
 
 static int32_t particle_disp(particle_vertex_data* vtx_data, particle_rot_data* data, int32_t count);
 
 static void rain_particle_free();
+
+static void ripple_emit_init();
+static void ripple_emit_free();
 
 static void snow_particle_data_emit_fallen(particle_data* data);
 static void snow_particle_data_kill_fallen(particle_data* data, bool kill);
@@ -546,6 +776,76 @@ void star_catalog_draw() {
     star_catalog_data.draw();
 }
 
+HOOK(void, FASTCALL, EffectFogRing__dest, 0x0000000140348090, EffectFogRing* fog_ring) {
+    auto elem = fog_ring_ssbo.find(fog_ring);
+    if (elem != fog_ring_ssbo.end()) {
+        elem->second.Destroy();
+        fog_ring_ssbo.erase(elem);
+        fog_ring_ssbo.sort();
+    }
+
+    originalEffectFogRing__dest(fog_ring);
+}
+
+HOOK(void, FASTCALL, EffectFogRing__disp, 0x0000000140348120, EffectFogRing* fog_ring) {
+    if (fog_ring->enable && fog_ring->display)
+        disp_manager->entry_obj_user(&mat4_identity,
+            (mdl::UserArgsFunc)draw_fog_particle, fog_ring, mdl::OBJ_TYPE_USER);
+}
+
+HOOK(void, FASTCALL, EffectFogRing__set_stage_indices, 0x0000000140348790,
+    EffectFogRing* fog_ring, prj::vector<int32_t>* stage_indices) {
+    originalEffectFogRing__set_stage_indices(fog_ring, stage_indices);
+
+    auto elem = fog_ring_ssbo.find(fog_ring);
+    if (elem == fog_ring_ssbo.end()) {
+        fog_ring_ssbo.push_back({ fog_ring, {} });
+        fog_ring_ssbo.sort();
+        elem = fog_ring_ssbo.find(fog_ring);
+    }
+    else
+        elem->second.Destroy();
+    elem->second.Create(sizeof(for_ring_vertex_data) * fog_ring->max_ptcls);
+}
+
+HOOK(void, FASTCALL, EffectFogRing__calc_vert, 0x000000001403495B0, EffectFogRing* fog_ring) {
+    auto elem = fog_ring_ssbo.find(fog_ring);
+    if (elem == fog_ring_ssbo.end())
+        return;
+
+    GLShaderStorageBuffer& ssbo = elem->second;
+
+    float_t density = fog_ring->density;
+    fog_ring_data* ptcl_data = fog_ring->ptcl_data;
+
+    for_ring_vertex_data* ptcl_vtx_data = (for_ring_vertex_data*)ssbo.MapMemory();
+    if (!ptcl_vtx_data) {
+        fog_ring->num_vtx = 0;
+        return;
+    }
+
+    vec4 color = fog_ring->color;
+    for (int32_t i = fog_ring->num_ptcls; i > 0; i--, ptcl_data++, ptcl_vtx_data++) {
+        float_t size = ptcl_data->size * (float_t)(1.0 / 256.0);
+        color.w = ptcl_data->density * density;
+
+        vec2 position;
+        position.x = ptcl_data->position.x * (float_t)(1.0 / 8.0);
+        position.y = ptcl_data->position.z * (float_t)(1.0 / 8.0);
+        ptcl_vtx_data->position = position;
+        ptcl_vtx_data->color = color;
+        ptcl_vtx_data->size = size;
+    }
+
+    ssbo.UnmapMemory();
+
+    fog_ring->num_vtx = (int32_t)(fog_ring->num_ptcls * 6LL);
+}
+
+HOOK(void, FASTCALL, EffectFogRing__draw_static, 0x0000000140349940, void* data) {
+    ((EffectFogRing*)data)->draw();
+}
+
 HOOK(void, FASTCALL, leaf_particle_free, 0x000000014034BB30) {
     if (leaf_ptcl_data) {
         free(leaf_ptcl_data);
@@ -629,7 +929,7 @@ HOOK(void, FASTCALL, leaf_particle_init, 0x000000014034C530, bool change_stage) 
     leaf_particle_scene_ubo.Create(sizeof(leaf_particle_scene_shader_data));
 }
 
-HOOK(bool, FASTCALL, TaskEffectRain__Dest, 0x0000000140353DA0, size_t task_eff_rain) {
+HOOK(bool, FASTCALL, TaskEffectRain__dest, 0x0000000140353DA0, size_t task_eff_rain) {
     if (stage_param_data_rain_current) {
         implOfleaf_particle_free();
         stage_param_data_rain_current = 0;
@@ -751,7 +1051,29 @@ HOOK(void, FASTCALL, particle_init, 0x0000000140351C50, vec3* offset) {
     particle_scene_ubo.Create(sizeof(particle_scene_shader_data));
 }
 
-HOOK(bool, FASTCALL, TaskEffectSnow__Dest, 0x000000014035CEF0, size_t task_eff_snow) {
+HOOK(bool, FASTCALL, TaskEffectRipple__dest, 0x0000000140358600, size_t task_effect_ripple) {
+    bool ret = originalTaskEffectRipple__dest(task_effect_ripple);
+    ripple_emit_free();
+    return ret;
+}
+
+HOOK(bool, FASTCALL, TaskEffectRipple__init, 0x00000001403596B0, size_t task_effect_ripple) {
+    ripple_emit_init();
+    return originalTaskEffectRipple__init(task_effect_ripple);
+}
+
+HOOK(void, FASTCALL, EffectRipple__draw_static, 0x000000014035AA50, void* data) {
+    ((EffectRipple*)data)->draw();
+}
+
+HOOK(void, FASTCALL, EffectRipple__disp_particles, 0x000000014035AD80,
+    EffectRipple* effect_ripple, ripple_struct* data) {
+    if (data->count > 0)
+        disp_manager->entry_obj_user(&mat4_identity,
+            (mdl::UserArgsFunc)draw_ripple_particles, data, mdl::OBJ_TYPE_USER);
+}
+
+HOOK(bool, FASTCALL, TaskEffectSnow__dest, 0x000000014035CEF0, size_t task_eff_snow) {
     snow_particle_data_free();
     snow_particle_free();
 
@@ -874,7 +1196,6 @@ HOOK(void, FASTCALL, snow_particle_ctrl, 0x000000014035CA20) {
     snow_fallen_ssbo.UnmapMemory();
 }
 
-
 HOOK(void, FASTCALL, snow_particle_init, 0x000000014035DD30, bool change_stage) {
     stage_param_data_snow* snow = stage_param_data_snow_current;
 
@@ -979,7 +1300,59 @@ HOOK(void, FASTCALL, snow_particle_init, 0x000000014035DD30, bool change_stage) 
     snow_particle_batch_ubo.Create(sizeof(snow_particle_batch_shader_data));
 }
 
-HOOK(bool, FASTCALL, TaskEffectStar__Dest, 0x000000014036A830, size_t tast_eff_star){
+HOOK(void, FASTCALL, water_particle__free, 0x0000000140363F00, water_particle* water_ptcl) {
+    auto elem = water_particle_ssbo.find(water_ptcl);
+    if (elem != water_particle_ssbo.end()) {
+        elem->second.Destroy();
+        water_particle_ssbo.erase(elem);
+        water_particle_ssbo.sort();
+    }
+
+    originalwater_particle__free(water_ptcl);
+}
+
+HOOK(bool, FASTCALL, TaskEffectSplash__dest, 0x0000000140364040, size_t task_effect_splash) {
+    bool ret = originalTaskEffectSplash__dest(task_effect_splash);
+    water_particle_scene_ubo.Destroy();
+    return ret;
+}
+
+HOOK(void, FASTCALL, water_particle__disp, 0x0000000140364090, water_particle* water_ptcl) {
+    if (!water_ptcl->splash)
+        return;
+
+    disp_manager->entry_obj_user(&mat4_identity,
+        (mdl::UserArgsFunc)draw_water_particle, water_ptcl, mdl::OBJ_TYPE_TRANSLUCENT);
+
+    EffectRipple* effect_ripple = effect_ripple_data_get();
+    if (effect_ripple && !effect_ripple->use_float_ripplemap) {
+        water_ptcl->ripple.ripple_uniform = 0;
+        water_ptcl->ripple.ripple_emit_uniform = 0;
+        implOfEffectRipple__disp_particles(effect_ripple, &water_ptcl->ripple);
+    }
+}
+
+HOOK(void, FASTCALL, water_particle__set, 0x0000000140364F20,
+    water_particle* water_ptcl, splash_particle* splash, int32_t splash_tex_id) {
+    originalwater_particle__set(water_ptcl, splash, splash_tex_id);
+    
+    auto elem = water_particle_ssbo.find(water_ptcl);
+    if (elem == water_particle_ssbo.end()) {
+        water_particle_ssbo.push_back({ water_ptcl, {} });
+        water_particle_ssbo.sort();
+        elem = water_particle_ssbo.find(water_ptcl);
+    }
+    else
+        elem->second.Destroy();
+    elem->second.Create(sizeof(water_particle_vertex_data) * water_ptcl->splash_count);
+}
+
+HOOK(bool, FASTCALL, TaskEffectSplash__init, 0x00000001403655A0, size_t task_effect_splash) {
+    water_particle_scene_ubo.Create(sizeof(water_particle_scene_shader_data));
+    return originalTaskEffectSplash__init(task_effect_splash);
+}
+
+HOOK(bool, FASTCALL, TaskEffectStar__dest, 0x000000014036A830, size_t tast_effect_star) {
     star_catalog_data.free();
     void (FASTCALL * stage_param_data_star_storage_clear)()
         = (void (FASTCALL*)())0x000000014036A0E0;
@@ -987,22 +1360,188 @@ HOOK(bool, FASTCALL, TaskEffectStar__Dest, 0x000000014036A830, size_t tast_eff_s
     return true;
 }
 
-HOOK(bool, FASTCALL, star_catalog__init, 0x000000014036CD50, star_catalog* star){
+HOOK(bool, FASTCALL, star_catalog__init, 0x000000014036CD50, star_catalog* star) {
     return star->init();
 }
 
-void task_effect_patch() {
+void effect_patch() {
+    INSTALL_HOOK(EffectFogRing__dest);
+    INSTALL_HOOK(EffectFogRing__disp);
+    INSTALL_HOOK(EffectFogRing__set_stage_indices);
+    INSTALL_HOOK(EffectFogRing__calc_vert);
+    INSTALL_HOOK(EffectFogRing__draw_static);
     INSTALL_HOOK(leaf_particle_free);
     INSTALL_HOOK(leaf_particle_init);
+    INSTALL_HOOK(TaskEffectRain__dest);
+    INSTALL_HOOK(rain_particle_init);
     INSTALL_HOOK(particle_free);
     INSTALL_HOOK(particle_init);
-    INSTALL_HOOK(TaskEffectRain__Dest);
-    INSTALL_HOOK(rain_particle_init);
-    INSTALL_HOOK(TaskEffectSnow__Dest);
+    INSTALL_HOOK(TaskEffectRipple__dest);
+    INSTALL_HOOK(TaskEffectRipple__init);
+    INSTALL_HOOK(EffectRipple__draw_static);
+    INSTALL_HOOK(EffectRipple__disp_particles);
+    INSTALL_HOOK(TaskEffectSnow__dest);
     INSTALL_HOOK(snow_particle_ctrl);
     INSTALL_HOOK(snow_particle_init);
-    INSTALL_HOOK(TaskEffectStar__Dest);
+    INSTALL_HOOK(water_particle__free);
+    INSTALL_HOOK(TaskEffectSplash__dest);
+    INSTALL_HOOK(water_particle__disp);
+    INSTALL_HOOK(water_particle__set);
+    INSTALL_HOOK(TaskEffectSplash__init);
+    INSTALL_HOOK(TaskEffectStar__dest);
     INSTALL_HOOK(star_catalog__init);
+}
+
+void EffectFogRing::draw() {
+    draw_state->set_fog_height(false);
+    if (!enable || !display)
+        return;
+
+    draw_state->set_fog_height(true);
+    RenderTexture& rt = render_manager->get_render_texture(8);
+    rt.Bind();
+    glViewportDLL(0, 0,
+        rt.color_texture->get_width_align_mip_level(),
+        rt.color_texture->get_height_align_mip_level());
+    glClearColorDLL(density_offset, density_offset, density_offset, 1.0f);
+    glClearDLL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (disp_manager->get_obj_count(mdl::OBJ_TYPE_USER))
+        disp_manager->draw(mdl::OBJ_TYPE_USER);
+    gl_state_bind_framebuffer(0);
+    render_manager->set_effect_texture(rt.color_texture);
+    gl_state_get_error();
+}
+
+static void sub_1403B6F60(GLuint a1, GLuint a2, GLuint a3, EffectRipple::Params& params) {
+    if (!a1 || !a2 || !a3)
+        return;
+
+    texture_param tex_params[2];
+    texture_params_get(0, 0, a1, &tex_params[0], a2, &tex_params[1]);
+
+    int32_t width = tex_params[1].width;
+    int32_t height = tex_params[1].height;
+
+    GLint v43[4];
+    glGetIntegervDLL(GL_VIEWPORT, v43);
+    glViewportDLL(1, 1, width - 2, height - 2);
+
+    ripple_scene_shader_data ripple_scene = {};
+    ripple_scene.g_transform = {
+        params.speed / (float_t)width, params.speed / (float_t)height,
+        (float_t)width / (float_t)(width - 2), (float_t)height / (float_t)(height - 2)
+    };
+    ripple_scene.g_texcoord = { 1.0f, 0.0f, 0.0f, 0.0f };
+    ripple_scene_ubo.WriteMemory(ripple_scene);
+
+    ripple_batch_shader_data ripple_batch = {};
+    ripple_batch.g_params = { params.wake_attn, params.speed, params.field_8, params.field_C };
+    ripple_batch_ubo.WriteMemory(ripple_batch);
+
+    gl_state_bind_vertex_array(rctx->common_vao);
+    shaders_ft.set(SHADER_FT_RIPPLE);
+    ripple_scene_ubo.Bind(0);
+    ripple_batch_ubo.Bind(1);
+    gl_state_active_bind_texture_2d(0, a2);
+    gl_state_active_bind_texture_2d(1, a3);
+    shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
+    gl_state_active_bind_texture_2d(1, 0);
+    gl_state_active_bind_texture_2d(0, 0);
+    gl_state_bind_vertex_array(0);
+
+    glViewportDLL(v43[0], v43[1], v43[2], v43[3]);
+
+    texture_params_restore(&tex_params[0], &tex_params[1]);
+}
+
+static void sub_1403B6ED0(RenderTexture* a1, RenderTexture* a2, RenderTexture* a3, EffectRipple::Params& params) {
+    a1->Bind();
+    if (a1->color_texture->internal_format == GL_RGBA32F
+        || a1->color_texture->internal_format == GL_RGBA16F)
+        uniform->arr[U_RIPPLE] = 1;
+    else
+        uniform->arr[U_RIPPLE] = 0;
+    sub_1403B6F60(a1->GetColorTex(), a2->GetColorTex(), a3->GetColorTex(), params);
+    gl_state_bind_framebuffer(0);
+}
+
+void EffectRipple::draw() {
+    if (!stage_set)
+        return;
+
+    gl_state_disable_cull_face();
+
+    RenderTexture* rt[3];
+    for (int32_t i = 0, j = 2; i < 3; i++, j++)
+        rt[i] = &render_manager->get_render_texture(
+            use_float_ripplemap ? j : (j + 3));
+
+    if (update) {
+        int32_t counter = this->counter + 1;
+        if (counter >= 3)
+            counter = 0;
+
+        rt[(counter + 1) % 3]->Bind();
+
+        GLint v43[4];
+        glGetIntegervDLL(GL_VIEWPORT, v43);
+
+        int32_t width = rt[0]->GetWidth();
+        int32_t height = rt[0]->GetHeight();
+
+        glViewportDLL(1, 1, width - 2, height - 2);
+
+        draw_pass_set_camera();
+        glClearDLL(GL_DEPTH_BUFFER_BIT);
+        if (disp_manager->get_obj_count(mdl::OBJ_TYPE_USER)) {
+            gl_state_active_bind_texture_2d(7, rt[counter % 3]->GetColorTex());
+            disp_manager->draw(mdl::OBJ_TYPE_USER, 0, true);
+            gl_state_active_bind_texture_2d(7, 0);
+        }
+
+        gl_state_bind_framebuffer(0);
+
+        params.field_8 = 0.0005f;
+        params.field_C = 0.97f;
+        if (field_30 > 0) {
+            params.field_8 = 0.00005f;
+            params.field_C = 0.999f;
+        }
+
+        sub_1403B6ED0(rt[(counter + 2) % 3], rt[(counter + 1) % 3], rt[counter % 3], params);
+
+        glViewportDLL(v43[0], v43[1], v43[2], v43[3]);
+
+        sub_1403584A0(rt[(counter + 2) % 3]);
+
+        this->counter = counter;
+    }
+
+    int32_t v11 = (counter + 2) % 3 + 2;
+    if (!use_float_ripplemap)
+        v11 += 3;
+
+    render_manager->set_effect_texture(
+        render_manager->get_render_texture(v11).color_texture);
+
+    update = false;
+
+    gl_state_enable_cull_face();
+}
+
+void EffectRipple::sub_1403584A0(RenderTexture* rt) {
+    if (ripple_tex_id == -1)
+        return;
+
+    texture* ripple_tex = texture_handler_get_texture(ripple_tex_id);
+    if (!ripple_tex)
+        return;
+
+    field_BB8.SetColorDepthTextures(ripple_tex->tex);
+    field_BB8.Bind();
+
+    image_filter_scale(ripple_tex->tex, rt->GetColorTex(), 1.0f);
+    gl_state_bind_framebuffer(0);
 }
 
 void star_catalog_milky_way::create_buffers(int32_t subdivs, float_t uv_rec_scale_u, float_t uv_rec_scale_v,
@@ -1377,6 +1916,147 @@ bool star_catalog::init() {
     return true;
 }
 
+void water_particle::draw(mat4* mat) {
+    if (count <= 0)
+        return;
+
+    auto elem = water_particle_ssbo.find(this);
+    if (elem == water_particle_ssbo.end())
+        return;
+
+    GLShaderStorageBuffer& ssbo = elem->second;
+
+    water_particle_vertex_data* vtx_data = (water_particle_vertex_data*)ssbo.MapMemory();
+    if (!vtx_data)
+        return;
+
+    point_particle_data* ptcl_data = this->ptcl_data.data();
+    for (int32_t i = count; i > 0; i--, vtx_data++, ptcl_data++) {
+        vtx_data->position = ptcl_data->position;
+        vtx_data->color = ptcl_data->color;
+        vtx_data->size = ptcl_data->size;
+    }
+    ssbo.UnmapMemory();
+
+    water_particle_scene_shader_data scene_shader_data = {};
+    mat4 temp;
+    mat4_mul(mat, &rctx->vp_mat, &temp);
+    mat4_transpose(&temp, &temp);
+    scene_shader_data.g_transform[0] = temp.row0;
+    scene_shader_data.g_transform[1] = temp.row1;
+    scene_shader_data.g_transform[2] = temp.row2;
+    scene_shader_data.g_transform[3] = temp.row3;
+
+    mat4_mul(mat, &rctx->view_mat, &temp);
+    mat4_transpose(&temp, &temp);
+
+    scene_shader_data.g_view_world_row2 = temp.row2;
+    scene_shader_data.g_state_point_attenuation = { 0.7f, 0.4f, 0.0f, 0.0f };
+    scene_shader_data.g_size_in_projection.x = (float_t)(1.0 / 1280.0);
+    scene_shader_data.g_size_in_projection.y = (float_t)(1.0 / 720.0);
+    scene_shader_data.g_size_in_projection.z = 1.0;
+    scene_shader_data.g_size_in_projection.w = 60.0;
+    water_particle_scene_ubo.WriteMemory(scene_shader_data);
+
+    gl_state_disable_cull_face();
+    shaders_ft.set(SHADER_FT_W_PTCL);
+
+    gl_state_bind_vertex_array(rctx->common_vao);
+    water_particle_scene_ubo.Bind(4);
+    ssbo.Bind(0);
+    texture* tex = texture_handler_get_texture(splash_tex_id);
+    if (tex)
+        gl_state_active_bind_texture_2d(0, tex->tex);
+    shaders_ft.draw_arrays(GL_TRIANGLES, 0, count * 6);
+    gl_state_bind_vertex_array(0);
+
+    shader::unbind();
+    gl_state_enable_cull_face();
+}
+
+static void draw_fog_particle(EffectFogRing* data, mat4* mat) {
+    if (!data->num_vtx)
+        return;
+
+    auto elem = fog_ring_ssbo.find(data);
+    if (elem == fog_ring_ssbo.end())
+        return;
+
+    GLShaderStorageBuffer& ssbo = elem->second;
+
+    shaders_ft.set(SHADER_FT_FOGPTCL);
+    gl_state_enable_blend();
+    texture* tex = texture_handler_get_texture(data->tex_id);
+    if (tex)
+        gl_state_active_bind_texture_2d(0, tex->tex);
+    gl_state_bind_vertex_array(rctx->common_vao);
+    ssbo.Bind(0);
+    shaders_ft.draw_arrays(GL_TRIANGLES, 0, data->num_vtx);
+    gl_state_bind_vertex_array(0);
+    gl_state_disable_blend();
+    shader::unbind();
+}
+
+static void draw_ripple_particles(ripple_struct* data, mat4* mat) {
+    if (data->count > 5000)
+        return;
+
+    vec3* vtx_data = (vec3*)ripple_emit_ssbo.MapMemory();
+    if (!vtx_data)
+        return;
+
+    vec3* position = data->position;
+    color4u8* color = data->color;
+
+    for (size_t i = data->count; i; i--, vtx_data++, position++, color++)
+        *vtx_data = { position->x, position->z, (float_t)color->a * (float_t)(1.0 / 255.0) };
+
+    ripple_emit_ssbo.UnmapMemory();
+
+    int32_t size = (int32_t)(data->size + 0.5f);
+
+    RenderTexture& rt = render_manager->get_render_texture(
+        effect_ripple_data_get()->use_float_ripplemap ? 2 : 5);
+    int32_t width = rt.GetWidth();
+    int32_t height = rt.GetHeight();
+
+    ripple_emit_scene_shader_data shader_data = {};
+    shader_data.g_size_in_projection = {
+        (float_t)size / (float_t)width,
+        (float_t)size / (float_t)height,
+        0.0f, 0.0f
+    };
+    shader_data.g_transform.x = (float_t)width / (float_t)(width - 2);
+    shader_data.g_transform.y = (float_t)height / (float_t)(height - 2);
+    shader_data.g_transform.z = 0.0079498291f / (float_t)(width - 2);
+    shader_data.g_transform.w = -0.0079498291f / (float_t)(height - 2);
+    shader_data.g_framebuffer_size = {
+        1.0f / (float_t)width,
+        1.0f / (float_t)height,
+        0.0f, 0.0f };
+    ripple_emit_scene_ubo.WriteMemory(shader_data);
+
+    uniform->arr[U_RIPPLE] = data->ripple_uniform;
+    uniform->arr[U_RIPPLE_EMIT] = data->ripple_emit_uniform;
+
+    gl_state_set_color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+    gl_state_bind_vertex_array(rctx->common_vao);
+
+    shaders_ft.set(SHADER_FT_RIPEMIT);
+    ripple_emit_scene_ubo.Bind(0);
+    ripple_emit_ssbo.Bind(0);
+    shaders_ft.draw_arrays(GL_TRIANGLES, 0, data->count * 6);
+
+    shader::unbind();
+
+    gl_state_bind_vertex_array(0);
+    gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
+static void draw_water_particle(water_particle* data, mat4* mat) {
+    data->draw(mat);
+}
+
 static std::pair<vec3, float_t> sub_1406427A0(vec3 x, vec3 y) {
     float_t t1 = vec3::length_squared(x);
     if (t1 <= 1.0e-30f)
@@ -1548,6 +2228,24 @@ static void rain_particle_free() {
 
     rain_particle_scene_ubo.Destroy();
     rain_particle_batch_ubo.Destroy();
+}
+
+static void ripple_emit_init() {
+    ripple_batch_ubo.Create(sizeof(ripple_batch_shader_data));
+    ripple_scene_ubo.Create(sizeof(ripple_scene_shader_data));
+
+    ripple_emit_ssbo.Create(sizeof(vec3) * ripple_emit_count);
+
+    ripple_emit_scene_ubo.Create(sizeof(ripple_emit_scene_shader_data));
+}
+
+static void ripple_emit_free() {
+    ripple_batch_ubo.Destroy();
+    ripple_scene_ubo.Destroy();
+
+    ripple_emit_ssbo.Destroy();
+
+    ripple_emit_scene_ubo.Destroy();
 }
 
 static void snow_particle_data_emit_fallen(particle_data* data) {

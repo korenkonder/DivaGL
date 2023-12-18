@@ -24,6 +24,10 @@ render_context* rctx;
 sss_data* (FASTCALL* sss_data_get)()
     = (sss_data * (FASTCALL*)())0x0000000140641B70;
 
+void draw_state_struct::set_fog_height(bool value) {
+    fog_height = value;
+}
+
 void obj_scene_shader_data::set_g_irradiance_r_transforms(const mat4& mat) {
     mat4 temp;
     mat4_transpose(&mat, &temp);

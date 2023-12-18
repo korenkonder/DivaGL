@@ -10,6 +10,7 @@
 #include "light_param/light.hpp"
 #include "mdl/disp_manager.hpp"
 #include "rob/rob.hpp"
+#include "effect.hpp"
 #include "gl_state.hpp"
 #include "render.hpp"
 #include "render_context.hpp"
@@ -17,7 +18,6 @@
 #include "shader_ft.hpp"
 #include "sprite.hpp"
 #include "stage_param.hpp"
-#include "task_effect.hpp"
 #include "texture.hpp"
 #include <Helpers.h>
 
@@ -565,7 +565,6 @@ namespace rndr {
     }
 
     void RenderManager::pass_pre_process() {
-        return;
         gl_state_begin_event("pass_pre_process");
         for (draw_pre_process& i : pre_process)
             if (i.func)

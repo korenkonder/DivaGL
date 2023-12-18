@@ -265,7 +265,7 @@ namespace mdl {
         ~EtcObj();
     };
 
-    typedef void(*UserArgsFunc)(void* data);
+    typedef void(*UserArgsFunc)(void* data, mat4* mat);
 
     struct UserArgs {
         UserArgsFunc func;

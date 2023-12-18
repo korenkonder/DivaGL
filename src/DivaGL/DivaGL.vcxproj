@@ -281,7 +281,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="stage_param.cpp" />
-    <ClCompile Include="task_effect.cpp" />
+    <ClCompile Include="effect.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="uniform.cpp" />
     <ClCompile Include="hook.cpp" />
@@ -326,7 +326,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="sprite.hpp" />
     <ClInclude Include="stage.hpp" />
     <ClInclude Include="stage_param.hpp" />
-    <ClInclude Include="task_effect.hpp" />
+    <ClInclude Include="effect.hpp" />
     <ClInclude Include="texture.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="uniform.hpp" />

@@ -66,6 +66,9 @@ struct texture {
     GLenum internal_format;
     int32_t max_mipmap_level;
     int32_t size;
+
+    uint32_t get_height_align_mip_level(uint8_t mip_level = 0);
+    uint32_t get_width_align_mip_level(uint8_t mip_level = 0);
 };
 
 static_assert(sizeof(texture) == 0x24, "\"texture\" struct should have a size of 0x24");

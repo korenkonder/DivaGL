@@ -9,11 +9,11 @@
 #include "rob/rob.hpp"
 #include "auth_3d.hpp"
 #include "camera.hpp"
+#include "effect.hpp"
 #include "resource.h"
 #include "shader_ft.hpp"
 #include "sprite.hpp"
 #include "stage.hpp"
-#include "task_effect.hpp"
 #include "texture.hpp"
 #include <Helpers.h>
 
@@ -27,7 +27,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     rob_patch();
     sprite_patch();
     stage_patch();
-    task_effect_patch();
+    effect_patch();
     Glitter::Patch();
 
     rctx = new render_context;

@@ -67,6 +67,8 @@ struct draw_state_struct {
     float_t fresnel;
     GLuint program_buffer_index;
     void* program_buffer_matrix_data;
+
+    void set_fog_height(bool value);
 };
 
 struct camera_blur_shader_data {
