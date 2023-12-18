@@ -88,6 +88,82 @@ HOOK(void, FASTCALL, rndr__RenderManager__render_all, 0x0000000140502CA0) {
     render_manager->render_all();
 }
 
+struct ScreenShotData {
+    prj::string path;
+    int32_t format;
+    bool screen_shot_4x;
+    int32_t width;
+    int32_t height;
+    GLuint buffer;
+    const void* tex_data;
+};
+
+struct ScreenShotImpl {
+    void* __vftable;
+    prj::string path;
+    int32_t format;
+    bool screen_shot_4x;
+    int32_t width;
+    int32_t height;
+    int32_t curr_width;
+    int32_t curr_height;
+    bool capture;
+    texture* tex;
+    GLuint data_buffers[2];
+    ScreenShotData ss_data[2];
+    int32_t data_buffer_index;
+    void* thread; // Thrd_t
+};
+
+HOOK(void, FASTCALL, ScreenShotImpl__get_data, 0x0000000140557F50, ScreenShotImpl* impl) {
+    gl_state_active_bind_texture_2d(0, impl->tex->tex);
+    glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, impl->width, impl->height);
+
+    float_t ratio = (float_t)(impl->curr_height * impl->curr_width) / (float_t)(impl->width * impl->height);
+    float_t scale = 1.0f;
+    if (ratio < 0.1f)
+        uniform->arr[U_REDUCE] = 1;
+    else if (ratio < 0.6f) {
+        scale = 0.75f;
+        uniform->arr[U_REDUCE] = 1;
+    }
+    else
+        uniform->arr[U_REDUCE] = 0;
+
+    quad_shader_data quad = {};
+    quad.g_texcoord_modifier = { 0.5f, 0.5f, 0.5f, 0.5f };
+    quad.g_texel_size = { scale / (float_t)impl->width, scale / (float_t)impl->height, 0.0f, 0.0f };
+    quad.g_color = 0.0f;
+    quad.g_texture_lod = 0.0f;
+
+    rctx->quad_ubo.WriteMemory(quad);
+    rctx->quad_ubo.Bind(0);
+
+    gl_state_disable_depth_test();
+    gl_state_disable_blend();
+    gl_state_disable_cull_face();
+    glViewportDLL(0, 0, impl->curr_width, impl->curr_height);
+
+    shaders_ft.set(SHADER_FT_REDUCE);
+    gl_state_bind_vertex_array(rctx->common_vao);
+    shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
+    gl_state_bind_vertex_array(0);
+    shader::unbind();
+
+    gl_state_enable_cull_face();
+    gl_state_enable_blend();
+    gl_state_enable_depth_test();
+}
+
+HOOK(void, FASTCALL, ScreenShotData__get_data, 0x0000000140557BE0, ScreenShotData* data) {
+    if (!data->screen_shot_4x) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, data->buffer);
+        glReadPixelsDLL(0, 0, data->width, data->height, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        glGetErrorDLL();
+    }
+}
+
 HOOK(void, FASTCALL, shader_free, 0x00000001405E4DB0) {
     shaders_ft.unload();
 }
@@ -136,6 +212,9 @@ void hook_funcs() {
 
     INSTALL_HOOK(rndr__RenderManager__render_ctrl);
     INSTALL_HOOK(rndr__RenderManager__render_all);
+
+    INSTALL_HOOK(ScreenShotImpl__get_data);
+    INSTALL_HOOK(ScreenShotData__get_data);
 
     INSTALL_HOOK(shader_free);
     INSTALL_HOOK(shader_load_all_shaders);
