@@ -146,7 +146,7 @@ namespace rndr {
         rctx->screen_buffer.Bind();
         glViewportDLL(0, 0, rctx->sprite_width, rctx->sprite_height);
         if (ssaa) {
-            gl_state_active_bind_texture_2d(0, taa_tex[2]->tex);
+            gl_state_active_bind_texture_2d(0, taa_tex[taa_texture]->tex);
             gl_state_bind_sampler(0, rctx->render_samplers[0]);
             uniform->arr[U_ALPHA_MASK] = ss_alpha_mask ? 1 : 0;
             uniform->arr[U_REDUCE] = 0;
@@ -157,7 +157,7 @@ namespace rndr {
             uniform->arr[U_ALPHA_MASK] = 0;
         }
         else {
-            gl_state_active_bind_texture_2d(0, taa_tex[2]->tex);
+            gl_state_active_bind_texture_2d(0, taa_tex[taa_texture]->tex);
             if (mag_filter == MAG_FILTER_NEAREST)
                 gl_state_bind_sampler(0, rctx->render_samplers[1]);
             else
