@@ -157,7 +157,7 @@ namespace spr {
     struct SpriteVertex {
         vec3 pos;
         vec2 uv;
-        vec4u8 color;
+        color4u8 color;
     };
 
     struct SprArgs {
@@ -180,7 +180,7 @@ namespace spr {
 
         SprKind kind;
         IDUnion id;
-        vec4u8 color;
+        color4u8_bgra color;
         SprAttr attr;
         int32_t blend;
         int32_t index;

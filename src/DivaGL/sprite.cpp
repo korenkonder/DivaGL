@@ -11,7 +11,7 @@
 struct sprite_draw_vertex {
     vec3 pos;
     vec2 uv[2];
-    vec4u8 color;
+    color4u8 color;
 };
 
 struct sprite_draw_param {
@@ -558,7 +558,7 @@ namespace spr {
             return;
 
         // BGRA to RGBA
-        const vec4u8 color = { args.color.z, args.color.y, args.color.x, args.color.w };
+        const color4u8 color = { args.color.r, args.color.g, args.color.b, args.color.a };
 
         if (font)
             draw_sprite_scale(&args);
