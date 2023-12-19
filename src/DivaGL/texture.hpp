@@ -80,14 +80,17 @@ struct texture_param {
 static_assert(sizeof(texture_param) == 0x08, "\"texture_param\" struct should have a size of 0x08");
 
 extern texture* (FASTCALL* texture_init)(texture_id id);
-extern texture* (FASTCALL* texture_copy)(texture_id id, texture* org_tex);
-extern texture* (FASTCALL* texture_load_tex_cubemap)(uint32_t id, GLenum internal_format,
-    int32_t width, int32_t height, int32_t max_mipmap_level, void** data_ptr);
-extern texture* (FASTCALL* texture_load_tex_2d)(texture_id id, GLenum internal_format,
-    int32_t width, int32_t height, int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy);
 extern void(FASTCALL* texture_free)(texture* tex);
 extern int32_t(FASTCALL* texture_info_get_id)(const char* name);
 extern texture* (FASTCALL* texture_handler_get_texture)(uint32_t id);
+
+extern texture* texture_copy(texture_id id, texture* org_tex);
+extern texture* texture_load_tex_2d(texture_id id, GLenum internal_format, int32_t width, int32_t height,
+    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy);
+extern texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format, int32_t width, int32_t height,
+    int32_t max_mipmap_level, void** data_ptr);
+extern texture* texture_txp_load(txp* t, texture_id id);
+extern void texture_txp_store(texture* tex, txp* t);
 
 extern void texture_set_params(GLenum target, int32_t max_mipmap_level, bool use_high_anisotropy);
 

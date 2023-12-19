@@ -23,7 +23,7 @@ struct RenderTexture {
     int32_t Init(int32_t width, int32_t height,
         int32_t max_level, GLenum color_format, GLenum depth_format);
     int32_t SetColorDepthTextures(GLuint color_texture,
-        int32_t max_level = 0, GLuint depth_texture = 0);
+        int32_t max_level = 0, GLuint depth_texture = 0, bool stencil = false);
 
     inline GLuint GetColorTex() {
         return color_texture->tex;
@@ -47,3 +47,5 @@ struct RenderTexture {
 };
 
 static_assert(sizeof(RenderTexture) == 0x30, "\"RenderTexture\" struct should have a size of 0x30");
+
+extern void render_texture_counter_reset();
