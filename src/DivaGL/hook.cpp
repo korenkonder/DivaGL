@@ -10,6 +10,7 @@
 #include "auth_3d.hpp"
 #include "camera.hpp"
 #include "effect.hpp"
+#include "print.hpp"
 #include "resource.h"
 #include "shader_ft.hpp"
 #include "sprite.hpp"
@@ -17,7 +18,30 @@
 #include "texture.hpp"
 #include <Helpers.h>
 
+#ifdef DEBUG
+static void APIENTRY gl_debug_output(GLenum source, GLenum type, uint32_t id,
+    GLenum severity, GLsizei length, const char* message, const void* userParam);
+#endif
+
 HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
+#ifdef DEBUG
+    typedef void (APIENTRY* GLDEBUGPROC)(GLenum source, GLenum type, GLuint id,
+        GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+
+    typedef void (GLAPIENTRY* PFNGLDEBUGMESSAGECALLBACKPROC)(GLDEBUGPROC callback, const void* userParam);
+    PFNGLDEBUGMESSAGECALLBACKPROC glDebugMessageCallback
+        = (PFNGLDEBUGMESSAGECALLBACKPROC)wglGetProcAddressDLL("glDebugMessageCallback");
+    typedef void (GLAPIENTRY* PFNGLDEBUGMESSAGECONTROLPROC)(GLenum source,
+        GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled);
+    PFNGLDEBUGMESSAGECONTROLPROC glDebugMessageControl
+        = (PFNGLDEBUGMESSAGECONTROLPROC)wglGetProcAddressDLL("glDebugMessageControl");
+
+    glEnableDLL(GL_DEBUG_OUTPUT);
+    glEnableDLL(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(gl_debug_output, 0);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+#endif
+
     wrap_addresses();
 
     auth_3d_patch();
@@ -223,3 +247,82 @@ void hook_funcs() {
     INSTALL_HOOK(env_set_blend_color);
     INSTALL_HOOK(env_set_offset_color);
 }
+
+#ifdef DEBUG
+static void APIENTRY gl_debug_output(GLenum source, GLenum type, uint32_t id,
+    GLenum severity, GLsizei length, const char* message, const void* userParam) {
+    if (!id && severity == GL_DEBUG_SEVERITY_NOTIFICATION
+        || id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return;
+
+    printf_divagl("########################################\n");
+    switch (type) {
+    case GL_DEBUG_TYPE_ERROR:
+        printf_divagl("Type: Error;                ");
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        printf_divagl("Type: Deprecated Behaviour; ");
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        printf_divagl("Type: Undefined Behaviour;  ");
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        printf_divagl("Type: Portability;          ");
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        printf_divagl("Type: Performance;          ");
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        printf_divagl("Type: Marker;               ");
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        printf_divagl("Type: Push Group;           ");
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        printf_divagl("Type: Pop Group;            ");
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        printf_divagl("Type: Other;                ");
+        break;
+    }
+
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_HIGH:
+        printf_divagl("Severity: high;   ");
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        printf_divagl("Severity: medium; ");
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        printf_divagl("Severity: low;    ");
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        printf_divagl("Severity: notif;  ");
+        break;
+    }
+
+    switch (source) {
+    case GL_DEBUG_SOURCE_API:
+        printf_divagl("Source: API\n");
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        printf_divagl("Source: Window System\n");
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        printf_divagl("Source: Shader Compiler\n");
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        printf_divagl("Source: Third Party\n");
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        printf_divagl("Source: Application\n");
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        printf_divagl("Source: Other\n");
+        break;
+    }
+
+    printf_divagl("Debug message (%d): %s\n", id, message);
+    printf_divagl("########################################\n\n");
+}
+#endif
