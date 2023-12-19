@@ -42,7 +42,6 @@ public:
             else
                 glBufferData(GL_UNIFORM_BUFFER, (GLsizeiptr)size, 0, GL_DYNAMIC_DRAW);
         }
-
     }
 
     inline void Create(size_t size, const void* data, bool dynamic = false) {
