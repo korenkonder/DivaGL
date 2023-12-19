@@ -61,19 +61,15 @@ namespace Glitter {
                 if (!rend_group->buffer)
                     rend_group->max_count = 0;
 
-                ParticleType type = rend_group->type;
-                GLuint& vbo = rend_group->vbo;
-                int32_t max_count = rend_group->max_count;
-                GLuint& vao = rend_group->vao;
-                GLuint& ebo = rend_group->ebo;
-                Glitter::CreateBuffer(max_count, type == PARTICLE_QUAD, vao, vbo, ebo);
+                Glitter::CreateBuffer(rend_group->max_count, rend_group->type == PARTICLE_QUAD,
+                    rend_group->vao, rend_group->vbo, rend_group->ebo);
                 rend_group->draw_list = new DrawListData;
             }
         }
         else {
             size_t particle = *(size_t*)((size_t)rend_group->particle_inst + 0x98 + 0x178);
-            rend_group->vao = ((GLuint*)(particle + 0x40 + 0x170))[0];
-            rend_group->ebo = ((GLuint*)(particle + 0x40 + 0x170))[1];
+            rend_group->vao = *((GLuint*)(particle + 0x40 + 0x170));
+            rend_group->ebo = *((GLElementArrayBuffer*)(particle + 0x40 + 0x174));
             rend_group->draw_list = *(DrawListData**)(particle
                 + 0x40 + 0x170 + sizeof(GLuint) * 2);
         }
@@ -89,14 +85,11 @@ namespace Glitter {
                 rend_group->draw_list = 0;
             }
 
-            GLuint& vbo = rend_group->vbo;
-            GLuint& vao = rend_group->vao;
-            GLuint& ebo = rend_group->ebo;
-            Glitter::DeleteBuffer(vao, vbo, ebo);
+            Glitter::DeleteBuffer(rend_group->vao, rend_group->vbo, rend_group->ebo);
         }
         else {
             rend_group->vbo = 0;
-            rend_group->ebo = 0;
+            rend_group->ebo = {};
             rend_group->draw_list = 0;
         }
     }

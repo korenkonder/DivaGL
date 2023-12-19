@@ -58,7 +58,7 @@ namespace Glitter {
     }
 
     void RenderScene::CalcDispLine(RenderGroup* rend_group) {
-        if (!rend_group->elements || !rend_group->vbo || rend_group->ctrl < 1)
+        if (!rend_group->elements || rend_group->vbo.IsNull() || rend_group->ctrl < 1)
             return;
 
         size_t count = 0;
@@ -96,19 +96,9 @@ namespace Glitter {
         else
             rend_group->mat_draw = mat4_identity;
 
-        Buffer* buf;
-        if (GL_VERSION_4_5)
-            buf = (Buffer*)glMapNamedBuffer(rend_group->vbo, GL_WRITE_ONLY);
-        else {
-            gl_state_bind_array_buffer(rend_group->vbo);
-            buf = (Buffer*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        }
-
-        if (!buf) {
-            if (!GL_VERSION_4_5)
-                gl_state_bind_array_buffer(0);
+        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        if (!buf)
             return;
-        }
 
         elem = rend_group->elements;
         size_t disp = 0;
@@ -151,16 +141,11 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        if (GL_VERSION_4_5)
-            glUnmapNamedBuffer(rend_group->vbo);
-        else {
-            glUnmapBuffer(GL_ARRAY_BUFFER);
-            gl_state_bind_array_buffer(0);
-        }
+        rend_group->vbo.UnmapMemory();
     }
 
     void RenderScene::CalcDispLocus(RenderGroup* rend_group) {
-        if (!rend_group->elements || !rend_group->vbo || rend_group->ctrl < 1)
+        if (!rend_group->elements || rend_group->vbo.IsNull() || rend_group->ctrl < 1)
             return;
 
         size_t count = 0;
@@ -229,19 +214,9 @@ namespace Glitter {
         mat3_invert(&cam_inv_view_mat3, &cam_inv_view_mat3);
         mat3_transform_vector(&cam_inv_view_mat3, &x_vec, &x_vec);
 
-        Buffer* buf;
-        if (GL_VERSION_4_5)
-            buf = (Buffer*)glMapNamedBuffer(rend_group->vbo, GL_WRITE_ONLY);
-        else {
-            gl_state_bind_array_buffer(rend_group->vbo);
-            buf = (Buffer*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        }
-
-        if (!buf) {
-            if (!GL_VERSION_4_5)
-                gl_state_bind_array_buffer(0);
+        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        if (!buf)
             return;
-        }
 
         elem = rend_group->elements;
         vec2 split_uv = rend_group->split_uv;
@@ -326,16 +301,11 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        if (GL_VERSION_4_5)
-            glUnmapNamedBuffer(rend_group->vbo);
-        else {
-            glUnmapBuffer(GL_ARRAY_BUFFER);
-            gl_state_bind_array_buffer(0);
-        }
+        rend_group->vbo.UnmapMemory();
     }
 
     void RenderScene::CalcDispQuad(RenderGroup* rend_group) {
-        if (!rend_group->elements || !rend_group->vbo || rend_group->ctrl < 1)
+        if (!rend_group->elements || rend_group->vbo.IsNull() || rend_group->ctrl < 1)
             return;
 
         mat4 cam_view;
@@ -445,19 +415,9 @@ namespace Glitter {
         vec3 scale;
         mat4_get_scale(model_mat, &scale);
 
-        Buffer* buf;
-        if (GL_VERSION_4_5)
-            buf = (Buffer*)glMapNamedBuffer(rend_group->vbo, GL_WRITE_ONLY);
-        else {
-            gl_state_bind_array_buffer(rend_group->vbo);
-            buf = (Buffer*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        }
-
-        if (!buf) {
-            if (!GL_VERSION_4_5)
-                gl_state_bind_array_buffer(0);
+        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        if (!buf)
             return;
-        }
 
         bool use_scale = rend_group->flags & PARTICLE_SCALE ? true : false;
         RenderElement* elem = rend_group->elements;
@@ -539,12 +499,7 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        if (GL_VERSION_4_5)
-            glUnmapNamedBuffer(rend_group->vbo);
-        else {
-            glUnmapBuffer(GL_ARRAY_BUFFER);
-            gl_state_bind_array_buffer(0);
-        }
+        rend_group->vbo.UnmapMemory();
     }
 
     void RenderScene::CalcDispQuadNormal(
@@ -615,19 +570,9 @@ namespace Glitter {
         mat4_transform_vector(&inv_model_mat, &x_vec, &x_vec);
         mat4_transform_vector(&inv_model_mat, &y_vec, &y_vec);
 
-        Buffer* buf;
-        if (GL_VERSION_4_5)
-            buf = (Buffer*)glMapNamedBuffer(rend_group->vbo, GL_WRITE_ONLY);
-        else {
-            gl_state_bind_array_buffer(rend_group->vbo);
-            buf = (Buffer*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        }
-
-        if (!buf) {
-            if (!GL_VERSION_4_5)
-                gl_state_bind_array_buffer(0);
+        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        if (!buf)
             return;
-        }
 
         RenderElement* elem = rend_group->elements;
         vec2 split_uv = rend_group->split_uv;
@@ -781,12 +726,7 @@ namespace Glitter {
             }
         rend_group->disp = disp;
 
-        if (GL_VERSION_4_5)
-            glUnmapNamedBuffer(rend_group->vbo);
-        else {
-            glUnmapBuffer(GL_ARRAY_BUFFER);
-            gl_state_bind_array_buffer(0);
-        }
+        rend_group->vbo.UnmapMemory();
     }
 
     void RenderScene::Disp(RenderScene* rend_sc, RenderGroup* rend_group) {

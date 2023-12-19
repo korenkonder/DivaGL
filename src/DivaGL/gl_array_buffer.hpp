@@ -17,6 +17,10 @@ public:
 
     }
 
+    inline GLArrayBuffer(GLuint buffer) : buffer(buffer) {
+
+    }
+
     inline ~GLArrayBuffer() {
 
     }

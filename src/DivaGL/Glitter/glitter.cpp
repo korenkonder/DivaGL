@@ -30,14 +30,14 @@ namespace Glitter {
             *angle = (float_t)M_PI - *angle;
     }
 
-    void CreateBuffer(int32_t max_count, bool is_quad, GLuint& vao, GLuint& vbo, GLuint& ebo) {
+    void CreateBuffer(int32_t max_count, bool is_quad, GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo) {
         glGenVertexArrays(1, &vao);
         gl_state_bind_vertex_array(vao, true);
 
-        glGenBuffers(1, &vbo);
-        gl_state_bind_array_buffer(vbo, true);
+        static const GLsizei buffer_size = sizeof(Buffer);
 
-        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sizeof(Buffer) * max_count), 0, GL_DYNAMIC_DRAW);
+        vbo.Create(buffer_size * (size_t)max_count);
+        vbo.Bind();
 
         if (is_quad) {
             size_t count = (size_t)max_count / 4 * 5;
@@ -51,15 +51,12 @@ namespace Glitter {
                     ebo_data[i + 4] = 0xFFFFFFFF;
             }
 
-            glGenBuffers(1, &ebo);
-            gl_state_bind_element_array_buffer(ebo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int32_t) * (count - 1), ebo_data, GL_STATIC_DRAW);
+            ebo.Create(sizeof(uint16_t) * count, ebo_data);
+            ebo.Bind();
             _operator_delete(ebo_data);
         }
         else
-            ebo = 0;
-
-        static const GLsizei buffer_size = sizeof(Buffer);
+            ebo = {};
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
@@ -77,16 +74,9 @@ namespace Glitter {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void DeleteBuffer(GLuint& vao, GLuint& vbo, GLuint& ebo) {
-        if (ebo) {
-            glDeleteBuffers(1, &ebo);
-            ebo = 0;
-        }
-
-        if (vbo) {
-            glDeleteBuffers(1, &vbo);
-            vbo = 0;
-        }
+    void DeleteBuffer(GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo) {
+        ebo.Destroy();
+        vbo.Destroy();
 
         if (vao) {
             glDeleteVertexArrays(1, &vao);

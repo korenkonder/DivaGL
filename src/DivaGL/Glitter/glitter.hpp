@@ -8,6 +8,8 @@
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
 #include "../gl.hpp"
+#include "../gl_array_buffer.hpp"
+#include "../gl_element_array_buffer.hpp"
 #include "../types.hpp"
 #include "../texture.hpp"
 
@@ -219,11 +221,11 @@ namespace Glitter {
         void* particle_inst; // Glitter::ParticleInst
         DispType disp_type;
         FogType fog_type;
-        GLuint vbo;
+        GLArrayBuffer vbo;
         float_t emission;
         bool use_own_buffer;
         GLuint vao;
-        GLuint ebo;
+        GLElementArrayBuffer ebo;
         size_t disp;
         mat4 mat_draw;
         DrawListData* draw_list;
@@ -313,8 +315,9 @@ namespace Glitter {
 
     extern void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec0, const vec3* vec1);
 
-    extern void CreateBuffer(int32_t max_count, bool is_quad, GLuint& vao, GLuint& vbo, GLuint& ebo);
-    extern void DeleteBuffer(GLuint& vao, GLuint& vbo, GLuint& ebo);
+    extern void CreateBuffer(int32_t max_count, bool is_quad,
+        GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo);
+    extern void DeleteBuffer(GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo);
 
     extern void Patch();
 
