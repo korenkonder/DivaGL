@@ -1654,16 +1654,16 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
             rctx->obj_scene.set_g_self_shadow_receivers(i, view);
         }
 
-        for (int32_t i = 0, j = 0; i < 2; i++) {
-            if (!shad->field_2F0[i]) {
-                gl_state_active_bind_texture_2d(6 + j, rctx->empty_texture_2d);
-                continue;
+        int32_t j = 0;
+        for (int32_t i = 0; i < 2; i++)
+            if (shad->field_2F0[i]) {
+                gl_state_active_bind_texture_2d(6 + j, shad->curr_render_textures[1 + i]->GetColorTex());
+                glTexParameterfDLL(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
+                j++;
             }
 
-            gl_state_active_bind_texture_2d(6 + j, shad->curr_render_textures[1 + i]->GetColorTex());
-            glTexParameterfDLL(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
-            j++;
-        }
+        for (; j < 2; j++)
+            gl_state_active_bind_texture_2d(6 + j, rctx->empty_texture_2d);
         gl_state_active_texture(0);
 
         light_set* set = &light_set_data[LIGHT_SET_MAIN];
