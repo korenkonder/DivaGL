@@ -36,8 +36,15 @@ struct sprite_draw_param {
     GLuint sampler;
 
     GLenum mode;
-    GLint first;
+    union {
+        GLint first;
+        struct {
+            GLuint start;
+            GLuint end;
+        };
+    };
     GLsizei count;
+    GLintptr offset;
 };
 
 namespace spr {
@@ -60,9 +67,12 @@ namespace spr {
         struct RenderData {
             std::vector<sprite_draw_param> draw_param_buffer;
             std::vector<sprite_draw_vertex> vertex_buffer;
+            std::vector<uint32_t> index_buffer;
             GLuint vao;
-            GLuint vbo;
+            GLArrayBuffer vbo;
             size_t vbo_vertex_count;
+            GLElementArrayBuffer ebo;
+            size_t ebo_index_count;
 
             RenderData();
             ~RenderData();
@@ -90,7 +100,8 @@ namespace spr {
 
     static void draw_sprite(SprArgs& args, bool font, const mat4& mat,
         int32_t x_min, int32_t y_min, int32_t x_max, int32_t y_max,
-        std::vector<sprite_draw_param>& draw_param_buffer, std::vector<sprite_draw_vertex>& vertex_buffer);
+        std::vector<sprite_draw_param>& draw_param_buffer,
+        std::vector<sprite_draw_vertex>& vertex_buffer, std::vector<uint32_t>& index_buffer);
     static void draw_sprite_begin();
     static void draw_sprite_end();
     static void draw_sprite_scale(spr::SprArgs* args);
@@ -123,15 +134,12 @@ namespace spr {
         glGenVertexArrays(1, &vao);
         gl_state_bind_vertex_array(vao, true);
 
-        glGenBuffers(1, &vbo);
-        gl_state_bind_array_buffer(vbo, true);
-
         vbo_vertex_count = 4096;
 
         static const GLsizei buffer_size = sizeof(sprite_draw_vertex);
 
-        glBufferData(GL_ARRAY_BUFFER,
-            (GLsizeiptr)(buffer_size * vbo_vertex_count), 0, GL_DYNAMIC_DRAW);
+        vbo.Create(buffer_size * vbo_vertex_count);
+        vbo.Bind();
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
@@ -146,15 +154,19 @@ namespace spr {
         glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, buffer_size,
             (void*)offsetof(sprite_draw_vertex, uv[1]));
 
+        ebo_index_count = 4096;
+
+        ebo.Create(sizeof(uint32_t) * ebo_index_count);
+        ebo.Bind();
+
         gl_state_bind_array_buffer(0);
         gl_state_bind_vertex_array(0);
+        gl_state_bind_element_array_buffer(0);
     }
 
     SpriteManager::RenderData::~RenderData() {
-        if (vbo) {
-            glDeleteBuffers(1, &vbo);
-            vbo = 0;
-        }
+        ebo.Destroy();
+        vbo.Destroy();
 
         if (vao) {
             glDeleteVertexArrays(1, &vao);
@@ -165,6 +177,7 @@ namespace spr {
     void SpriteManager::RenderData::Clear() {
         draw_param_buffer.clear();
         vertex_buffer.clear();
+        index_buffer.clear();
     }
 
     void SpriteManager::RenderData::Update() {
@@ -174,14 +187,13 @@ namespace spr {
             while (vbo_vertex_count < vertex_buffer.size())
                 vbo_vertex_count *= 2;
 
-            glDeleteBuffers(1, &vbo);
-            glGenBuffers(1, &vbo);
+            vbo.Destroy();
 
             gl_state_bind_vertex_array(vao, true);
-            gl_state_bind_array_buffer(vbo, true);
 
-            glBufferData(GL_ARRAY_BUFFER,
-                (GLsizeiptr)(buffer_size * vbo_vertex_count), 0, GL_DYNAMIC_DRAW);
+            vbo.Create(buffer_size * vbo_vertex_count);
+            vbo.Bind();
+
             glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(buffer_size
                 * vertex_buffer.size()), vertex_buffer.data());
 
@@ -201,12 +213,28 @@ namespace spr {
             gl_state_bind_array_buffer(0);
             gl_state_bind_vertex_array(0);
         }
-        else {
-            gl_state_bind_array_buffer(vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(buffer_size
-                * vertex_buffer.size()), vertex_buffer.data());
-            gl_state_bind_array_buffer(0);
+        else
+            vbo.WriteMemory(0, buffer_size * vertex_buffer.size(), vertex_buffer.data());
+
+        if (ebo_index_count < index_buffer.size()) {
+            while (ebo_index_count < index_buffer.size())
+                ebo_index_count *= 2;
+
+            ebo.Destroy();
+
+            gl_state_bind_vertex_array(vao, true);
+
+            ebo.Create(sizeof(uint32_t) * ebo_index_count);
+            ebo.Bind();
+
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, (GLsizeiptr)(sizeof(uint32_t)
+                * index_buffer.size()), index_buffer.data());
+
+            gl_state_bind_vertex_array(0);
+            gl_state_bind_element_array_buffer(0);
         }
+        else
+            ebo.WriteMemory(0, sizeof(uint32_t) * index_buffer.size(), index_buffer.data());
     }
 
     void SpriteManager::Draw(int32_t index, bool font, texture* tex) {
@@ -306,24 +334,24 @@ namespace spr {
             shader_data.g_transform = view_projection;
             rctx->sprite_scene_ubo.WriteMemory(shader_data);
 
-            sprite_manager_render_data->Clear();
+            RenderData& render_data = *sprite_manager_render_data;
+
+            render_data.Clear();
 
             for (uint32_t j = SPR_PRIO_MAX; j; j--, reqlist++)
                 for (auto& k : *reqlist)
                     draw_sprite(k, font, mat, x_min, y_min, x_max, y_max,
-                        sprite_manager_render_data->draw_param_buffer,
-                        sprite_manager_render_data->vertex_buffer);
+                        render_data.draw_param_buffer,
+                        render_data.vertex_buffer, render_data.index_buffer);
 
-            static const GLsizei buffer_size = sizeof(sprite_draw_vertex);
-
-            sprite_manager_render_data->Update();
+            render_data.Update();
 
             rctx->sprite_scene_ubo.Bind(0);
 
             gl_state_active_bind_texture_2d(7, tex->tex);
 
-            gl_state_bind_vertex_array(sprite_manager_render_data->vao);
-            for (sprite_draw_param& j : sprite_manager_render_data->draw_param_buffer) {
+            gl_state_bind_vertex_array(render_data.vao);
+            for (sprite_draw_param& j : render_data.draw_param_buffer) {
                 if (j.blend) {
                     gl_state_enable_blend();
                     gl_state_set_blend_func_separate(
@@ -353,10 +381,20 @@ namespace spr {
                         gl_state_active_bind_texture_2d(1, j.texture[1]);
                         gl_state_bind_sampler(1, j.sampler);
                     }
+                    else
+                        gl_state_active_bind_texture_2d(1, rctx->empty_texture_2d);
+                }
+                else {
+                    gl_state_active_bind_texture_2d(0, rctx->empty_texture_2d);
+                    gl_state_active_bind_texture_2d(1, rctx->empty_texture_2d);
                 }
 
                 shaders_ft.set(j.shader);
-                shaders_ft.draw_arrays(j.mode, j.first, j.count);
+                if (j.mode != GL_TRIANGLES)
+                    shaders_ft.draw_arrays(j.mode, j.first, j.count);
+                else
+                    shaders_ft.draw_range_elements(j.mode, j.start, j.end,
+                        j.count, GL_UNSIGNED_INT, (void*)j.offset);
             }
             gl_state_bind_vertex_array(0);
         }
@@ -551,9 +589,10 @@ namespace spr {
         return tex_param_count;
     }
 
-    static void draw_sprite(SprArgs& args, bool font, const mat4& mat,
-        int32_t x_min, int32_t y_min, int32_t x_max, int32_t y_max,
-        std::vector<sprite_draw_param>& draw_param_buffer, std::vector<sprite_draw_vertex>& vertex_buffer) {
+    static void draw_sprite(SprArgs& args, bool font,
+        const mat4& mat, int32_t x_min, int32_t y_min, int32_t x_max, int32_t y_max,
+        std::vector<sprite_draw_param>& draw_param_buffer,
+        std::vector<sprite_draw_vertex>& vertex_buffer, std::vector<uint32_t>& index_buffer) {
         if (args.kind == SPR_KIND_LINE)
             return;
 
@@ -689,7 +728,7 @@ namespace spr {
                     return;
                 }
 
-                sprite_draw_vertex spr_vtx[4] = {};
+                sprite_draw_vertex spr_vtx[2] = {};
                 spr_vtx[0].pos = vtx[0];
                 spr_vtx[0].color = color;
 
@@ -724,16 +763,26 @@ namespace spr {
                 spr_vtx[3].color = color;
 
                 draw_param.mode = GL_TRIANGLES;
-                draw_param.first = (GLint)vertex_buffer.size();
+                draw_param.start = (GLuint)vertex_buffer.size();
+                draw_param.end = draw_param.start + 3;
                 draw_param.count = 6;
+                draw_param.offset = (GLintptr)(index_buffer.size() * sizeof(uint32_t));
 
-                vertex_buffer.reserve(6);
-                vertex_buffer.push_back(spr_vtx[1]); // LT
+                uint32_t start_vertex_index = (uint32_t)vertex_buffer.size();
+
+                vertex_buffer.reserve(4);
                 vertex_buffer.push_back(spr_vtx[0]); // LB
-                vertex_buffer.push_back(spr_vtx[2]); // RT
                 vertex_buffer.push_back(spr_vtx[3]); // RB
                 vertex_buffer.push_back(spr_vtx[2]); // RT
-                vertex_buffer.push_back(spr_vtx[0]); // LB
+                vertex_buffer.push_back(spr_vtx[1]); // LT
+
+                index_buffer.reserve(6);
+                index_buffer.push_back(start_vertex_index + 0); // LB
+                index_buffer.push_back(start_vertex_index + 3); // LT
+                index_buffer.push_back(start_vertex_index + 1); // RB
+                index_buffer.push_back(start_vertex_index + 1); // RB
+                index_buffer.push_back(start_vertex_index + 3); // LT
+                index_buffer.push_back(start_vertex_index + 2); // RT
             } break;
             case SPR_KIND_MULTI: {
                 if (vtx[0] == 0.0f && vtx[1] == 0.0f && vtx[2] == 0.0f && vtx[3] == 0.0f) {
@@ -770,8 +819,13 @@ namespace spr {
                 spr_vtx[1].color = color;
 
                 if (args.num_vertex) {
+                    draw_param.mode = GL_LINES;
+                    draw_param.first = (GLint)vertex_buffer.size();
+                    draw_param.count = (uint32_t)(args.num_vertex / 2 * 2);
+
                     size_t vertex_buffer_size = vertex_buffer.size();
                     vertex_buffer.reserve(args.num_vertex / 2 * 2);
+
                     SpriteVertex* vtx = args.vertex_array;
                     for (size_t i = args.num_vertex / 2; i; i--, vtx += 2) {
                         if (vtx[0].pos == 0.0f && vtx[1].pos == 0.0f)
@@ -796,6 +850,10 @@ namespace spr {
 
                     spr_vtx[0].pos = vtx[0];
                     spr_vtx[1].pos = vtx[2];
+
+                    draw_param.mode = GL_LINES;
+                    draw_param.first = (GLint)vertex_buffer.size();
+                    draw_param.count = 2;
 
                     vertex_buffer.reserve(2);
                     vertex_buffer.push_back(spr_vtx[0]);
@@ -844,6 +902,9 @@ namespace spr {
                     vertex_buffer.push_back(spr_vtx);
                 }
             } break;
+            default:
+                draw_param_buffer.pop_back();
+                return;
             }
             break;
         case 1:
@@ -862,6 +923,7 @@ namespace spr {
                     vertex_buffer.reserve(args.num_vertex);
 
                     sprite_draw_vertex spr_vtx = {};
+
                     SpriteVertex* vtx = args.vertex_array;
                     for (size_t i = args.num_vertex; i; i--, vtx++) {
                         spr_vtx.pos = vtx->pos;
@@ -874,15 +936,21 @@ namespace spr {
                     size_t num_vertex = args.num_vertex / 4 * 6;
 
                     draw_param.mode = GL_TRIANGLES;
-                    draw_param.first = (GLint)vertex_buffer.size();
+                    draw_param.start = (GLuint)vertex_buffer.size();
+                    draw_param.end = draw_param.start + (GLuint)(args.num_vertex - 1);
                     draw_param.count = (GLsizei)num_vertex;
+                    draw_param.offset = (GLintptr)(index_buffer.size() * sizeof(uint32_t));
+
+                    uint32_t start_vertex_index = (uint32_t)vertex_buffer.size();
 
                     size_t vertex_buffer_size = vertex_buffer.size();
-                    vertex_buffer.reserve(num_vertex);
+                    vertex_buffer.reserve(args.num_vertex);
+                    index_buffer.reserve(num_vertex);
 
                     sprite_draw_vertex spr_vtx[4] = {};
+
                     SpriteVertex* vtx = args.vertex_array;
-                    for (size_t i = num_vertex / 6; i; i--, vtx += 4) {
+                    for (size_t i = num_vertex / 6, j = 0; i; i--, j += 4, vtx += 4) {
                         if (vtx[0].pos == 0.0f && vtx[1].pos == 0.0f
                             && vtx[2].pos == 0.0f && vtx[3].pos == 0.0f)
                             continue;
@@ -899,12 +967,18 @@ namespace spr {
                         spr_vtx[3].pos = vtx[3].pos;
                         spr_vtx[3].uv[0] = vtx[3].uv;
                         spr_vtx[3].color = vtx[3].color;
-                        vertex_buffer.push_back(spr_vtx[1]); // LT
+
                         vertex_buffer.push_back(spr_vtx[0]); // LB
-                        vertex_buffer.push_back(spr_vtx[2]); // RT
                         vertex_buffer.push_back(spr_vtx[3]); // RB
                         vertex_buffer.push_back(spr_vtx[2]); // RT
-                        vertex_buffer.push_back(spr_vtx[0]); // LB
+                        vertex_buffer.push_back(spr_vtx[1]); // LT
+
+                        index_buffer.push_back(start_vertex_index + (uint32_t)j + 0); // LB
+                        index_buffer.push_back(start_vertex_index + (uint32_t)j + 3); // LT
+                        index_buffer.push_back(start_vertex_index + (uint32_t)j + 1); // RB
+                        index_buffer.push_back(start_vertex_index + (uint32_t)j + 1); // RB
+                        index_buffer.push_back(start_vertex_index + (uint32_t)j + 3); // LT
+                        index_buffer.push_back(start_vertex_index + (uint32_t)j + 2); // RT
                     }
 
                     if (vertex_buffer_size == vertex_buffer.size()) {
@@ -941,16 +1015,26 @@ namespace spr {
                 spr_vtx[3].color = color;
 
                 draw_param.mode = GL_TRIANGLES;
-                draw_param.first = (GLint)vertex_buffer.size();
+                draw_param.start = (GLuint)vertex_buffer.size();
+                draw_param.end = draw_param.start + 3;
                 draw_param.count = 6;
+                draw_param.offset = (GLintptr)(index_buffer.size() * sizeof(uint32_t));
 
-                vertex_buffer.reserve(6);
-                vertex_buffer.push_back(spr_vtx[1]); // LT
+                uint32_t start_vertex_index = (uint32_t)vertex_buffer.size();
+
+                vertex_buffer.reserve(4);
                 vertex_buffer.push_back(spr_vtx[0]); // LB
-                vertex_buffer.push_back(spr_vtx[2]); // RT
                 vertex_buffer.push_back(spr_vtx[3]); // RB
                 vertex_buffer.push_back(spr_vtx[2]); // RT
-                vertex_buffer.push_back(spr_vtx[0]); // LB
+                vertex_buffer.push_back(spr_vtx[1]); // LT
+
+                index_buffer.reserve(6);
+                index_buffer.push_back(start_vertex_index + 0); // LB
+                index_buffer.push_back(start_vertex_index + 3); // LT
+                index_buffer.push_back(start_vertex_index + 1); // RB
+                index_buffer.push_back(start_vertex_index + 1); // RB
+                index_buffer.push_back(start_vertex_index + 3); // LT
+                index_buffer.push_back(start_vertex_index + 2); // RT
             }
             break;
         case 2: {
@@ -993,16 +1077,26 @@ namespace spr {
             spr_vtx[3].color = color;
 
             draw_param.mode = GL_TRIANGLES;
-            draw_param.first = (GLint)vertex_buffer.size();
+            draw_param.start = (GLuint)vertex_buffer.size();
+            draw_param.end = draw_param.start + 3;
             draw_param.count = 6;
+            draw_param.offset = (GLintptr)(index_buffer.size() * sizeof(uint32_t));
 
-            vertex_buffer.reserve(6);
-            vertex_buffer.push_back(spr_vtx[1]); // LT
+            uint32_t start_vertex_index = (uint32_t)vertex_buffer.size();
+
+            vertex_buffer.reserve(4);
             vertex_buffer.push_back(spr_vtx[0]); // LB
-            vertex_buffer.push_back(spr_vtx[2]); // RT
             vertex_buffer.push_back(spr_vtx[3]); // RB
             vertex_buffer.push_back(spr_vtx[2]); // RT
-            vertex_buffer.push_back(spr_vtx[0]); // LB
+            vertex_buffer.push_back(spr_vtx[1]); // LT
+
+            index_buffer.reserve(6);
+            index_buffer.push_back(start_vertex_index + 0); // LB
+            index_buffer.push_back(start_vertex_index + 3); // LT
+            index_buffer.push_back(start_vertex_index + 1); // RB
+            index_buffer.push_back(start_vertex_index + 1); // RB
+            index_buffer.push_back(start_vertex_index + 3); // LT
+            index_buffer.push_back(start_vertex_index + 2); // RT
         } break;
         }
 
@@ -1010,9 +1104,7 @@ namespace spr {
             sprite_draw_param& draw_param_2 = draw_param_buffer.data()[draw_param_buffer.size() - 2];
             sprite_draw_param& draw_param_1 = draw_param_buffer.data()[draw_param_buffer.size() - 1];
 
-            if ((args.index == -1 || args.index == 0 || args.index == 3)
-                && draw_param_2.mode == draw_param_1.mode
-                && (draw_param_2.first + draw_param_2.count) == draw_param_1.first
+            if (draw_param_2.mode == draw_param_1.mode
                 && draw_param_2.blend == draw_param_1.blend
                 && draw_param_2.blend_src_rgb == draw_param_1.blend_src_rgb
                 && draw_param_2.blend_src_alpha == draw_param_1.blend_src_alpha
@@ -1026,8 +1118,17 @@ namespace spr {
                 && draw_param_2.texture[0] == draw_param_1.texture[0]
                 && draw_param_2.texture[1] == draw_param_1.texture[1]
                 && draw_param_2.sampler == draw_param_1.sampler) {
-                draw_param_2.count += draw_param_1.count;
-                draw_param_buffer.pop_back();
+                if (draw_param_2.mode != GL_TRIANGLES
+                    && (draw_param_2.first + draw_param_2.count) == draw_param_1.first) {
+                    draw_param_2.count += draw_param_1.count;
+                    draw_param_buffer.pop_back();
+                }
+                else if (draw_param_2.mode == GL_TRIANGLES
+                    && draw_param_2.end + 1 == draw_param_1.start) {
+                    draw_param_2.end = draw_param_1.end;
+                    draw_param_2.count += draw_param_1.count;
+                    draw_param_buffer.pop_back();
+                }
             }
         }
     }
