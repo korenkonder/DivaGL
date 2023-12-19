@@ -39,7 +39,7 @@ public:
         }
         else {
             glGenBuffers(1, &buffer);
-            gl_state_bind_array_buffer(buffer);
+            gl_state_bind_array_buffer(buffer, true);
             if (GL_VERSION_4_4)
                 glBufferStorage(GL_ARRAY_BUFFER, (GLsizeiptr)size,
                     0, GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT);
@@ -59,7 +59,7 @@ public:
         }
         else {
             glGenBuffers(1, &buffer);
-            gl_state_bind_array_buffer(buffer);
+            gl_state_bind_array_buffer(buffer, true);
             if (GL_VERSION_4_4)
                 glBufferStorage(GL_ARRAY_BUFFER, (GLsizeiptr)size, data,
                     dynamic ? GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT : 0);
