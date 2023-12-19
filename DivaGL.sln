@@ -4,7 +4,7 @@ VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DivaGL", "src\DivaGL\DivaGL.vcxproj", "{4D949362-9095-4113-9423-7E0492618F16}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KKdLib", "src\KKdLib\KKdLib.vcxproj", "{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KKdLib", "src\KKdLib\KKdLib.vcxproj", "{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,14 +22,14 @@ Global
 		{4D949362-9095-4113-9423-7E0492618F16}.Release|x64.Build.0 = Release|x64
 		{4D949362-9095-4113-9423-7E0492618F16}.ReleaseDLL|x64.ActiveCfg = ReleaseDLL|x64
 		{4D949362-9095-4113-9423-7E0492618F16}.ReleaseDLL|x64.Build.0 = ReleaseDLL|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.Debug|x64.ActiveCfg = DebugOpt|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.Debug|x64.Build.0 = DebugOpt|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.DebugDLL|x64.ActiveCfg = DebugOpt|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.DebugDLL|x64.Build.0 = DebugOpt|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.Release|x64.ActiveCfg = Release|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.Release|x64.Build.0 = Release|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.ReleaseDLL|x64.ActiveCfg = Release|x64
-		{4C9636B9-E5B6-41E5-9AFC-5B33CC9633DE}.ReleaseDLL|x64.Build.0 = Release|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.Debug|x64.ActiveCfg = DebugOpt|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.Debug|x64.Build.0 = DebugOpt|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.DebugDLL|x64.ActiveCfg = DebugOpt|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.DebugDLL|x64.Build.0 = DebugOpt|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.Release|x64.ActiveCfg = Release|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.Release|x64.Build.0 = Release|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.ReleaseDLL|x64.ActiveCfg = Release|x64
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}.ReleaseDLL|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

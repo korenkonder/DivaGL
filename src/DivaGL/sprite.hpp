@@ -35,6 +35,26 @@ struct SpriteHeaderFile {
     uint32_t sprdata_offset;
 };
 
+namespace spr {
+    struct SprInfo {
+        uint32_t texid;
+        int32_t rotate;
+        float_t su;
+        float_t sv;
+        float_t eu;
+        float_t ev;
+        float_t px;
+        float_t py;
+        float_t width;
+        float_t height;
+    };
+};
+
+struct SpriteData {
+    uint32_t attr;
+    resolution_mode resolution_mode;
+};
+
 struct SpriteHeader {
     uint32_t flag;
     uint32_t texofs;

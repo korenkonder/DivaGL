@@ -6,7 +6,6 @@
 #pragma once
 
 #include "../KKdLib/default.hpp"
-#include "../KKdLib/image.hpp"
 #include "../KKdLib/txp.hpp"
 #include "wrap.hpp"
 

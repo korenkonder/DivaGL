@@ -4,10 +4,7 @@
 */
 
 #include <thread>
-#include "../KKdLib/io/file_stream.hpp"
-#include "../KKdLib/hash.hpp"
 #include "file_handler.hpp"
-#include <sys/stat.h>
 
 void p_file_handler::call_free_callback() {
     static void(FASTCALL * p_file_handler__call_free_callback)(p_file_handler * pfhndl)

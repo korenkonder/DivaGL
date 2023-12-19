@@ -6,9 +6,48 @@
 #pragma once
 
 #include "../../KKdLib/default.hpp"
-#include "../../KKdLib/light_param/light.hpp"
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
+
+enum light_id {
+    LIGHT_CHARA       = 0x00,
+    LIGHT_STAGE       = 0x01,
+    LIGHT_SUN         = 0x02,
+    LIGHT_REFLECT     = 0x03,
+    LIGHT_SHADOW      = 0x04,
+    LIGHT_CHARA_COLOR = 0x05,
+    LIGHT_TONE_CURVE  = 0x06,
+    LIGHT_PROJECTION  = 0x07,
+    LIGHT_MAX         = 0x08,
+};
+
+enum light_set_id {
+    LIGHT_SET_MAIN = 0x00,
+    LIGHT_SET_MAX  = 0x01,
+};
+
+enum light_type {
+    LIGHT_OFF      = 0x00,
+    LIGHT_PARALLEL = 0x01,
+    LIGHT_POINT    = 0x02,
+    LIGHT_SPOT     = 0x03,
+};
+
+struct light_attenuation {
+    float_t constant;
+    float_t linear;
+    float_t quadratic;
+};
+
+struct light_clip_plane {
+    bool data[4];
+};
+
+struct light_tone_curve {
+    float_t start_point;
+    float_t end_point;
+    float_t coefficient;
+};
 
 struct light_data {
     light_type type;

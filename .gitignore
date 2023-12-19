@@ -2,7 +2,6 @@
 bin
 lib
 obj
-src/KKdLib
 *.aps
 *.cs
 !extern/lib

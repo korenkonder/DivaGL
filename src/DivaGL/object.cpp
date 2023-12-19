@@ -31,6 +31,28 @@ static void obj_vertex_add_bone_weight(vec4& bone_weight, vec4i16& bone_index, i
 static void obj_vertex_validate_bone_data(vec4& bone_weight, vec4i16& bone_index);
 static uint32_t obj_vertex_format_get_vertex_size(obj_vertex_format format);
 
+obj_material_shader_lighting_type obj_material_shader_attrib::get_lighting_type() const {
+    if (!m.is_lgt_diffuse && !m.is_lgt_specular)
+        return OBJ_MATERIAL_SHADER_LIGHTING_CONSTANT;
+    else if (!m.is_lgt_specular)
+        return OBJ_MATERIAL_SHADER_LIGHTING_LAMBERT;
+    else
+        return OBJ_MATERIAL_SHADER_LIGHTING_PHONG;
+}
+
+int32_t obj_texture_attrib::get_blend() const {
+    switch (m.blend) {
+    case 4:
+        return 2;
+    case 6:
+        return 1;
+    case 16:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
 void obj_mesh_vertex_buffer::cycle_index() {
     if (++index >= count)
         index = 0;

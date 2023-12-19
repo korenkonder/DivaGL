@@ -6,12 +6,18 @@
 #pragma once
 
 #include "../KKdLib/default.hpp"
-#include "../KKdLib/light_param/glow.hpp"
 #include "../KKdLib/vec.hpp"
 #include "renderer/dof.hpp"
 #include "renderer/transparency.hpp"
 #include "camera.hpp"
 #include "gl_uniform_buffer.hpp"
+
+enum tone_map_method {
+    TONE_MAP_YCC_EXPONENT = 0,
+    TONE_MAP_RGB_LINEAR   = 1,
+    TONE_MAP_RGB_LINEAR2  = 2,
+    TONE_MAP_MAX          = 3,
+};
 
 namespace rndr {
     struct Render {
