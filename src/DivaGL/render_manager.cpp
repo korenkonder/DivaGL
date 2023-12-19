@@ -888,7 +888,7 @@ namespace rndr {
         glViewportDLL(0, 0, rctx->sprite_width, rctx->sprite_height);
 
         if (multisample && multisample_framebuffer) {
-            glBindFramebuffer(GL_FRAMEBUFFER, multisample_framebuffer);
+            gl_state_bind_framebuffer(multisample_framebuffer);
             gl_state_enable_multisample();
             glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
             glClearDLL(GL_COLOR_BUFFER_BIT);
@@ -909,19 +909,20 @@ namespace rndr {
         gl_state_enable_depth_test();
 
         if (multisample && multisample_framebuffer) {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            gl_state_bind_framebuffer(0);
             gl_state_disable_multisample();
-            gl_state_bind_read_framebuffer(multisample_framebuffer);
-            glBlitFramebuffer(0, 0, width, height,
-                0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-            gl_state_bind_read_framebuffer(0);
+            fbo_blit(multisample_framebuffer, 0,
+                0, 0, rctx->sprite_width, rctx->sprite_height,
+                rctx->screen_x_offset, rctx->screen_y_offset,
+                rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         }
+        else
+            fbo_blit(rctx->screen_buffer.fbos[0], 0,
+                0, 0, rctx->sprite_width, rctx->sprite_height,
+                rctx->screen_x_offset, rctx->screen_y_offset,
+                rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         gl_state_get_error();
 
-        fbo_blit(rctx->screen_buffer.fbos[0], 0,
-            0, 0, rctx->sprite_width, rctx->sprite_height,
-            rctx->screen_x_offset, rctx->screen_y_offset,
-            rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();

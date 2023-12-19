@@ -502,7 +502,7 @@ HOOK(void, FASTCALL, auth_3d_m_object_hrc_disp, 0x00000001401D0760, auth_3d_m_ob
 
     for (auth_3d_object_instance& i : moh->instance) {
         if (!i.model_transform.visible)
-            return;
+            continue;
 
         mdl::ObjFlags flags = mdl::OBJ_SSS;
         shadow_type_enum shadow_type = SHADOW_CHARA;
