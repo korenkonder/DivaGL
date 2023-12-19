@@ -3245,10 +3245,6 @@ extern gl_func_struct gl_addr_glut[7];
 #define wglGetProcAddressGLUT ((PFNWGLGETPROCADDRESSGLUTPROC)gl_addr_glut[WGLGETPROCADDRESSGLUT].func)
 #define wglMakeCurrentGLUT ((PFNWGLMAKECURRENTGLUTPROC)gl_addr_glut[WGLMAKECURRENTGLUT].func)
 
-extern bool GL_VERSION_3_3;
-extern bool GL_VERSION_4_0;
-extern bool GL_VERSION_4_1;
-extern bool GL_VERSION_4_2;
 extern bool GL_VERSION_4_3;
 extern bool GL_VERSION_4_4;
 extern bool GL_VERSION_4_5;

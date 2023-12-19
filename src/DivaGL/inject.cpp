@@ -92,21 +92,25 @@ static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, in
     wrap_addresses();
 
     if (true/*a5*/) {
-        const int32_t attrib_list[] = {
-            WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-            WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
-            0,
-        };
-
         typedef HGLRC(GLAPIENTRY* PFNWGLCREATECONTEXTGLUTPROC)(HDC hDc);
 
         HGLRC tmp_ctx = wglCreateContextGLUT(hDc);;
         wglMakeCurrentGLUT(hDc, tmp_ctx);
         PFNWGLCREATECONTEXTATTRIBSARBPROC _wglCreateContextAttribsARB
             = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddressGLUT("wglCreateContextAttribsARB");
-        HGLRC ctx = _wglCreateContextAttribsARB(hDc, 0, attrib_list);
+
+        int32_t minor = 6;
+        HGLRC ctx = 0;
+        while (!ctx || minor < 3) {
+            const int32_t attrib_list[] = {
+                WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+                WGL_CONTEXT_MINOR_VERSION_ARB, minor,
+                WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
+                0,
+            };
+            ctx = _wglCreateContextAttribsARB(hDc, 0, attrib_list);;
+        }
         wglMakeCurrentGLUT(hDc, ctx);
         wglDeleteContextGLUT(tmp_ctx);
         return ctx;

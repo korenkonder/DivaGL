@@ -1583,10 +1583,6 @@ gl_func_struct gl_addr_glut[7] = {
     { 0x000000000002A430, 0, }, // wglMakeCurrent
 };
 
-bool GL_VERSION_3_3 = false;
-bool GL_VERSION_4_0 = false;
-bool GL_VERSION_4_1 = false;
-bool GL_VERSION_4_2 = false;
 bool GL_VERSION_4_3 = false;
 bool GL_VERSION_4_4 = false;
 bool GL_VERSION_4_5 = false;
@@ -1666,10 +1662,6 @@ void wrap_addresses() {
         int32_t minor;
         sscanf_s(version, "%d.%d", &major, &minor);
 
-        GL_VERSION_3_3 = (major == 3 && minor >= 3) || major > 3;
-        GL_VERSION_4_0 = (major == 4 && minor >= 0) || major > 4;
-        GL_VERSION_4_1 = (major == 4 && minor >= 1) || major > 4;
-        GL_VERSION_4_2 = (major == 4 && minor >= 2) || major > 4;
         GL_VERSION_4_3 = (major == 4 && minor >= 3) || major > 4;
         GL_VERSION_4_4 = (major == 4 && minor >= 4) || major > 4;
         GL_VERSION_4_5 = (major == 4 && minor >= 5) || major > 4;
