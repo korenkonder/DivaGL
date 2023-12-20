@@ -2408,7 +2408,7 @@ static const bool BLINN_permut[] = {
     true,
     true,
     false,
-    false, // 11th added
+    true, // 11th added
 };
 
 static const bool ITEM_permut[] = {
@@ -2422,7 +2422,7 @@ static const bool ITEM_permut[] = {
     false,
     false,
     false,
-    false,
+    true,
     false,
     false,
     false,
@@ -2440,7 +2440,7 @@ static const bool STAGE_permut[] = {
     false,
     false,
     false,
-    false, // 11th added
+    true, // 11th added
 };
 
 static const bool SKIN_permut[] = {
@@ -2449,7 +2449,7 @@ static const bool SKIN_permut[] = {
     false,
     false,
     false,
-    false,
+    true,
     false,
     false,
     false,
@@ -2460,7 +2460,7 @@ static const bool SSS_SKIN_permut[] = {
     //true, // 0th removed
     true,
     false,
-    false,
+    true,
     false,
     false,
     false,
@@ -2488,7 +2488,7 @@ static const bool HAIR_permut[] = {
     false,
     false,
     false,
-    false, // 14th added
+    true, // 14th added
 };
 
 static const bool CLOTH_permut[] = {
@@ -2501,7 +2501,7 @@ static const bool CLOTH_permut[] = {
     false,
     false,
     false,
-    false,
+    true,
     false,
     false,
     false,
@@ -2516,7 +2516,7 @@ static const bool TIGHTS_permut[] = {
     false,
     false,
     false,
-    false,
+    true,
     false,
     false,
     false,
@@ -2530,7 +2530,7 @@ static const bool SKY_permut[] = {
     true,
     true,
     false,
-    false, // 6th added
+    true, // 6th added
 };
 
 /*static const bool EYEBALL_permut[] = {
@@ -2610,7 +2610,7 @@ static const bool SIL_permut[] = {
     true,
     false,
     false,
-    false, // 7th added
+    true, // 7th added
 };
 
 static const bool LAMBERT_permut[] = {
@@ -2622,7 +2622,7 @@ static const bool LAMBERT_permut[] = {
     true,
     true,
     false,
-    false, // 8th added
+    true, // 8th added
 };
 
 static const bool CONSTANT_permut[] = {
@@ -2632,7 +2632,7 @@ static const bool CONSTANT_permut[] = {
     false,
     true,
     true,
-    false, // 6th added
+    true, // 6th added
 };
 
 /*static const bool PEEL_permut[] = {
@@ -2760,7 +2760,7 @@ static const bool FLOOR_permut[] = {
     false,
     true,
     true,
-    false, // 7th added
+    true, // 7th added
 };
 
 static const bool PUDDLE_permut[] = {
@@ -2776,7 +2776,7 @@ static const bool S_REFL_permut[] = {
     true,
     true,
     true,
-    false,
+    true,
     false,
     false,
     false,
@@ -2966,7 +2966,6 @@ const shader_table shader_ft_table[] = {
 };
 
 #undef shader_table_struct
-#undef shader_table_struct
 
 const size_t shader_ft_table_size =
     sizeof(shader_ft_table) / sizeof(shader_table);
@@ -3101,7 +3100,7 @@ static void glass_eye_calc(glass_eye_struct* glass_eye) {
     glass_eye->field_74 = glass_eye->field_3C * v2;
     glass_eye->field_80 = glass_eye->field_48 * v2;
     glass_eye->field_8C = glass_eye->field_54 * v2;
-    if (glass_eye->field_B0 == 0) {
+    if (!glass_eye->field_B0) {
         glass_eye->field_A0 = 0.0f;
         return;
     }
@@ -3122,8 +3121,8 @@ static void glass_eye_calc(glass_eye_struct* glass_eye) {
     float_t v17 = (float_t)(uint8_t)frame * (float_t)(M_PI * (1.0 / 128.0));
     float_t v19 = sinf(sinf(v17 * 27.0f) + v17 * 2.0f);
     float_t v20 = sinf(v17 * 23.0f);
-    glass_eye->field_A0.w = 0.0f;
     glass_eye->field_A0.z = (v19 + v20) * 0.5f * 0.01f;
+    glass_eye->field_A0.w = 0.0f;
 }
 
 static void glass_eye_set(glass_eye_struct* glass_eye) {
