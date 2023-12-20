@@ -319,22 +319,22 @@ namespace mdl {
             glGenVertexArrays(1, &vertex_array->vertex_array);
 
             gl_state_bind_vertex_array(vertex_array->vertex_array);
-            glVertexAttrib4f(POSITION_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(BONE_WEIGHT_INDEX, 0.0f, 0.0f, 0.0f, 0.0f);
-            glVertexAttrib4f(NORMAL_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(COLOR0_INDEX, 1.0f, 1.0f, 1.0f, 1.0f);
-            glVertexAttrib4f(COLOR1_INDEX, 1.0f, 1.0f, 1.0f, 1.0f);
-            glVertexAttrib4f(MORPH_COLOR_INDEX, 1.0f, 1.0f, 1.0f, 1.0f);
-            glVertexAttrib4f(TANGENT_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(UNKNOWN_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(TEXCOORD0_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(TEXCOORD1_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(MORPH_POSITION_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(MORPH_NORMAL_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(MORPH_TANGENT_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(       POSITION_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(    BONE_WEIGHT_INDEX, 0.0f, 0.0f, 0.0f, 0.0f);
+            glVertexAttrib4f(         NORMAL_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(         COLOR0_INDEX, 1.0f, 1.0f, 1.0f, 1.0f);
+            glVertexAttrib4f(         COLOR1_INDEX, 1.0f, 1.0f, 1.0f, 1.0f);
+            glVertexAttrib4f(    MORPH_COLOR_INDEX, 1.0f, 1.0f, 1.0f, 1.0f);
+            glVertexAttrib4f(        TANGENT_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(        UNKNOWN_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(      TEXCOORD0_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(      TEXCOORD1_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f( MORPH_POSITION_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(   MORPH_NORMAL_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
+            glVertexAttrib4f(  MORPH_TANGENT_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
             glVertexAttrib4f(MORPH_TEXCOORD0_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
             glVertexAttrib4f(MORPH_TEXCOORD1_INDEX, 0.0f, 0.0f, 0.0f, 1.0f);
-            glVertexAttrib4f(BONE_INDEX_INDEX, 0.0f, 0.0f, 0.0f, 0.0f);
+            glVertexAttrib4f(     BONE_INDEX_INDEX, 0.0f, 0.0f, 0.0f, 0.0f);
         }
 
         vertex_array->vertex_buffer = vertex_buffer;
@@ -348,7 +348,7 @@ namespace mdl {
             vertex_attrib_buffer_binding, sizeof(vertex_attrib_buffer_binding));
 
         gl_state_bind_vertex_array(vertex_array->vertex_array);
-        gl_state_bind_array_buffer(vertex_buffer);
+        gl_state_bind_array_buffer(vertex_buffer, true);
         if (index_buffer)
             gl_state_bind_element_array_buffer(index_buffer, true);
 
@@ -496,7 +496,7 @@ namespace mdl {
         }
 
         if (morph_vertex_buffer) {
-            gl_state_bind_array_buffer(morph_vertex_buffer);
+            gl_state_bind_array_buffer(morph_vertex_buffer, true);
 
             size_t offset = 0;
             if (vertex_format & OBJ_VERTEX_POSITION) {
@@ -1135,7 +1135,7 @@ namespace mdl {
         if (etc_vertex_array->vertex_buffer.IsNull())
             etc_vertex_array->vertex_buffer.Create(sizeof(float_t) * vtx_data.size());
 
-        etc_vertex_array->vertex_buffer.Bind();
+        etc_vertex_array->vertex_buffer.Bind(true);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float_t)
             * vtx_data.size(), vtx_data.data());
 
@@ -1143,7 +1143,7 @@ namespace mdl {
             if (etc_vertex_array->index_buffer.IsNull())
                 etc_vertex_array->index_buffer.Create(sizeof(uint32_t) * vtx_indices.size());
 
-            etc_vertex_array->index_buffer.Bind();
+            etc_vertex_array->index_buffer.Bind(true);
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(uint32_t)
                 * vtx_indices.size(), vtx_indices.data());
         }
