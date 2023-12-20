@@ -4,6 +4,7 @@
 */
 
 #include "object.hpp"
+#include "mdl/disp_manager.hpp"
 #include "gl_state.hpp"
 #include "wrap.hpp"
 #include <Helpers.h>
@@ -501,6 +502,8 @@ static void free_index_buffer(GLuint buffer) {
     if (!buffer)
         return;
 
+    disp_manager->check_index_buffer(buffer);
+
     GLint size;
     gl_state_bind_element_array_buffer(buffer);
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
@@ -514,6 +517,8 @@ static void free_index_buffer(GLuint buffer) {
 static void free_vertex_buffer(GLuint buffer) {
     if (!buffer)
         return;
+
+    disp_manager->check_vertex_buffer(buffer);
 
     GLint size = 0;
     gl_state_bind_array_buffer(buffer);

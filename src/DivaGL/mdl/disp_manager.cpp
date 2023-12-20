@@ -251,6 +251,21 @@ namespace mdl {
         args.user.data = data;
     }
 
+    void DispManager::vertex_array::reset_vertex_attrib() {
+        alive_time = 0;
+        vertex_buffer = 0;
+        morph_vertex_buffer = 0;
+
+        gl_state_bind_vertex_array(vertex_array);
+        for (int32_t i = 0; i < 16; i++)
+            if (vertex_attrib_array[i]) {
+                glDisableVertexAttribArray(i);
+                vertex_attrib_array[i] = false;
+            }
+        gl_state_bind_array_buffer(0, true);
+        gl_state_bind_element_array_buffer(0, true);
+        gl_state_bind_vertex_array(0);
+    }
 
     void DispManager::add_vertex_array(ObjSubMeshArgs* args) {
         const obj_mesh* mesh = args->mesh;
@@ -1276,12 +1291,16 @@ namespace mdl {
             }
     }
 
+    void DispManager::check_index_buffer(GLuint buffer) {
+        for (DispManager::vertex_array& i : vertex_array_cache)
+            if (i.alive_time > 0 && i.index_buffer == buffer)
+                i.reset_vertex_attrib();
+    }
+
     void DispManager::check_vertex_arrays() {
         for (DispManager::vertex_array& i : vertex_array_cache)
-            if (i.alive_time > 0 && --i.alive_time <= 0) {
-                i.vertex_buffer = 0;
-                i.morph_vertex_buffer = 0;
-            }
+            if (i.alive_time > 0 && --i.alive_time <= 0)
+                i.reset_vertex_attrib();
 
         for (DispManager::etc_vertex_array& i : etc_vertex_array_cache)
             if (i.alive_time > 0 && --i.alive_time <= 0) {
@@ -1292,6 +1311,13 @@ namespace mdl {
                 gl_state_bind_element_array_buffer(0, true);
                 gl_state_bind_vertex_array(0);
             }
+    }
+
+    void DispManager::check_vertex_buffer(GLuint buffer) {
+        for (DispManager::vertex_array& i : vertex_array_cache)
+            if (i.alive_time > 0
+                && (i.vertex_buffer == buffer || i.morph_vertex_buffer == buffer))
+                i.reset_vertex_attrib();
     }
 
     void DispManager::draw(ObjType type, int32_t depth_mask, bool a4) {

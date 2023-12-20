@@ -338,9 +338,10 @@ namespace mdl {
             bool vertex_attrib_array[16];
             obj_vertex_format vertex_format;
             GLsizei size_vertex;
-            bool compressed;
             GLuint vertex_attrib_buffer_binding[16];
             int32_t texcoord_array[2];
+
+            void reset_vertex_attrib();
         };
 
         struct etc_vertex_array {
@@ -393,7 +394,9 @@ namespace mdl {
         mat4* alloc_mat4_array(int32_t count);
         void buffer_reset();
         void calc_obj_radius(mat4* view, mdl::ObjType type);
+        void check_index_buffer(GLuint buffer);
         void check_vertex_arrays();
+        void check_vertex_buffer(GLuint buffer);
         void draw(mdl::ObjType type, int32_t depth_mask = 0, bool a4 = true);
         void draw_translucent(mdl::ObjType type, int32_t alpha);
         /*void draw_show_vector(mdl::ObjType type, int32_t show_vector);*/
