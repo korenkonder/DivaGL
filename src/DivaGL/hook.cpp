@@ -47,11 +47,12 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     auth_3d_patch();
     camera_patch();
     mdl::disp_manager_patch();
+    effect_patch();
     render_manager_patch();
     rob_patch();
     sprite_patch();
     stage_patch();
-    effect_patch();
+    texture_patch();
     Glitter::Patch();
 
     rctx = new render_context;

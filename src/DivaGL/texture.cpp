@@ -284,30 +284,23 @@ void texture_params_restore(texture_param* tex_0_param,
         gl_state_active_bind_texture_2d(i, 0);
 }
 
-bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids) {
-    if (!t || !texs || !ids)
-        return false;
-
-    size_t count = t->textures.size();
-    *texs = force_malloc<texture*>(count + 1);
-    texture** tex = *texs;
-    for (size_t i = 0; i < count; i++)
-        tex[i] = texture_txp_load(&t->textures[i], texture_id(0, ids[i]));
-    tex[count] = 0;
-    return true;
+HOOK(texture*, FASTCALL, texture_load_tex_cube_map, 0x000000014069B860,
+    texture_id id, GLenum internal_format, int32_t width, int32_t height,
+    int32_t max_mipmap_level, void** data_ptr) {
+    return texture_load_tex(id, GL_TEXTURE_CUBE_MAP, internal_format,
+        width, height, max_mipmap_level, data_ptr, false);
 }
 
-bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids) {
-    if (!t || !texs || !ids)
-        return false;
+HOOK(texture*, FASTCALL, texture_load_tex_2d, 0x000000014069B8E0, 
+    texture_id id, GLenum internal_format, int32_t width, int32_t height,
+    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy) {
+    return texture_load_tex(id, GL_TEXTURE_2D, internal_format,
+        width, height, max_mipmap_level, data_ptr, use_high_anisotropy);
+}
 
-    size_t count = t->textures.size();
-    *texs = force_malloc<texture*>(count + 1);
-    texture** tex = *texs;
-    for (size_t i = 0; i < count; i++)
-        tex[i] = texture_txp_load(&t->textures[i], ids[i]);
-    tex[count] = 0;
-    return true;
+void texture_patch() {
+    INSTALL_HOOK(texture_load_tex_cube_map);
+    INSTALL_HOOK(texture_load_tex_2d);
 }
 
 inline static void texture_bind(GLenum target, GLuint texture) {

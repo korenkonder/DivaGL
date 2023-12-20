@@ -98,3 +98,5 @@ extern void texture_params_get(GLuint tex_0 = 0, texture_param* tex_0_param = 0,
     GLuint tex_1 = 0, texture_param* tex_1_param = 0, GLuint tex_2 = 0, texture_param* tex_2_param = 0);
 extern void texture_params_restore(texture_param* tex_0_param = 0,
     texture_param* tex_1_param = 0, texture_param* tex_2_param = 0);
+
+extern void texture_patch();
