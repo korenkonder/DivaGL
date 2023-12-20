@@ -4,6 +4,7 @@
 */
 
 #include "draw_object.hpp"
+#include "../../KKdLib/hash.hpp"
 #include "../light_param/light.hpp"
 #include "../shader_ft.hpp"
 #include "../texture.hpp"
@@ -1047,16 +1048,17 @@ static void draw_object_vertex_attrib_set_default(const mdl::ObjSubMeshArgs* arg
 
     bool texcoord_mat_set[4] = { false };
     const obj_material_data* material = args->material;
-    for (int32_t i = 0, j = 0, l = 0; i < 4; i++) {
-        if (material->material.texdata[i].tex_index == -1)
+    const obj_material_texture_data* texdata = material->material.texdata;
+    for (int32_t i = 0, j = 0, l = 0; i < 4; i++, texdata++) {
+        if (texdata->tex_index == -1)
             continue;
 
         int32_t texcoord_index = obj_material_texture_type_get_texcoord_index(
-            material->material.texdata[i].shader_info.m.tex_type, j);
+            texdata->shader_info.m.tex_type, j);
         if (texcoord_index < 0)
             continue;
 
-        if (material->material.texdata[i].shader_info.m.tex_type == OBJ_MATERIAL_TEXTURE_COLOR)
+        if (texdata->shader_info.m.tex_type == OBJ_MATERIAL_TEXTURE_COLOR)
             j++;
 
         l++;
@@ -1064,11 +1066,11 @@ static void draw_object_vertex_attrib_set_default(const mdl::ObjSubMeshArgs* arg
         if (texcoord_mat_set[texcoord_index])
             continue;
 
-        uint32_t texture_id = material->material.texdata[i].tex_index & 0xFFFFF;
+        uint32_t texture_id = texdata->tex_index & 0xFFFFF;
 
         rctx->obj_batch.set_g_texcoord_transforms(texcoord_index,
-            material->material.texdata[i].tex_coord_mat);
-        if (material->material.texdata[i].shader_info.m.tex_type == OBJ_MATERIAL_TEXTURE_COLOR)
+            texdata->tex_coord_mat);
+        if (texdata->shader_info.m.tex_type == OBJ_MATERIAL_TEXTURE_COLOR)
             for (int32_t k = 0; k < args->texture_transform_count; k++)
                 if (args->texture_transform_array[k].id == texture_id) {
                     rctx->obj_batch.set_g_texcoord_transforms(texcoord_index,
