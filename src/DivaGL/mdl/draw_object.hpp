@@ -17,7 +17,7 @@ namespace mdl {
     extern void draw_etc_obj(mdl::EtcObj* etc);
     extern void draw_sub_mesh(const ObjSubMeshArgs* args, const mat4* model,
         void(*func)(const ObjSubMeshArgs* args));
-    extern void draw_sub_mesh_show_vector(const ObjSubMeshArgs* args, const mat4* model, int32_t show_vector);
+    //extern void draw_sub_mesh_show_vector(const ObjSubMeshArgs* args, const mat4* model, int32_t show_vector);
     extern void draw_sub_mesh_default(const ObjSubMeshArgs* args);
     extern void draw_sub_mesh_default_instanced(const ObjSubMeshArgs* args, const mat4* mat);
     extern void draw_sub_mesh_sss(const ObjSubMeshArgs* args);

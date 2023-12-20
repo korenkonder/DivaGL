@@ -4,6 +4,7 @@
 */
 
 #include "disp_manager.hpp"
+#include "../rob/rob.hpp"
 #include "../gl_state.hpp"
 #include "../object.hpp"
 #include "../render_manager.hpp"
@@ -2422,8 +2423,6 @@ namespace mdl {
         wet_param = value;
     }
 
-    static const mat4* rob_chara_item_equip_mat = 0;
-
     HOOK(void, FASTCALL, DataTestObjectManager__Disp, 0x0000000140293E30, __int64 a1) {
         if (*(int32_t*)(a1 + 0x88) == 3 || *(int32_t*)(a1 + 0x74) < 0
             || *(int32_t*)(a1 + 0x74) >= *(int32_t*)(a1 + 0x70))
@@ -2504,43 +2503,7 @@ namespace mdl {
         disp_manager->entry_obj_etc(&mat, &etc);
     }
 
-    HOOK(void, FASTCALL, DispManager__entry_obj_by_object_info_object_skin, 0x00000001405E8E20,
-        object_info obj_info, prj::vector<texture_pattern_struct>* texture_pattern,
-        texture_data_struct* texture_data, float_t alpha, mat4* matrices, mat4* ex_data_matrices, mat4* mat) {
-        disp_manager->entry_obj_by_object_info_object_skin(obj_info, texture_pattern, texture_data,
-            alpha, matrices, ex_data_matrices, mat, rob_chara_item_equip_mat);
-    }
-
     void disp_manager_patch() {
-        WRITE_NOP_6(0x0000000140542019);
-        WRITE_NOP_6(0x000000014054204F);
-        WRITE_NOP_6(0x000000014054208E);
-
-        uint8_t buf[0x1B] = {};
-        buf[0x00] = 0x48;
-        buf[0x01] = 0x8D;
-        buf[0x02] = 0x8F;
-        buf[0x03] = 0xFC;
-        buf[0x04] = 0x00;
-        buf[0x05] = 0x00;
-        buf[0x06] = 0x00;
-        buf[0x07] = 0x48;
-        buf[0x08] = 0xB8;
-        *(uint64_t*)&buf[0x09] = (uint64_t)&rob_chara_item_equip_mat;
-        buf[0x11] = 0x48;
-        buf[0x12] = 0x89;
-        buf[0x13] = 0x08;
-        buf[0x14] = 0x0F;
-        buf[0x15] = 0x1F;
-        buf[0x16] = 0x80;
-        buf[0x17] = 0x00;
-        buf[0x18] = 0x00;
-        buf[0x19] = 0x00;
-        buf[0x1A] = 0x00;
-        WRITE_MEMORY_STRING(0x0000000140512A82, buf, sizeof(buf));
-
-        WRITE_NOP_6(0x0000000140512BE6);
-
         INSTALL_HOOK(DataTestObjectManager__Disp);
         INSTALL_HOOK(sub_14031AF10);
         INSTALL_HOOK(sub_14031AFE0);
@@ -2548,7 +2511,6 @@ namespace mdl {
         INSTALL_HOOK(DispManager__entry_obj_etc);
         INSTALL_HOOK(DispManager__entry_obj_by_obj);
         INSTALL_HOOK(sub_1404BCC60);
-        INSTALL_HOOK(DispManager__entry_obj_by_object_info_object_skin);
     }
 }
 

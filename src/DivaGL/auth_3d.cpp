@@ -446,8 +446,8 @@ struct auth_3d {
     object_info object_info;
     mat4* bone_mats;
     bool shadow;
-    int32_t src_chara; // chara_index
-    int32_t dst_chara; // chara_index
+    chara_index src_chara;
+    chara_index dst_chara;
     int32_t pos;
     int64_t field_A8;
     void* frame_rate; // FrameRateControl
