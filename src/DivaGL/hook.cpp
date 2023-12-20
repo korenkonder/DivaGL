@@ -10,6 +10,7 @@
 #include "auth_3d.hpp"
 #include "camera.hpp"
 #include "effect.hpp"
+#include "object.hpp"
 #include "print.hpp"
 #include "resource.h"
 #include "shader_ft.hpp"
@@ -48,6 +49,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     camera_patch();
     mdl::disp_manager_patch();
     effect_patch();
+    object_patch();
     render_manager_patch();
     rob_patch();
     sprite_patch();
@@ -82,10 +84,6 @@ HOOK(void, FASTCALL, sub_140194CD0, 0x000000140194CD0) {
 
 HOOK(void, FASTCALL, _gl_state_get, 0x0000000140442DF0) {
     gl_state_get();
-}
-
-HOOK(bool, FASTCALL, obj_mesh_vertex_buffer__load, 0x0000000140458280, obj_mesh_vertex_buffer* obj_vb, obj_mesh* mesh) {
-    return obj_vb->load(mesh);
 }
 
 HOOK(void, FASTCALL, rndr__Render__update_res, 0x00000001404A9480, rndr::Render* rend, bool set, int32_t base_downsample) {
@@ -227,8 +225,6 @@ void hook_funcs() {
     INSTALL_HOOK(sub_140194CD0);
 
     INSTALL_HOOK(_gl_state_get);
-
-    INSTALL_HOOK(obj_mesh_vertex_buffer__load);
 
     INSTALL_HOOK(rndr__Render__update_res);
     INSTALL_HOOK(rndr__Render__init_tone_map_buffers);

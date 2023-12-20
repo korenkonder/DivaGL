@@ -465,6 +465,12 @@ inline bool operator !=(const object_info& left, const object_info& right) {
 
 struct obj_mesh_index_buffer {
     GLuint buffer;
+
+    bool load(obj_mesh* mesh);
+    bool load_data(size_t size, const void* data);
+    void unload();
+
+    static void* fill_data(void* data, obj_mesh* mesh);
 };
 
 static_assert(sizeof(obj_mesh_index_buffer) == 0x04, "\"obj_mesh_index_buffer\" struct should have a size of 0x04");
@@ -478,7 +484,9 @@ struct obj_mesh_vertex_buffer {
     void cycle_index();
     GLuint get_buffer();
     GLsizeiptr get_size();
-    bool load(obj_mesh* mesh);
+    bool load(obj_mesh* mesh, bool dynamic = false);
+    bool load_data(size_t size, const void* data, int32_t count, bool dynamic);
+    void unload();
 
     static void* fill_data(void* data, obj_mesh* mesh);
 };
@@ -516,3 +524,5 @@ extern int32_t obj_material_texture_type_get_texture_index(
 
 extern void obj_skin_set_matrix_buffer(obj_skin* s, mat4* matrices,
     mat4* ex_data_matrices, mat4* matrix_buffer, const mat4* mat, const mat4* global_mat);
+
+extern void object_patch();
