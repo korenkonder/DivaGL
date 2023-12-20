@@ -577,7 +577,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                             frag_buf[frag_buf_pos + l] = (char)('0' + vec_frag_data[l]);
                         }
 
-                        if (!bin || !shader_load_binary_shader(bin, &shaders[k].program)) {
+                        if (!bin || !bin->binary_format || !bin->length || !shader_load_binary_shader(bin, &shaders[k].program)) {
                             bool vert_succ = shader::parse_define(vert_data, num_uniform,
                                 vec_vert_data, &temp_vert, &temp_vert_size);
                             bool frag_succ = shader::parse_define(frag_data, num_uniform,
@@ -618,7 +618,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     strcat_s(vert_buf, sizeof(vert_buf), "..vert");
                     strcat_s(frag_buf, sizeof(vert_buf), "..frag");
 
-                    if (!bin || !shader_load_binary_shader(bin, &shaders[0].program)) {
+                    if (!bin || !bin->binary_format || !bin->length || !shader_load_binary_shader(bin, &shaders[0].program)) {
                         bool vert_succ = shader::parse_define(vert_data, &temp_vert, &temp_vert_size);
                         bool frag_succ = shader::parse_define(frag_data, &temp_frag, &temp_frag_size);
 
