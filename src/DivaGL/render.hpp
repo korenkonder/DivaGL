@@ -186,7 +186,12 @@ namespace rndr {
         void init_render_buffers(int32_t width, int32_t height,
             int32_t ssaa, int32_t hd_res, int32_t ss_alpha_mask);
         void init_tone_map_buffers();
+        int32_t movie_texture_set(texture* movie_texture);
+        void movie_texture_free(texture* movie_texture);
+        int32_t render_texture_set(texture* render_texture, bool task_photo);
+        void render_texture_free(texture* render_texture, bool task_photo);
         void resize(int32_t width, int32_t height);
+        void take_ss(texture* tex, bool vertical, float_t horizontal_offset);
         void transparency_combine(float_t alpha);
         void transparency_copy();
         void update_res(bool set, int32_t base_downsample);

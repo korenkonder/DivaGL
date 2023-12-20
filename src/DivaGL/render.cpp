@@ -351,6 +351,7 @@ namespace rndr {
             }
         }
     }
+
     void Render::draw_quad(int32_t width, int32_t height, float_t s0, float_t t0, float_t s1, float_t t1,
         float_t scale, float_t param_x, float_t param_y, float_t param_z, float_t param_w) {
         s0 -= s1;
@@ -834,6 +835,66 @@ namespace rndr {
         }
     }
 
+    int32_t Render::movie_texture_set(texture* movie_texture) {
+        if (!movie_texture)
+            return -1;
+
+        int32_t index = 0;
+        while (movie_textures_data[index])
+            if (++index >= 1)
+                return -1;
+
+        movie_textures_data[index] = movie_texture;
+        movie_textures[index].SetColorDepthTextures(movie_texture->tex);
+        return index;
+    }
+
+    void Render::movie_texture_free(texture* movie_texture) {
+        if (!movie_texture)
+            return;
+
+        int32_t index = 0;
+        while (movie_textures_data[index] != movie_texture)
+            if (++index >= 1)
+                return;
+
+        movie_textures_data[index] = 0;
+        movie_textures[index].Free();
+    }
+
+    int32_t Render::render_texture_set(texture* render_texture, bool task_photo) {
+        if (!render_texture)
+            return -1;
+
+        int32_t index = 0;
+        if (task_photo)
+            index = 15;
+        else
+            while (render_textures_data[index])
+                if (++index >= 15)
+                    return -1;
+
+        render_textures_data[index] = render_texture;
+        render_textures[index].SetColorDepthTextures(render_texture->tex);
+        return index;
+    }
+
+    void Render::render_texture_free(texture* render_texture, bool task_photo) {
+        if (!render_texture)
+            return;
+
+        int32_t index = 0;
+        if (task_photo)
+            index = 15;
+        else
+            while (render_textures_data[index] != render_texture)
+                if (++index >= 15)
+                    return;
+
+        render_textures_data[index] = 0;
+        render_textures[index].Free();
+    }
+
     void Render::resize(int32_t width, int32_t height) {
         this->width = width;
         this->height = height;
@@ -952,6 +1013,43 @@ namespace rndr {
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->tex);
             glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, reduce_width[i], reduce_height[i]);
         }
+    }
+
+    void Render::take_ss(texture* tex, bool vertical, float_t horizontal_offset) {
+        GLuint temp_tex;
+        glGenTextures(1, &temp_tex);
+        gl_state_active_bind_texture_2d(0, temp_tex);
+        glTexParameteriDLL(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteriDLL(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glCopyTexImage2DDLL(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, width, height, 0);
+
+        int32_t index = render_texture_set(tex, true);
+        if (index >= 0) {
+            render_textures[index].Bind();
+
+            float_t x_min = 0.0f;
+            float_t x_max = 1.0f;
+            if (vertical) {
+                const float_t center = 0.5f + horizontal_offset / (float_t)width;
+                const float_t area = (float_t)height * (float_t)(9.0 / 16.0) / (float_t)width * 0.5f;
+                x_min = center - area;
+                x_max = center + area;
+            }
+
+            uniform->arr[U_REDUCE] = 0;
+
+            glViewportDLL(0, 0, render_textures_data[index]->width, render_textures_data[index]->height);
+            shaders_ft.set(SHADER_FT_REDUCE);
+            draw_quad(render_textures_data[index]->width, render_textures_data[index]->height,
+                x_max, 1.0f, x_min, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+            shader::unbind();
+            gl_state_bind_framebuffer(0);
+            gl_state_active_bind_texture_2d(0, 0);
+            render_texture_free(tex, true);
+        }
+        else
+            gl_state_active_bind_texture_2d(0, 0);
+        glDeleteTextures(1, &temp_tex);
     }
 
     void Render::transparency_combine(float_t alpha) {

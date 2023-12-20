@@ -90,6 +90,11 @@ HOOK(void, FASTCALL, rndr__Render__update_res, 0x00000001404A9480, rndr::Render*
     rend->update_res(set, base_downsample);
 }
 
+HOOK(void, FASTCALL, rndr__Render__take_ss, 0x00000001404A9CD0,
+    rndr::Render* rend, texture* tex, bool vertical, float_t horizontal_offset) {
+    rend->take_ss(tex, vertical, horizontal_offset);
+}
+
 HOOK(void, FASTCALL, rndr__Render__init_tone_map_buffers, 0x00000001404A9FF0, rndr::Render* rend) {
     rend->init_tone_map_buffers();
 }
@@ -219,6 +224,10 @@ HOOK(void, FASTCALL, env_set_offset_color, 0x00000001405E5630, float_t r, float_
 }
 
 void hook_funcs() {
+    WRITE_NOP_5(0x0000000140441290);
+    WRITE_JUMP(0x00000001404412E2, 0x00000001404413BD);
+    WRITE_NOP(0x00000001404412E7, 0xD6);
+
     INSTALL_HOOK(data_init);
     INSTALL_HOOK(data_free);
 
@@ -227,6 +236,7 @@ void hook_funcs() {
     INSTALL_HOOK(_gl_state_get);
 
     INSTALL_HOOK(rndr__Render__update_res);
+    INSTALL_HOOK(rndr__Render__take_ss);
     INSTALL_HOOK(rndr__Render__init_tone_map_buffers);
     INSTALL_HOOK(rndr__Render__init_render_buffers);
     INSTALL_HOOK(rndr__Render__free);
