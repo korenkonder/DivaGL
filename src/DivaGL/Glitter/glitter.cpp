@@ -36,6 +36,7 @@ namespace Glitter {
 
         static const GLsizei buffer_size = sizeof(Buffer);
 
+        vbo = {};
         vbo.Create(buffer_size * (size_t)max_count);
         vbo.Bind();
 
@@ -51,6 +52,7 @@ namespace Glitter {
                     ebo_data[i + 4] = 0xFFFFFFFF;
             }
 
+            ebo = {};
             ebo.Create(sizeof(uint16_t) * count, ebo_data);
             ebo.Bind();
             _operator_delete(ebo_data);
