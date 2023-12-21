@@ -3420,6 +3420,7 @@ extern void GLAPIENTRY glCreateBuffers(GLsizei n, GLuint* buffers);
 extern void GLAPIENTRY glNamedBufferStorage(GLuint buffer, GLsizeiptr size, const void* data, GLbitfield flags);
 extern void GLAPIENTRY glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const void* data);
 extern void* GLAPIENTRY glMapNamedBuffer(GLuint buffer, GLenum access);
+extern void* GLAPIENTRY glMapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length, GLenum access);
 extern GLboolean GLAPIENTRY glUnmapNamedBuffer(GLuint buffer);
 extern void GLAPIENTRY glTextureSubImage2D(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
 

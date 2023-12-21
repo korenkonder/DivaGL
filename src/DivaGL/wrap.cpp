@@ -2444,6 +2444,7 @@ typedef void (GLAPIENTRY* PFNGLCREATEBUFFERSPROC)(GLsizei n, GLuint* buffers);
 typedef void (GLAPIENTRY* PFNGLNAMEDBUFFERSTORAGEPROC)(GLuint buffer, GLsizeiptr size, const void* data, GLbitfield flags);
 typedef void (GLAPIENTRY* PFNGLNAMEDBUFFERSUBDATAPROC)(GLuint buffer, GLintptr offset, GLsizeiptr size, const void* data);
 typedef void* (GLAPIENTRY* PFNGLMAPNAMEDBUFFERPROC)(GLuint buffer, GLenum access);
+typedef void* (GLAPIENTRY* PFNGLMAPNAMEDBUFFERRANGEPROC)(GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access);
 typedef GLboolean (GLAPIENTRY* PFNGLUNMAPNAMEDBUFFERPROC)(GLuint buffer);
 typedef void (GLAPIENTRY* PFNGLTEXTURESUBIMAGE2DPROC)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
 
@@ -2463,6 +2464,7 @@ static PFNGLCREATEBUFFERSPROC _glCreateBuffers = 0;
 static PFNGLNAMEDBUFFERSTORAGEPROC _glNamedBufferStorage = 0;
 static PFNGLNAMEDBUFFERSUBDATAPROC _glNamedBufferSubData = 0;
 static PFNGLMAPNAMEDBUFFERPROC _glMapNamedBuffer = 0;
+static PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange = 0;
 static PFNGLUNMAPNAMEDBUFFERPROC _glUnmapNamedBuffer = 0;
 static PFNGLTEXTURESUBIMAGE2DPROC _glTextureSubImage2D = 0;
 
@@ -2535,6 +2537,12 @@ void* GLAPIENTRY glMapNamedBuffer(GLuint buffer, GLenum access) {
     if (!_glMapNamedBuffer)
         _glMapNamedBuffer = (PFNGLMAPNAMEDBUFFERPROC)wglGetProcAddressDLL("glMapNamedBuffer");
     return _glMapNamedBuffer(buffer, access);
+}
+
+void* GLAPIENTRY glMapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length, GLenum access) {
+    if (!_glMapNamedBufferRange)
+        _glMapNamedBufferRange = (PFNGLMAPNAMEDBUFFERRANGEPROC)wglGetProcAddressDLL("glMapNamedBufferRange");
+    return _glMapNamedBufferRange(buffer, offset, length, access);
 }
 
 GLboolean GLAPIENTRY glUnmapNamedBuffer(GLuint buffer) {

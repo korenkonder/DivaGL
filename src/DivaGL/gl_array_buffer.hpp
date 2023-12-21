@@ -104,6 +104,30 @@ public:
         return 0;
     }
 
+    inline void* MapMemory(size_t offset, size_t length) {
+        if (!buffer)
+            return 0;
+
+        void* data;
+        if (GL_VERSION_4_5)
+            data = glMapNamedBufferRange(buffer, (GLintptr)offset, (GLsizeiptr)length, GL_WRITE_ONLY);
+        else {
+            gl_state_bind_array_buffer(buffer);
+            data = glMapBufferRange(GL_ARRAY_BUFFER, (GLintptr)offset, (GLsizeiptr)length, GL_WRITE_ONLY);
+        }
+
+        if (data)
+            return data;
+
+        if (GL_VERSION_4_5)
+            glUnmapNamedBuffer(buffer);
+        else {
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            gl_state_bind_array_buffer(0);
+        }
+        return 0;
+    }
+
     inline bool NotNull() {
         return !!buffer;
     }
