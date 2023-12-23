@@ -306,6 +306,7 @@ struct vec2 {
     static vec2 lerp(const vec2& left, const vec2& right, const vec2& blend);
     static vec2 lerp(const vec2& left, const vec2& right, const float_t blend);
     static vec2 normalize(const vec2& left);
+    static vec2 normalize_rcp(const vec2& left);
     static vec2 rcp(const vec2& left);
     static vec2 min(const vec2& left, const vec2& right);
     static vec2 max(const vec2& left, const vec2& right);
@@ -342,6 +343,7 @@ struct vec3 {
     static vec3 lerp(const vec3& left, const vec3& right, const vec3& blend);
     static vec3 lerp(const vec3& left, const vec3& right, const float_t blend);
     static vec3 normalize(const vec3& left);
+    static vec3 normalize_rcp(const vec3& left);
     static vec3 rcp(const vec3& left);
     static vec3 min(const vec3& left, const vec3& right);
     static vec3 max(const vec3& left, const vec3& right);
@@ -380,6 +382,7 @@ struct vec4 {
     static vec4 lerp(const vec4& left, const vec4& right, const vec4& blend);
     static vec4 lerp(const vec4& left, const vec4& right, const float_t blend);
     static vec4 normalize(const vec4& left);
+    static vec4 normalize_rcp(const vec4& left);
     static vec4 rcp(const vec4& left);
     static vec4 min(const vec4& min, const vec4& max);
     static vec4 max(const vec4& min, const vec4& max);
@@ -694,6 +697,17 @@ inline vec2 vec2::lerp(const vec2& left, const vec2& right, const float_t blend)
 }
 
 inline vec2 vec2::normalize(const vec2& left) {
+    __m128 xt;
+    __m128 zt;
+    xt = vec2::load_xmm(left);
+    zt = _mm_mul_ps(xt, xt);
+    zt = _mm_sqrt_ss(_mm_hadd_ps(zt, zt));
+    if (_mm_cvtss_f32(zt) != 0.0f)
+        return vec2::store_xmm(_mm_div_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
+    return vec2::store_xmm(xt);
+}
+
+inline vec2 vec2::normalize_rcp(const vec2& left) {
     __m128 xt;
     __m128 zt;
     xt = vec2::load_xmm(left);
@@ -1020,6 +1034,18 @@ inline vec3 vec3::normalize(const vec3& left) {
     zt = _mm_hadd_ps(zt, zt);
     zt = _mm_sqrt_ss(_mm_hadd_ps(zt, zt));
     if (_mm_cvtss_f32(zt) != 0.0f)
+        return vec3::store_xmm(_mm_div_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
+    return vec3::store_xmm(xt);
+}
+
+inline vec3 vec3::normalize_rcp(const vec3& left) {
+    __m128 xt;
+    __m128 zt;
+    xt = vec3::load_xmm(left);
+    zt = _mm_mul_ps(xt, xt);
+    zt = _mm_hadd_ps(zt, zt);
+    zt = _mm_sqrt_ss(_mm_hadd_ps(zt, zt));
+    if (_mm_cvtss_f32(zt) != 0.0f)
         zt = _mm_div_ss(_mm_set_ss(1.0f), zt);
     return vec3::store_xmm(_mm_mul_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
 }
@@ -1336,6 +1362,18 @@ inline vec4 vec4::lerp(const vec4& left, const vec4& right, const float_t blend)
 }
 
 inline vec4 vec4::normalize(const vec4& left) {
+    __m128 xt;
+    __m128 zt;
+    xt = vec4::load_xmm(left);
+    zt = _mm_mul_ps(xt, xt);
+    zt = _mm_hadd_ps(zt, zt);
+    zt = _mm_sqrt_ss(_mm_hadd_ps(zt, zt));
+    if (_mm_cvtss_f32(zt) != 0.0f)
+        return vec4::store_xmm(_mm_div_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
+    return vec4::store_xmm(xt);
+}
+
+inline vec4 vec4::normalize_rcp(const vec4& left) {
     __m128 xt;
     __m128 zt;
     xt = vec4::load_xmm(left);
