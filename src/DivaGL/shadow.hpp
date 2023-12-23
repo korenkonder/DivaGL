@@ -56,6 +56,8 @@ struct Shadow {
     bool self_shadow;
     bool blur_filter_enable[2];
     bool field_2F5;
+
+    float_t get_range();
 };
 
 static_assert(sizeof(Shadow) == 0x2F8, "\"Shadow\" struct should have a size of 0x2F8");

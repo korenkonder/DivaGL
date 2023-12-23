@@ -1118,19 +1118,17 @@ static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, i
         glClearDLL(GL_COLOR_BUFFER_BIT);
     glScissorDLL(1, 1, tex->width - 2, tex->height - 2);
 
-    float_t offset = 0.0f;
-    float_t range = shad->view_region * shad->range;
+    float_t range = shad->get_range();
+    float_t offset;
     vec3* interest;
     vec3* view_point;
     if (shad->field_2F5) {
-        offset = -0.5f;
-        if (index)
-            offset = 0.5f;
-
+        offset = index ? 0.5f : -0.5f;
         interest = &shad->interest[index];
         view_point = &shad->view_point[index];
     }
     else {
+        offset = 0.0f;
         interest = &shad->interest_shared;
         view_point = &shad->view_point_shared;
     }
@@ -1623,18 +1621,19 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
         draw_state->light = true;
         uniform->arr[U_LIGHT_1] = shad->field_2EC > 1 ? 1 : 0;
 
-        float_t range = shad->view_region * shad->range;
+        float_t range = shad->get_range();
         for (int32_t i = 0; i < 2; i++) {
-            float_t v6 = 0.0f;
+            float_t offset;
             vec3* interest;
             vec3* view_point;
             if (shad->field_2F5) {
-                v6 = i ? 0.5f : -0.5f;
+                offset = i ? 0.5f : -0.5f;
 
                 interest = &shad->interest[i];
                 view_point = &shad->view_point[i];
             }
             else {
+                offset = 0.0f;
                 interest = &shad->interest_shared;
                 view_point = &shad->view_point_shared;
             }
@@ -1642,7 +1641,7 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
             mat4 temp;
             mat4_translate(0.5f, 0.5f, 0.5f, &temp);
             mat4_scale_rot(&temp, 0.5f, 0.5f, 0.5f, &temp);
-            mat4_mul_translate(&temp, v6, 0.0f, 0.0f, &temp);
+            mat4_mul_translate(&temp, offset, 0.0f, 0.0f, &temp);
 
             mat4 proj;
             mat4_ortho(-range, range, -range, range, shad->z_near, shad->z_far, &proj);
