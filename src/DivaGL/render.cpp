@@ -972,6 +972,7 @@ namespace rndr {
         for (int32_t i = 1; i < downsample_count - 1; i++) {
             rend_texture[i].Bind();
             gl_state_active_bind_texture_2d(0, rend_texture[i - 1].GetColorTex());
+            gl_state_bind_sampler(0, rctx->render_samplers[2]);
             glViewportDLL(0, 0, render_width[i], render_height[i]);
             draw_quad(
                 render_post_width[i - 1], render_post_height[i - 1],
@@ -986,6 +987,7 @@ namespace rndr {
         glViewportDLL(0, 0, reduce_width[0], reduce_height[0]);
         reduce_texture[0].Bind();
         gl_state_active_bind_texture_2d(0, rend_texture[downsample].GetColorTex());
+        gl_state_bind_sampler(0, rctx->render_samplers[2]);
         draw_quad(
             render_post_width[downsample], render_post_height[downsample],
             render_post_width_scale, render_post_height_scale,
@@ -993,6 +995,7 @@ namespace rndr {
 
         downsample_texture.Bind();
         gl_state_active_bind_texture_2d(0, reduce_tex[0]->tex);
+        gl_state_bind_sampler(0, rctx->render_samplers[2]);
         for (int32_t i = 1; i < 5; i++) {
             float_t scale;
             if (i == 4) {
@@ -1011,6 +1014,7 @@ namespace rndr {
             draw_quad(reduce_width[i - 1], reduce_height[i - 1],
                 1.0f, 1.0f, 0.0f, 0.0f, scale, 1.0f, 1.0f, 1.0f, 1.0f);
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->tex);
+            gl_state_bind_sampler(0, rctx->render_samplers[2]);
             glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, reduce_width[i], reduce_height[i]);
         }
     }
@@ -1143,7 +1147,7 @@ namespace rndr {
             gl_state_active_bind_texture_2d(0, mlaa_buffer.GetColorTex());
             gl_state_active_bind_texture_2d(1, mlaa_area_texture);
             gl_state_bind_sampler(0, rctx->render_samplers[0]);
-            gl_state_bind_sampler(1, rctx->render_samplers[1]);
+            gl_state_bind_sampler(1, rctx->render_samplers[3]);
             uniform->arr[U_MLAA] = 1;
             uniform->arr[U_MLAA_SEARCH] = 2;
             shaders_ft.set(SHADER_FT_MLAA);
@@ -1155,6 +1159,7 @@ namespace rndr {
             gl_state_active_bind_texture_2d(0, taa_tex[2]->tex);
             gl_state_active_bind_texture_2d(1, temp_buffer.GetColorTex());
             gl_state_bind_sampler(0, rctx->render_samplers[1]);
+            gl_state_bind_sampler(1, rctx->render_samplers[1]);
             uniform->arr[U_MLAA] = 2;
             uniform->arr[U_ALPHA_MASK] = ss_alpha_mask ? 1 : 0;
             shaders_ft.set(SHADER_FT_MLAA);
@@ -1200,6 +1205,13 @@ namespace rndr {
         gl_state_active_bind_texture_2d(4, rctx->empty_texture_2d);
         gl_state_active_bind_texture_2d(5, rctx->empty_texture_2d);
         gl_state_active_bind_texture_2d(6, rctx->empty_texture_2d);
+        gl_state_bind_sampler(0, rctx->render_samplers[1]);
+        gl_state_bind_sampler(1, rctx->render_samplers[2]);
+        gl_state_bind_sampler(2, rctx->render_samplers[0]);
+        gl_state_bind_sampler(3, rctx->render_samplers[3]);
+        gl_state_bind_sampler(4, rctx->render_samplers[2]);
+        gl_state_bind_sampler(5, rctx->render_samplers[2]);
+        gl_state_bind_sampler(6, rctx->render_samplers[2]);
 
         if (aet_back) {
             gl_state_active_bind_texture_2d(6, aet_back_tex->tex);
@@ -1442,10 +1454,13 @@ namespace rndr {
             rctx->exposure_measure_ubo.Bind(1);
             gl_state_active_bind_texture_2d(0, reduce_tex[4]->tex);
             gl_state_active_bind_texture_2d(1, reduce_tex[2]->tex);
+            gl_state_bind_sampler(0, rctx->render_samplers[2]);
+            gl_state_bind_sampler(1, rctx->render_samplers[2]);
             draw_quad(1, 1, 1.0f, 1.0f,
                 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 
             gl_state_active_bind_texture_2d(0, exposure_history->tex);
+            gl_state_bind_sampler(0, rctx->render_samplers[2]);
             if (reset_exposure)
                 glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 32, 1);
             else
@@ -1458,6 +1473,7 @@ namespace rndr {
         uniform->arr[U_EXPOSURE] = 2;
         shaders_ft.set(SHADER_FT_EXPOSURE);
         gl_state_active_bind_texture_2d(0, exposure_history->tex);
+        gl_state_bind_sampler(0, rctx->render_samplers[0]);
         draw_quad(1, 1, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
@@ -1644,6 +1660,7 @@ namespace rndr {
         uniform->arr[U_REDUCE] = 4;
         shaders_ft.set(SHADER_FT_REDUCE);
         gl_state_active_bind_texture_2d(0, lens_ghost_texture);
+        gl_state_bind_sampler(0, rctx->render_samplers[0]);
         gl_state_bind_vertex_array(rctx->lens_ghost_vao);
         shaders_ft.draw_arrays(GL_TRIANGLES, 0, (GLsizei)(lens_ghost_count * 6LL));
         gl_state_bind_vertex_array(0);
@@ -1663,6 +1680,7 @@ namespace rndr {
         for (int32_t i = 1; i < 4; i++) {
             glViewportDLL(0, 0, reduce_width[i], reduce_height[i]);
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->tex);
+            gl_state_bind_sampler(0, rctx->render_samplers[2]);
             draw_quad(reduce_width[i], reduce_height[i],
                 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f);
             glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, reduce_width[i], reduce_height[i]);
@@ -1671,6 +1689,7 @@ namespace rndr {
         for (int32_t i = 1; i < 4; i++) {
             glViewportDLL(0, 0, reduce_width[i], reduce_height[i]);
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->tex);
+            gl_state_bind_sampler(0, rctx->render_samplers[2]);
             draw_quad(reduce_width[i], reduce_height[i],
                 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f);
             glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, reduce_width[i], reduce_height[i]);
@@ -1681,6 +1700,7 @@ namespace rndr {
 
         glViewportDLL(0, 0, reduce_width[0], reduce_height[0]);
         gl_state_active_bind_texture_2d(0, reduce_tex[0]->tex);
+        gl_state_bind_sampler(0, rctx->render_samplers[2]);
         draw_quad(reduce_width[0], reduce_height[0],
             1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
             intensity.x * 0.5f, intensity.y * 0.5f, intensity.z * 0.5f, 1.0f);
@@ -1694,6 +1714,10 @@ namespace rndr {
         gl_state_active_bind_texture_2d(1, reduce_tex[1]->tex);
         gl_state_active_bind_texture_2d(2, reduce_tex[2]->tex);
         gl_state_active_bind_texture_2d(3, reduce_tex[3]->tex);
+        gl_state_bind_sampler(0, rctx->render_samplers[2]);
+        gl_state_bind_sampler(1, rctx->render_samplers[2]);
+        gl_state_bind_sampler(2, rctx->render_samplers[2]);
+        gl_state_bind_sampler(3, rctx->render_samplers[2]);
         draw_quad(reduce_width[3], reduce_height[3],
             1.0f, 1.0f, 0.0f, 0.0f, 0.25f, 0.15f, 0.25f, 0.25f, 0.25f);
         reduce_tex_draw = reduce_tex[0]->tex;

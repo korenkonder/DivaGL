@@ -309,7 +309,7 @@ struct render_context {
     GLuint empty_texture_cube_map;
 
     GLuint samplers[18];
-    GLuint render_samplers[3];
+    GLuint render_samplers[4];
     GLuint sprite_samplers[3];
 
     int32_t sprite_width;
