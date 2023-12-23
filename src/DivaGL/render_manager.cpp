@@ -911,16 +911,16 @@ namespace rndr {
         if (multisample && multisample_framebuffer) {
             gl_state_bind_framebuffer(0);
             gl_state_disable_multisample();
-            fbo_blit(multisample_framebuffer, 0,
+            fbo_blit(multisample_framebuffer, rctx->screen_buffer.fbos[0],
                 0, 0, rctx->sprite_width, rctx->sprite_height,
-                rctx->screen_x_offset, rctx->screen_y_offset,
-                rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                0, 0, rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         }
-        else
-            fbo_blit(rctx->screen_buffer.fbos[0], 0,
-                0, 0, rctx->sprite_width, rctx->sprite_height,
-                rctx->screen_x_offset, rctx->screen_y_offset,
-                rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+        fbo_blit(rctx->screen_buffer.fbos[0], 0,
+            0, 0, rctx->sprite_width, rctx->sprite_height,
+            rctx->screen_x_offset, rctx->screen_y_offset,
+            rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
         gl_state_get_error();
 
         shader::unbind();
