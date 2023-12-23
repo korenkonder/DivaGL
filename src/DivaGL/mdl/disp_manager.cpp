@@ -1440,8 +1440,7 @@ namespace mdl {
                 draw_sub_mesh(&i->args.sub_mesh, &i->mat, func);
             } break;
             case OBJ_KIND_ETC: {
-                draw_object_model_mat_load(i->mat);
-                draw_etc_obj(&i->args.etc);
+                draw_etc_obj(&i->args.etc, &i->mat);
             } break;
             case OBJ_KIND_USER: {
                 i->args.user.func(i->args.user.data, &i->mat);
