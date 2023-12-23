@@ -3424,7 +3424,5 @@ extern void* GLAPIENTRY glMapNamedBufferRange(GLuint buffer, GLintptr offset, GL
 extern GLboolean GLAPIENTRY glUnmapNamedBuffer(GLuint buffer);
 extern void GLAPIENTRY glTextureSubImage2D(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
 
-#if DEBUG
 extern constexpr void GLAPIENTRY glPushDebugGroup(GLenum source, GLuint id, GLsizei length, const GLchar* message);
 extern constexpr void GLAPIENTRY glPopDebugGroup();
-#endif

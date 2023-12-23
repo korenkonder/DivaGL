@@ -2448,10 +2448,8 @@ typedef void* (GLAPIENTRY* PFNGLMAPNAMEDBUFFERRANGEPROC)(GLuint buffer, GLintptr
 typedef GLboolean (GLAPIENTRY* PFNGLUNMAPNAMEDBUFFERPROC)(GLuint buffer);
 typedef void (GLAPIENTRY* PFNGLTEXTURESUBIMAGE2DPROC)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
 
-#if DEBUG
-typedef void(GLAPIENTRY* PFNGLPUSHDEBUGGROUPPROC)(GLenum source, GLuint id, GLsizei length, const GLchar* message);
-typedef void(GLAPIENTRY* PFNGLPOPDEBUGGROUPPROC)();
-#endif
+typedef void (GLAPIENTRY* PFNGLPUSHDEBUGGROUPPROC)(GLenum source, GLuint id, GLsizei length, const GLchar* message);
+typedef void (GLAPIENTRY* PFNGLPOPDEBUGGROUPPROC)();
 
 static PFNGLTEXPARAMETERIVPROC _glTexParameteriv = 0;
 static PFNGLSTENCILMASKPROC _glStencilMask = 0;
@@ -2468,10 +2466,8 @@ static PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange = 0;
 static PFNGLUNMAPNAMEDBUFFERPROC _glUnmapNamedBuffer = 0;
 static PFNGLTEXTURESUBIMAGE2DPROC _glTextureSubImage2D = 0;
 
-#if DEBUG
 static PFNGLPUSHDEBUGGROUPPROC _glPushDebugGroup = 0;
 static PFNGLPOPDEBUGGROUPPROC _glPopDebugGroup = 0;
-#endif
 
 void GLAPIENTRY glTexParameteriv(GLenum target, GLenum pname, const GLint* params) {
     if (!_glTexParameteriv)
@@ -2557,7 +2553,6 @@ void GLAPIENTRY glTextureSubImage2D(GLuint texture, GLint level, GLint xoffset, 
     _glTextureSubImage2D(texture, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
-#if DEBUG
 void constexpr GLAPIENTRY glPushDebugGroup(GLenum source, GLuint id, GLsizei length, const GLchar* message) {
     if (!_glPushDebugGroup)
         _glPushDebugGroup = (PFNGLPUSHDEBUGGROUPPROC)wglGetProcAddressDLL("glPushDebugGroup");
@@ -2569,4 +2564,3 @@ void constexpr GLAPIENTRY glPopDebugGroup() {
         _glPopDebugGroup = (PFNGLPOPDEBUGGROUPPROC)wglGetProcAddressDLL("glPopDebugGroup");
     return _glPopDebugGroup();
 }
-#endif
