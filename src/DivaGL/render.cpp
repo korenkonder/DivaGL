@@ -277,18 +277,18 @@ namespace rndr {
         gl_state_enable_cull_face();
     }
 
-    void Render::calc_projection_matrix(mat4* mat, double_t fov, double_t aspect, double_t z_near, double_t z_far,
-        double_t left_scale, double_t right_scale, double_t bottom_scale, double_t top_scale) {
-        double_t tan_fov = tan(fov * DEG_TO_RAD * 0.5) * z_near;
-        double_t left = -tan_fov * aspect + tan_fov * aspect * left_scale;
-        double_t right = tan_fov * aspect + tan_fov * aspect * right_scale;
-        double_t bottom = -tan_fov + tan_fov * bottom_scale;
-        double_t top = tan_fov + tan_fov * top_scale;
+    void Render::calc_projection_matrix(mat4* mat, float_t fov, float_t aspect, float_t z_near, float_t z_far,
+        float_t left_scale, float_t right_scale, float_t bottom_scale, float_t top_scale) {
+        float_t tan_fov = tanf(fov * DEG_TO_RAD_FLOAT * 0.5f) * z_near;
+        float_t left = -tan_fov * aspect + tan_fov * aspect * left_scale;
+        float_t right = tan_fov * aspect + tan_fov * aspect * right_scale;
+        float_t bottom = -tan_fov + tan_fov * bottom_scale;
+        float_t top = tan_fov + tan_fov * top_scale;
 
         if (taa) {
-            double_t offset = taa_texture_selector == 1 ? -0.25 : 0.25;
-            double_t left_right_offset = (right - left) * offset / (double_t)render_width[0];
-            double_t bottom_top_offset = (top - bottom) * offset / (double_t)render_height[0];
+            float_t offset = taa_texture_selector == 1 ? -0.25f : 0.25f;
+            float_t left_right_offset = (right - left) * offset / (float_t)render_width[0];
+            float_t bottom_top_offset = (top - bottom) * offset / (float_t)render_height[0];
             left += left_right_offset;
             right += left_right_offset;
             bottom += bottom_top_offset;

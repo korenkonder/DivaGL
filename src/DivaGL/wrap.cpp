@@ -1804,7 +1804,7 @@ void GLAPIENTRY glFrontFaceDLL(GLenum mode) {
 
 void GLAPIENTRY glFrustumDLL(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar) {
     mat4 mat;
-    mat4_frustrum(left, right, bottom, top, zNear, zFar, &mat);
+    mat4_frustrum((float_t)left, (float_t)right, (float_t)bottom, (float_t)top, (float_t)zNear, (float_t)zFar, &mat);
     mat4_transpose(&mat, &mat);
     glMultTransposeMatrixf((const GLfloat*)&mat);
     //((PFNGLFRUSTUMDLLPROC)wrap_addr_dll[GLFRUSTUMDLL].orig_func)(left, right, bottom, top, zNear, zFar);
@@ -1899,7 +1899,7 @@ void GLAPIENTRY glNormalPointerDLL(GLenum type, GLsizei stride, const void * poi
 
 void GLAPIENTRY glOrthoDLL(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar) {
     mat4 mat;
-    mat4_ortho(left, right, bottom, top, zNear, zFar, &mat);
+    mat4_ortho((float_t)left, (float_t)right, (float_t)bottom, (float_t)top, (float_t)zNear, (float_t)zFar, &mat);
     mat4_transpose(&mat, &mat);
     glMultTransposeMatrixf((const GLfloat*)&mat);
     //((PFNGLORTHODLLPROC)wrap_addr_dll[GLORTHODLL].orig_func)(left, right, bottom, top, zNear, zFar);

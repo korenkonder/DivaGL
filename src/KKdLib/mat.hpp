@@ -196,11 +196,11 @@ extern float_t mat4_get_max_scale(const mat4* in_m1);
 extern void mat4_blend(const mat4* in_m1, const mat4* in_m2, mat4* out_m, float_t blend);
 extern void mat4_blend_rotation(const mat4* in_m1, const mat4* in_m2, mat4* out_m, float_t blend);
 extern void mat4_lerp_rotation(const mat4* in_m1, const mat4* in_m2, mat4* out_m, float_t blend);
-extern void mat4_frustrum(double_t left, double_t right,
-    double_t bottom, double_t top, double_t z_near, double_t z_far, mat4* out_m);
-extern void mat4_ortho(double_t left, double_t right,
-    double_t bottom, double_t top, double_t z_near, double_t z_far, mat4* out_m);
-extern void mat4_persp(double_t fov_y, double_t aspect, double_t z_near, double_t z_far, mat4* out_m);
+extern void mat4_frustrum(float_t left, float_t right,
+    float_t bottom, float_t top, float_t z_near, float_t z_far, mat4* out_m);
+extern void mat4_ortho(float_t left, float_t right,
+    float_t bottom, float_t top, float_t z_near, float_t z_far, mat4* out_m);
+extern void mat4_persp(float_t fov_y, float_t aspect, float_t z_near, float_t z_far, mat4* out_m);
 extern void mat4_look_at(const vec3* eye, const vec3* target, const vec3* up, mat4* out_m);
 extern void mat4_look_at(const vec3* eye, const vec3* target, mat4* out_m);
 

@@ -1933,39 +1933,39 @@ void mat4_lerp_rotation(const mat4* in_m1, const mat4* in_m2, mat4* out_m, float
     *(vec3*)&out_m->row2 = m2;
 }
 
-inline void mat4_frustrum(double_t left, double_t right,
-    double_t bottom, double_t top, double_t z_near, double_t z_far, mat4* out_m) {
+inline void mat4_frustrum(float_t left, float_t right,
+    float_t bottom, float_t top, float_t z_near, float_t z_far, mat4* out_m) {
     *out_m = mat4_null;
-    out_m->row0.x = (float_t)((2.0 * z_near) / (right - left));
-    out_m->row1.y = (float_t)((2.0 * z_near) / (top - bottom));
-    out_m->row2.x = (float_t)((right + left) / (right - left));
-    out_m->row2.y = (float_t)((top + bottom) / (top - bottom));
-    out_m->row2.z = -(float_t)((z_far + z_near) / (z_far - z_near));
+    out_m->row0.x = (2.0f * z_near) / (right - left);
+    out_m->row1.y = (2.0f * z_near) / (top - bottom);
+    out_m->row2.x = (right + left) / (right - left);
+    out_m->row2.y = (top + bottom) / (top - bottom);
+    out_m->row2.z = -((z_far + z_near) / (z_far - z_near));
     out_m->row2.w = -1.0f;
-    out_m->row3.z = -(float_t)((2.0 * z_far * z_near) / (z_far - z_near));
+    out_m->row3.z = -((2.0f * z_far * z_near) / (z_far - z_near));
 }
 
-inline void mat4_ortho(double_t left, double_t right,
-    double_t bottom, double_t top, double_t z_near, double_t z_far, mat4* out_m) {
+inline void mat4_ortho(float_t left, float_t right,
+    float_t bottom, float_t top, float_t z_near, float_t z_far, mat4* out_m) {
     *out_m = mat4_null;
-    out_m->row0.x = (float_t)(2.0 / (right - left));
-    out_m->row1.y = (float_t)(2.0 / (top - bottom));
-    out_m->row2.z = (float_t)(-2.0 / (z_far - z_near));
-    out_m->row3.x = -(float_t)((right + left) / (right - left));
-    out_m->row3.y = -(float_t)((top + bottom) / (top - bottom));
-    out_m->row3.z = -(float_t)((z_far + z_near) / (z_far - z_near));
+    out_m->row0.x = 2.0f / (right - left);
+    out_m->row1.y = 2.0f / (top - bottom);
+    out_m->row2.z = -2.0f / (z_far - z_near);
+    out_m->row3.x = -((right + left) / (right - left));
+    out_m->row3.y = -((top + bottom) / (top - bottom));
+    out_m->row3.z = -((z_far + z_near) / (z_far - z_near));
     out_m->row3.w = 1.0f;
 }
 
-inline void mat4_persp(double_t fov_y, double_t aspect, double_t z_near, double_t z_far, mat4* out_m) {
-    double_t tan_fov = tan(fov_y * 0.5);
+inline void mat4_persp(float_t fov_y, float_t aspect, float_t z_near, float_t z_far, mat4* out_m) {
+    float_t tan_fov = tanf(fov_y * 0.5f);
 
     *out_m = mat4_null;
-    out_m->row0.x = (float_t)(1.0 / (aspect * tan_fov));
-    out_m->row1.y = (float_t)(1.0 / tan_fov);
-    out_m->row2.z = -(float_t)((z_far + z_near) / (z_far - z_near));
+    out_m->row0.x = 1.0f / (aspect * tan_fov);
+    out_m->row1.y = 1.0f / tan_fov;
+    out_m->row2.z = -(z_far + z_near) / (z_far - z_near);
     out_m->row2.w = -1.0f;
-    out_m->row3.z = -(float_t)((2.0 * z_far * z_near) / (z_far - z_near));
+    out_m->row3.z = -((2.0f * z_far * z_near) / (z_far - z_near));
 }
 
 inline void mat4_look_at(const vec3* eye, const vec3* target, const vec3* up, mat4* out_m) {

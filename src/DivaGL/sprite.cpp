@@ -277,7 +277,7 @@ namespace spr {
                 float_t v15b = sprite_half_height * 0.2f * aet_depth_1;
 
                 mat4 proj;
-                mat4_frustrum(-v15a, v15a, v15b, -v15b, 0.2, 3000.0, &proj);
+                mat4_frustrum(-v15a, v15a, v15b, -v15b, 0.2f, 3000.0f, &proj);
 
                 vec3 eye = { sprite_half_width, sprite_half_height, aet_depth };
                 vec3 target = { sprite_half_width, sprite_half_height, 0.0f };
