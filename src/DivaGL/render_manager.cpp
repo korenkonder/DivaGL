@@ -324,7 +324,8 @@ namespace rndr {
                 draw_pass_shadow_begin_make_shadowmap(shad, v11[i], j);
                 disp_manager->draw((mdl::ObjType)(mdl::OBJ_TYPE_SHADOW_CHARA + v11[i]));
                 if (disp_manager->get_obj_count((mdl::ObjType)(mdl::OBJ_TYPE_SHADOW_OBJECT_CHARA + v11[i])) > 0) {
-                    gl_state_set_color_mask(field_2F8 ? GL_TRUE : GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+                    gl_state_set_color_mask(show_stage_shadow
+                        ? GL_TRUE : GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
                     disp_manager->draw((mdl::ObjType)(mdl::OBJ_TYPE_SHADOW_OBJECT_CHARA + i));
                     gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
                 }
@@ -1117,7 +1118,7 @@ static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, i
         glClearDLL(GL_COLOR_BUFFER_BIT);
     glScissorDLL(1, 1, tex->width - 2, tex->height - 2);
 
-    float_t range = shad->get_range();
+    float_t shadow_range = shad->get_shadow_range();
     float_t offset;
     vec3* interest;
     vec3* view_point;
@@ -1136,7 +1137,8 @@ static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, i
     mat4_translate(offset, 0.0f, 0.0f, &temp);
 
     mat4 proj;
-    mat4_ortho(-range, range, -range, range, shad->z_near, shad->z_far, &proj);
+    mat4_ortho(-shadow_range, shadow_range,
+        -shadow_range, shadow_range, shad->z_near, shad->z_far, &proj);
     mat4_mul(&proj, &temp, &rctx->proj_mat);
     mat4_look_at(view_point, interest, &rctx->view_mat);
 
@@ -1620,7 +1622,7 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
         draw_state->light = true;
         uniform->arr[U_LIGHT_1] = shad->num_light > 1 ? 1 : 0;
 
-        float_t range = shad->get_range();
+        float_t shadow_range = shad->get_shadow_range();
         for (int32_t i = 0; i < 2; i++) {
             float_t offset;
             vec3* interest;
@@ -1643,7 +1645,8 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
             mat4_mul_translate(&temp, offset, 0.0f, 0.0f, &temp);
 
             mat4 proj;
-            mat4_ortho(-range, range, -range, range, shad->z_near, shad->z_far, &proj);
+            mat4_ortho(-shadow_range, shadow_range,
+                -shadow_range, shadow_range, shad->z_near, shad->z_far, &proj);
             mat4_mul(&proj, &temp, &proj);
 
             mat4 view;
@@ -1670,11 +1673,8 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
         vec4 ambient;
         if (data->get_type() == LIGHT_PARALLEL)
             data->get_ambient(ambient);
-        else {
-            ambient.x = shad->ambient;
-            ambient.y = shad->ambient;
-            ambient.z = shad->ambient;
-        }
+        else
+            *(vec3*)&ambient.x = shad->shadow_ambient;
 
         rctx->obj_scene.g_shadow_ambient = { ambient.x, ambient.y, ambient.z, 1.0f };
         rctx->obj_scene.g_shadow_ambient1 = { 1.0f - ambient.x, 1.0f - ambient.y, 1.0f - ambient.z, 0.0f };

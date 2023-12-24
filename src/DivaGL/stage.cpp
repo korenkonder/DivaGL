@@ -181,11 +181,11 @@ static bool object_bounding_sphere_check_visibility_shadow(obj_bounding_sphere* 
     float_t radius = sphere->radius;
 
     Shadow* shad = shadow_ptr_get();
-    float_t v9 = shad->view_region * shad->range;
-    if ((center.x + radius) < -v9
-        || (center.x - radius) > v9
-        || (center.y + radius) < -v9
-        || (center.y - radius) > v9
+    float_t shadow_range = shad->get_shadow_range();
+    if ((center.x + radius) < -shadow_range
+        || (center.x - radius) > shadow_range
+        || (center.y + radius) < -shadow_range
+        || (center.y - radius) > shadow_range
         || (center.z - radius) > -shad->z_near
         || (center.z + radius) < -shad->z_far)
         return false;

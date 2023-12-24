@@ -22,8 +22,8 @@ struct Shadow {
     void* __vftable;
     RenderTexture render_textures[7];
     RenderTexture* curr_render_textures[3];
-    float_t view_region;
-    float_t range;
+    float_t shadow_range;
+    float_t shadow_range_factor;
     vec3 view_point[2];
     vec3 interest[2];
     vec3 field_1A8[2];
@@ -49,15 +49,15 @@ struct Shadow {
     float_t field_2D8;
     float_t field_2DC;
     float_t field_2E0;
-    float_t ambient;
-    bool field_2E8;
+    float_t shadow_ambient;
+    bool show_texture;
     int32_t num_light;
     bool light_enable[2];
     bool self_shadow;
     bool blur_filter_enable[2];
     bool separate;
 
-    float_t get_range();
+    float_t get_shadow_range();
 };
 
 static_assert(sizeof(Shadow) == 0x2F8, "\"Shadow\" struct should have a size of 0x2F8");
