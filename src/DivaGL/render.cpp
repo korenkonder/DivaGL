@@ -1443,10 +1443,7 @@ namespace rndr {
                     exposure_measure.g_spot_coefficients[i * 8 + j] = chara_data->spot_coefficients[j];
             rctx->exposure_measure_ubo.WriteMemory(exposure_measure);
 
-            if (reset_exposure)
-                glViewportDLL(0, 0, 32, 1);
-            else
-                glViewportDLL(0, 0, 1, 1);
+            glViewportDLL(0, 0, 32, 1);
             downsample_texture.Bind();
 
             uniform->arr[U_EXPOSURE] = 1;
