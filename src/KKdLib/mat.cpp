@@ -1978,7 +1978,7 @@ inline void mat4_look_at(const vec3* eye, const vec3* target, const vec3* up, ma
     if (vec3::length(x_axis) == 0.0f)
         x_axis = { 1.0f, 0.0f, 0.0f };
 
-    y_axis = vec3::normalize(vec3::cross(z_axis, x_axis));
+    y_axis = vec3::cross(z_axis, x_axis);
 
     xyz.x = vec3::dot(x_axis, *eye);
     xyz.y = vec3::dot(y_axis, *eye);
