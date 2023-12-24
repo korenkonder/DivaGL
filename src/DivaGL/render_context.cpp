@@ -490,7 +490,7 @@ void render_context::ctrl(bool change_res) {
               }*/
 
     if (sprite_res_change)
-        screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA16F, 0); // Was GL_R11F_G11F_B10F
+        screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA8, 0);
 }
 
 void render_context::free() {
@@ -516,7 +516,7 @@ void render_context::init() {
     init_copy_buffer(render_buffer, this->render_buffer);
     init_copy_buffer(shadow_buffer, this->shadow_buffer);
 
-    screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA16F, 0); // Was GL_R11F_G11F_B10F
+    screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA8, 0);
 }
 
 void fbo_blit(GLuint src_fbo, GLuint dst_fbo,
