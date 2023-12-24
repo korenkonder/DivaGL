@@ -880,40 +880,42 @@ namespace rndr {
     }
 
     void RenderManager::pass_sprite() {
-        if (!sprite_manager_get_reqlist_count(0))
-            return;
-
         gl_state_begin_event("pass_sprite");
-        rndr::Render* rend = render;
-        glViewportDLL(0, 0, rctx->sprite_width, rctx->sprite_height);
+        if (sprite_manager_get_reqlist_count(0)) {
+            rndr::Render* rend = render;
+            glViewportDLL(0, 0, rctx->sprite_width, rctx->sprite_height);
 
-        if (multisample && multisample_framebuffer) {
-            gl_state_bind_framebuffer(multisample_framebuffer);
-            gl_state_enable_multisample();
-            glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
-            glClearDLL(GL_COLOR_BUFFER_BIT);
-        }
-        else
-            rctx->screen_buffer.Bind();
+            if (multisample && multisample_framebuffer) {
+                gl_state_bind_framebuffer(multisample_framebuffer);
+                gl_state_enable_multisample();
+                glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
+                glClearDLL(GL_COLOR_BUFFER_BIT);
+            }
+            else
+                rctx->screen_buffer.Bind();
 
-        sprite_manager_set_view_projection(false);
-        gl_state_disable_depth_test();
-        gl_state_enable_blend();
-        gl_state_disable_cull_face();
-        sprite_manager_set_res((double_t)rctx->sprite_width / (double_t)rctx->sprite_height,
-            rctx->sprite_width, rctx->sprite_height);
-        sprite_manager_draw(0, true,
-            rend->temp_buffer.color_texture);
-        gl_state_enable_cull_face();
-        gl_state_disable_blend();
-        gl_state_enable_depth_test();
+            sprite_manager_set_view_projection(false);
+            gl_state_disable_depth_test();
+            gl_state_enable_blend();
+            gl_state_disable_cull_face();
+            sprite_manager_set_res((double_t)rctx->sprite_width / (double_t)rctx->sprite_height,
+                rctx->sprite_width, rctx->sprite_height);
+            sprite_manager_draw(0, true,
+                rend->temp_buffer.color_texture);
+            gl_state_enable_cull_face();
+            gl_state_disable_blend();
+            gl_state_enable_depth_test();
 
-        if (multisample && multisample_framebuffer) {
-            gl_state_bind_framebuffer(0);
-            gl_state_disable_multisample();
-            fbo_blit(multisample_framebuffer, rctx->screen_buffer.fbos[0],
-                0, 0, rctx->sprite_width, rctx->sprite_height,
-                0, 0, rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            if (multisample && multisample_framebuffer) {
+                gl_state_bind_framebuffer(0);
+                gl_state_disable_multisample();
+                fbo_blit(multisample_framebuffer, rctx->screen_buffer.fbos[0],
+                    0, 0, rctx->sprite_width, rctx->sprite_height,
+                    0, 0, rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            shader::unbind();
+
+            gl_state_get_error();
         }
 
         fbo_blit(rctx->screen_buffer.fbos[0], 0,
@@ -921,9 +923,6 @@ namespace rndr {
             rctx->screen_x_offset, rctx->screen_y_offset,
             rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-        gl_state_get_error();
-
-        shader::unbind();
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
     }
