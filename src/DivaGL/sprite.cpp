@@ -1163,7 +1163,7 @@ namespace spr {
         while (args) {
             resolution_mode_scale_data data(args->resolution_mode_screen, mode);
             if (args->resolution_mode_screen != RESOLUTION_MODE_MAX
-                && args->resolution_mode_screen != mode && (index == 0 || index == 3)) {
+                && args->resolution_mode_screen != mode && (index <= 0 || index >= 3)) {
                 float_t scale_x = data.scale.x;
                 float_t scale_y = data.scale.y;
                 float_t src_res_x = data.src_res.x;
