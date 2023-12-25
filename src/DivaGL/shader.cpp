@@ -71,7 +71,8 @@ int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
     set->curr_shader = shader;
 
     gl_state_use_program(shader->program);
-    if (memcmp(shader->uniform_val, uniform_val, sizeof(uniform_val))) {
+    if (shader->has_uniform_val
+        && memcmp(shader->uniform_val, uniform_val, sizeof(uniform_val))) {
         memcpy(shader->uniform_val, uniform_val, sizeof(uniform_val));
         shader->uniform_val_update = true;
     }
@@ -577,7 +578,8 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                             frag_buf[frag_buf_pos + l] = (char)('0' + vec_frag_data[l]);
                         }
 
-                        if (!bin || !bin->binary_format || !bin->length || !shader_load_binary_shader(bin, &shaders[k].program)) {
+                        if (!bin || !bin->binary_format || !bin->length
+                            || !shader_load_binary_shader(bin, &shaders[k].program)) {
                             bool vert_succ = shader::parse_define(vert_data, num_uniform,
                                 vec_vert_data, &temp_vert, &temp_vert_size);
                             bool frag_succ = shader::parse_define(frag_data, num_uniform,
@@ -603,6 +605,10 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                             memcpy((void*)b->binary, (void*)((size_t)bin + bin->binary), bin->length);
                         }
 
+                        shaders[k].has_uniform_val = false;
+                        if (shaders[k].program)
+                            shaders[k].has_uniform_val = glGetUniformLocation(shaders[k].program, "uniform_val") >= 0;
+
                         if (!ignore_cache && bin)
                             bin++;
                     }
@@ -618,7 +624,8 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     strcat_s(vert_buf, sizeof(vert_buf), "..vert");
                     strcat_s(frag_buf, sizeof(vert_buf), "..frag");
 
-                    if (!bin || !bin->binary_format || !bin->length || !shader_load_binary_shader(bin, &shaders[0].program)) {
+                    if (!bin || !bin->binary_format || !bin->length
+                        || !shader_load_binary_shader(bin, &shaders[0].program)) {
                         bool vert_succ = shader::parse_define(vert_data, &temp_vert, &temp_vert_size);
                         bool frag_succ = shader::parse_define(frag_data, &temp_frag, &temp_frag_size);
 
@@ -641,6 +648,10 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                         b->binary = (size_t)force_malloc(bin->length);
                         memcpy((void*)b->binary, (void*)((size_t)bin + bin->binary), bin->length);
                     }
+
+                    shaders[0].has_uniform_val = false;
+                    if (shaders[0].program)
+                        shaders[0].has_uniform_val = glGetUniformLocation(shaders[0].program, "uniform_val") >= 0;
 
                     if (!ignore_cache && bin)
                         bin++;
@@ -979,7 +990,7 @@ static void shader_update_data(shader_set_data* set) {
 
     if (set->curr_shader) {
         shader_sub_shader* shader = set->curr_shader;
-        if (shader->uniform_val_update) {
+        if (shader->has_uniform_val && shader->uniform_val_update) {
             glUniform1iv(0, SHADER_MAX_UNIFORM_VALUES, (GLint*)shader->uniform_val);
             shader->uniform_val_update = false;
         }

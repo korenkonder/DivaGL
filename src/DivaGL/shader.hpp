@@ -56,6 +56,7 @@ struct shader_bind_func {
 
 struct shader_sub_shader {
     GLuint program;
+    bool has_uniform_val;
     int32_t uniform_val[SHADER_MAX_UNIFORM_VALUES];
     bool uniform_val_update;
 };
