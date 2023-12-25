@@ -951,12 +951,12 @@ namespace rndr {
         rctx->contour_params_ubo.WriteMemory(contour_params_data);
 
         shaders_ft.set(SHADER_FT_CONTOUR_NPR);
-        gl_state_active_bind_texture_2d(16, contour_rt->GetColorTex());
-        gl_state_bind_sampler(16, rctx->render_samplers[1]);
-        gl_state_active_bind_texture_2d(17, contour_rt->GetDepthTex());
-        gl_state_bind_sampler(17, rctx->render_samplers[1]);
         gl_state_active_bind_texture_2d(14, rt->GetDepthTex());
+        gl_state_active_bind_texture_2d(16, contour_rt->GetColorTex());
+        gl_state_active_bind_texture_2d(17, contour_rt->GetDepthTex());
         gl_state_bind_sampler(14, rctx->render_samplers[1]);
+        gl_state_bind_sampler(16, rctx->render_samplers[1]);
+        gl_state_bind_sampler(17, rctx->render_samplers[1]);
         rctx->quad_ubo.Bind(0);
         rctx->contour_params_ubo.Bind(2);
         gl_state_bind_vertex_array(rctx->common_vao);

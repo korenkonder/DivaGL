@@ -467,7 +467,7 @@ namespace mdl {
 
                 texture* tex = texture_handler_get_texture(texture_id);
                 gl_state_bind_sampler(tex_index, rctx->samplers[(wrap_t * 3 + wrap_s) * 2
-                    + (tex->max_mipmap_level > 0 ? 1 : 0)]);
+                    + (!tex || tex->max_mipmap_level > 0 ? 1 : 0)]);
             }
         }
 
@@ -723,7 +723,7 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
 
             texture* tex = texture_handler_get_texture(texture_id);
             gl_state_bind_sampler(tex_index, rctx->samplers[(wrap_t * 3 + wrap_s) * 2
-                + (tex->max_mipmap_level > 0 ? 1 : 0)]);
+                + (!tex || tex->max_mipmap_level > 0 ? 1 : 0)]);
         }
 
         if (material->material.shader.index == SHADER_FT_SKY) {
@@ -925,7 +925,7 @@ static void draw_object_material_set_reflect(const mdl::ObjSubMeshArgs* args) {
 
         texture* tex = texture_handler_get_texture(texture_id);
         gl_state_bind_sampler(i, rctx->samplers[(wrap_t * 3 + wrap_s) * 2
-            + (tex->max_mipmap_level > 0 ? 1 : 0)]);
+            + (!tex || tex->max_mipmap_level > 0 ? 1 : 0)]);
     }
 
     vec4 ambient;

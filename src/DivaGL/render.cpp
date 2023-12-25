@@ -1298,13 +1298,19 @@ namespace rndr {
         }
 
         if (render_manager->npr_param == 1) {
-            /*gl_state_active_bind_texture_2d(16, sss_contour_texture->GetColorTex());
-            gl_state_bind_sampler(16, rctx->render_samplers[1]);
-            gl_state_active_bind_texture_2d(17, sss_contour_texture->GetDepthTex());
-            gl_state_bind_sampler(17, rctx->render_samplers[1]);*/
             gl_state_active_bind_texture_2d(14, rend_texture[0].GetDepthTex());
-            gl_state_bind_sampler(14, rctx->render_samplers[1]);
+            /*gl_state_active_bind_texture_2d(16, sss_contour_texture->GetColorTex());
+            gl_state_active_bind_texture_2d(17, sss_contour_texture->GetDepthTex());*/
         }
+        else {
+            gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d);
+            /*gl_state_active_bind_texture_2d(16, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(17, rctx->empty_texture_2d);*/
+        }
+
+        gl_state_bind_sampler(14, rctx->render_samplers[1]);
+        /*gl_state_bind_sampler(16, rctx->render_samplers[1]);
+        gl_state_bind_sampler(17, rctx->render_samplers[1]);*/
 
         rctx->tone_map_ubo.WriteMemory(shader_data);
 
