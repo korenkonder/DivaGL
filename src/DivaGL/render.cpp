@@ -543,7 +543,7 @@ namespace rndr {
         gl_state_bind_vertex_array(0);
 
         if (lens_flare_appear_power <= 0.01f)
-            lens_flare_appear_power = 0.0;
+            lens_flare_appear_power = 0.0f;
         else
             lens_flare_appear_power *= 0.93f;
         lens_shaft_scale = 100.0f;
@@ -793,11 +793,11 @@ namespace rndr {
         reduce_texture[0].SetColorDepthTextures(reduce_tex[0]->tex);
 
         exposure_history = texture_load_tex_2d(texture_id(0x25, texture_counter++),
-            GL_R32F, 32, 1, 0, 0, 0);
+            GL_RGBA16F, 32, 2, 0, 0, 0);
 
         glGenTextures(1, &exposure_tex);
         gl_state_bind_texture_2d(exposure_tex);
-        glTexImage2DDLL(GL_TEXTURE_2D, 0, GL_R32F, 2, 2, 0, GL_RED, GL_FLOAT, 0);
+        glTexImage2DDLL(GL_TEXTURE_2D, 0, GL_RGBA32F, 2, 2, 0, GL_RGBA, GL_FLOAT, 0);
         glTexParameteriDLL(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteriDLL(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteriDLL(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -972,7 +972,7 @@ namespace rndr {
         for (int32_t i = 1; i < downsample_count - 1; i++) {
             rend_texture[i].Bind();
             gl_state_active_bind_texture_2d(0, rend_texture[i - 1].GetColorTex());
-            gl_state_bind_sampler(0, rctx->render_samplers[2]);
+            gl_state_bind_sampler(0, rctx->render_samplers[0]);
             glViewportDLL(0, 0, render_width[i], render_height[i]);
             draw_quad(
                 render_post_width[i - 1], render_post_height[i - 1],
@@ -987,7 +987,7 @@ namespace rndr {
         glViewportDLL(0, 0, reduce_width[0], reduce_height[0]);
         reduce_texture[0].Bind();
         gl_state_active_bind_texture_2d(0, rend_texture[downsample].GetColorTex());
-        gl_state_bind_sampler(0, rctx->render_samplers[2]);
+        gl_state_bind_sampler(0, rctx->render_samplers[0]);
         draw_quad(
             render_post_width[downsample], render_post_height[downsample],
             render_post_width_scale, render_post_height_scale,
@@ -1326,12 +1326,10 @@ namespace rndr {
                 exposure_chara_data[i].reset();
 
             ExposureCharaData* chara_data = exposure_chara_data;
-            float_t v18 = (float_t)height / (float_t)width;
-            float_t v20 = powf(tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT) * 3.4f, 2.0f);
             size_t rob_chara_smth = get_rob_chara_smth();
             for (int32_t i = 0; i < ROB_CHARA_COUNT; i++, chara_data++) {
                 size_t rob_chr = rob_chara_array_get(rob_chara_smth, i);
-                if (!rob_chr || !(*(uint8_t*)(rob_chara_smth + 0x440) & 1))
+                if (!rob_chr || !(*(uint8_t*)(rob_chr + 0x440) & 1))
                     continue;
 
                 vec4 v34 = { 0.05f, 0.0f, -0.04f, 1.0f };
@@ -1361,14 +1359,7 @@ namespace rndr {
                 float_t v31 = 0.5f - (fabsf(v14) - 1.0f) * 2.5f;
                 float_t v32 = 0.5f - (fabsf(v13) - 1.0f) * 2.5f;
 
-                float_t v16;
-                if (v32 <= v31)
-                    v16 = v32;
-                else
-                    v16 = v31;
-
-                if (v16 > 1.0f)
-                    v16 = 1.0f;
+                float_t v16 = min_def(min_def(v31, v32), 1.0f);
 
                 vec4 v39;
                 mat4_transform_vector(&v42, &v33, &v39);
@@ -1379,18 +1370,14 @@ namespace rndr {
                 else if (v17 < 0.2f)
                     v17 = 0.0f;
 
+                float_t v18 = (float_t)height / (float_t)width;
+                float_t v20 = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
                 float_t v21 = 0.25f / sqrtf(powf(v20 * 3.4f, 2.0f) * (v41.z * v41.z));
                 float_t v22;
-                if (v21 < 0.055f) {
-                    v22 = (v21 - 0.035f) * 50.0f;
-                    if (v22 < 0.0f)
-                        v22 = 0.0f;
-                }
-                else if (v21 > 0.5f) {
-                    v22 = 1.0f - (v21 - 0.5f) * 3.3333333f;
-                    if (v22 < 0.0f)
-                        v22 = 0.0f;
-                }
+                if (v21 < 0.055f)
+                    v22 = max_def((v21 - 0.035f) * 50.0f, 0.0f);
+                else if (v21 > 0.5f)
+                    v22 = max_def(1.0f - (v21 - 0.5f) * 3.3333333f, 0.0f);
                 else
                     v22 = 1.0f;
 
