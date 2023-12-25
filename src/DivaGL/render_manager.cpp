@@ -1447,49 +1447,41 @@ static void draw_pass_sss_contour(rndr::Render* rend) {
         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-static void draw_pass_sss_filter_calc_coef(double_t a1, size_t a2, double_t a3, size_t a4,
-    const double_t* a5, const double_t* a6, const double_t* a7, const double_t* a8, vec4 params[64]) {
-    if (a2 > 8)
+static void draw_pass_sss_filter_calc_coef(double_t step, int32_t size, double_t a3, int32_t iterations,
+    const double_t* a5, const double_t* a6, const double_t* a7, const double_t* a8, vec4 a9[64]) {
+    if (size > 8)
         return;
 
-    for (size_t i = a4; i; i--) {
-        float_t* v20 = (float_t*)params;
+    for (int32_t i = 0; i < iterations; i++) {
+        const double_t v18 = a5[i];
         double_t v56[3];
-        v56[0] = *a6;
-        v56[1] = *a7;
-        v56[2] = *a8;
+        v56[0] = a6[i];
+        v56[1] = a7[i];
+        v56[2] = a8[i];
 
-        for (size_t j = 0; j < 3; j++) {
+        for (int32_t j = 0; j < 3; j++) {
             double_t v22 = 0.0;
             double_t v23 = 0.0;
             double_t v54[8];
             double_t v24 = 1.0 / (a3 * v56[j]);
-            v24 *= v24;
-            for (size_t k = 0; k < a2; k++) {
-                double_t v25 = exp(-0.5 * (v23 * v23) * v24);
+            for (int32_t k = 0; k < size; k++) {
+                double_t v25 = exp(-0.5 * (v24 * v23) * (v24 * v23));
                 v54[k] = v25;
-                v23 += a1;
+                v23 += step;
                 v22 += v25;
             }
 
             double_t v27 = 1.0 / v22;
-            for (size_t k = 0; k < a2; k++)
+            for (int32_t k = 0; k < size; k++)
                 v54[k] *= v27;
 
-            float_t* v35 = v20;
-            for (size_t k = 0; k < a2; k++) {
-                double_t v37 = v54[k] * *a5;
-                for (size_t v36 = 0; v36 < a2; v36++) {
-                    *v35 += (float_t)(v37 * v54[v36]);
+            float_t* v35 = (float_t*)a9 + j;
+            for (int32_t k = 0; k < size; k++)
+                for (size_t l = 0; l < size; l++) {
+                    *v35 = (float_t)(v54[k] * v18 * v54[l] + *v35);
                     v35 += 4;
                 }
-            }
-            v20++;
         }
-        a5++;
-        a6++;
-        a7++;
-        a8++;
     }
 }
 
@@ -1511,39 +1503,27 @@ static void draw_pass_sss_filter(sss_data* sss) {
             && rob_chara_array_check_visibility(rob_chara_smth, i)) {
             mat4* mat = rob_chara_bone_data_get_mats_mat(rob_bone_data, 0);
             if (mat) {
-                mat4_get_translation(mat, &chara_position[i]);
+                mat4 temp;
+                mat4_transpose(mat, &temp);
+                mat4_get_translation(&temp, &chara_position[i]);
                 chara_distance[i] = vec3::distance(view_point, chara_position[i]);
             }
         }
     }
 
-    vec3 closest_chara_position;
-    if (chara_distance[0] > chara_distance[1]) {
-        closest_chara_position = chara_position[1];
-        chara_position[0] = chara_position[1];
-    }
-    else
-        closest_chara_position = chara_position[0];
+    vec3 closest_chara_position = chara_distance[0] <= chara_distance[1]
+        ? chara_position[0] : chara_position[1];
 
     float_t length = vec3::distance(interest, closest_chara_position);
     if (length > 1.25f)
         interest = chara_position[0];
 
-    float_t v29 = vec3::distance(view_point, interest);
-    if (v29 < 0.25f)
-        v29 = 0.25f;
-    float_t v31 = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT) * 5.0f;
-    if (v31 < 0.25f)
-        v31 = 0.25f;
-    float_t v32 = v31 * v29;
+    float_t v29 = max_def(vec3::distance(view_point, interest), 0.25f);
+    float_t v31 = max_def(tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT) * 5.0f, 0.25f);
     float_t v33 = 0.6f;
-    float_t v34 = 1.0f / clamp_def(v32, 0.25f, 100.0f);
-    if (v34 < 0.145f) {
-        float_t v36 = v34 - 0.02f;
-        if (v34 < 0.0f)
-            v36 = 0.0f;
-        v33 = (v36 * 8.0f) * 0.6f;
-    }
+    float_t v34 = (float_t)(1.0 / clamp_def(v31 * v29, 0.25f, 100.0f));
+    if (v34 < 0.145f)
+        v33 = max_def(v34 - 0.02f, 0.0f) * 8.0f * 0.6f;
     rctx->obj_batch.g_sss_param = { v33, 0.0f, 0.0f, 0.0f };
 
     gl_state_active_texture(0);
