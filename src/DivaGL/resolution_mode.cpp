@@ -108,27 +108,6 @@ resolution_struct* res_window_internal_get() {
     return res_window_internal;
 }
 
-void res_window_set(resolution_mode mode) {
-    *res_window = resolution_struct(mode);
-
-    int32_t width = resolution_table[mode].width;
-    int32_t height = resolution_table[mode].height;
-
-    res_window_internal->resolution_mode = RESOLUTION_MODE_MAX;
-    res_window_internal->x_offset = resolution_table[mode].x_offset;
-    res_window_internal->y_offset = resolution_table[mode].y_offset;
-    res_window_internal->width = width;
-    res_window_internal->height = height;
-    res_window_internal->aspect = (double_t)width / (double_t)height;
-    res_window_internal->field_20 = 4;
-
-    for (int32_t i = 0; i < RESOLUTION_MODE_MAX; i++)
-        if (resolution_table[i].width_full == width && resolution_table[i].height_full == height) {
-            res_window_internal->resolution_mode = (resolution_mode)i;
-            res_window_internal->field_20 = resolution_table[i].field_8;
-        }
-}
-
 vec2 resolution_mode_get_scale(const resolution_mode dst_mode, const resolution_mode src_mode) {
     if (dst_mode == RESOLUTION_MODE_MAX || src_mode == RESOLUTION_MODE_MAX
         || dst_mode < RESOLUTION_MODE_QVGA || src_mode < RESOLUTION_MODE_QVGA

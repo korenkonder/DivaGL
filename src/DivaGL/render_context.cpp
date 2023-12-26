@@ -471,23 +471,23 @@ void render_context::ctrl(bool change_res) {
     /*if (render_res_change)
           litproj_texture->Init(render_width, render_height, 0, GL_RGBA8, GL_DEPTH_COMPONENT32F);*/
 
-          /*sprite_manager_set_res((double_t)sprite_width / (double_t)sprite_height,
-              sprite_width, sprite_height);*/
+    /*sprite_manager_set_res((double_t)sprite_width / (double_t)sprite_height,
+        sprite_width, sprite_height);*/
 
-              /*if (render_res_change) {
-                  auto init_copy_buffer = [&](RenderTexture& src, RenderTexture& dst) {
-                      dst.Init(src.GetWidth(),
-                          src.GetHeight(), 0, src.color_texture->internal_format,
-                          src.depth_texture ? src.depth_texture->internal_format : GL_ZERO);
-                  };
+    /*if (render_res_change) {
+        auto init_copy_buffer = [&](RenderTexture& src, RenderTexture& dst) {
+            dst.Init(src.GetWidth(),
+                src.GetHeight(), 0, src.color_texture->internal_format,
+                src.depth_texture ? src.depth_texture->internal_format : GL_ZERO);
+        };
 
-                  RenderTexture& render_buffer = render->rend_texture[0];
-                  RenderTexture& reflect_buffer = render_manager->get_render_texture(1);
-                  RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
-                  init_copy_buffer(reflect_buffer, this->reflect_buffer);
-                  init_copy_buffer(render_buffer, this->render_buffer);
-                  init_copy_buffer(shadow_buffer, this->shadow_buffer);
-              }*/
+        RenderTexture& render_buffer = render->rend_texture[0];
+        RenderTexture& reflect_buffer = render_manager->get_render_texture(1);
+        RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
+        init_copy_buffer(reflect_buffer, this->reflect_buffer);
+        init_copy_buffer(render_buffer, this->render_buffer);
+        init_copy_buffer(shadow_buffer, this->shadow_buffer);
+    }*/
 
     if (sprite_res_change)
         screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA8, 0);

@@ -14,8 +14,8 @@ static void (FASTCALL* camera_struct__update_view)(camera_struct* cam)
     = (void (FASTCALL*)(camera_struct * cam))0x00000001401F7690;
 
 HOOK(void, FASTCALL, camera_data_update_projection, 0x00000001401F8E90) {
-    resolution_struct* res_wind_int = res_window_internal_get();
     resolution_struct* res_wind = res_window_get();
+    resolution_struct* res_wind_int = res_window_internal_get();
 
     float_t sprite_half_width = (float_t)res_wind->width * 0.5f;
     float_t sprite_half_height = (float_t)res_wind->height * 0.5f;
