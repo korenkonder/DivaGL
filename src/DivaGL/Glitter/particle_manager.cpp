@@ -9,6 +9,20 @@
 namespace Glitter {
     GPM = (GltParticleManager*)0x000000141199BB0;
 
+    void GltParticleManager::DispScenes(DispType disp_type) {
+        if (flags & PARTICLE_MANAGER_NOT_DISP)
+            return;
+
+        for (Scene*& i : scenes)
+            if (i)
+                i->Disp(disp_type);
+
+        gl_state_bind_vertex_array(0);
+        gl_state_disable_blend();
+        gl_state_enable_cull_face();
+        gl_state_disable_depth_test();
+    }
+
     void GltParticleManager::Disp(GPM) {
         if (glt_particle_manager->flags & PARTICLE_MANAGER_NOT_DISP)
             return;
@@ -17,7 +31,4 @@ namespace Glitter {
             if (i)
                 Scene::CalcDisp(i);
     }
-
-    void (FASTCALL* GltParticleManager__DispScenes)(GPM, DispType disp_type)
-        = (void (FASTCALL*)(GPM, DispType disp_type))0x00000001403A1020;
 }

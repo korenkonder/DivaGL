@@ -248,8 +248,11 @@ namespace Glitter {
         int32_t ctrl_locus;
         int32_t ctrl_line;
 
-        static void CalcDisp(RenderScene* rend_sc);
-        static void CalcDisp(RenderScene* rend_sc, RenderGroup* rend_group);
+        void CalcDisp();
+        void CalcDisp(RenderGroup* rend_group);
+        void Disp(Glitter::DispType disp_type);
+        void Disp(RenderGroup* rend_group);
+
         static void CalcDispLine(RenderGroup* rend_group);
         static void CalcDispLocus(RenderGroup* rend_group);
         static void CalcDispQuad(RenderGroup* rend_group);
@@ -257,7 +260,6 @@ namespace Glitter {
             RenderGroup* rend_group, mat4* model_mat, mat4* dir_mat);
         static void CalcDispQuadNormal(
             RenderGroup* rend_group, mat4* model_mat, mat4* dir_mat);
-        static void Disp(RenderScene* rend_sc, RenderGroup* rend_group);
 
         static void CalcDispLocusSetPivot(Pivot pivot,
             float_t w, float_t& v00, float_t& v01);
@@ -279,6 +281,8 @@ namespace Glitter {
         float_t emission;
         EffectGroup* effect_group;
         RenderScene render_scene;
+
+        void Disp(DispType disp_type);
 
         static void CalcDisp(Scene* sc);
     };
@@ -308,6 +312,8 @@ namespace Glitter {
         int32_t counter;
         int32_t field_104;
 
+        void DispScenes(DispType disp_type);
+
         static void Disp(GPM);
     };
 
@@ -320,6 +326,4 @@ namespace Glitter {
     extern void DeleteBuffer(GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo);
 
     extern void Patch();
-
-    extern void (FASTCALL* GltParticleManager__DispScenes)(GPM, DispType disp_type);
 }

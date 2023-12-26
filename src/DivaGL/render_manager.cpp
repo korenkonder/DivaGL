@@ -716,7 +716,7 @@ namespace rndr {
             gl_state_disable_depth_test();
         }
 
-        Glitter::GltParticleManager__DispScenes(Glitter::glt_particle_manager, Glitter::DISP_OPAQUE);
+        Glitter::glt_particle_manager->DispScenes(Glitter::DISP_OPAQUE);
 
         gl_state_enable_depth_test();
         gl_state_set_depth_mask(GL_TRUE);
@@ -748,7 +748,7 @@ namespace rndr {
         gl_state_disable_depth_test();
 
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-        Glitter::GltParticleManager__DispScenes(Glitter::glt_particle_manager, Glitter::DISP_ALPHA);
+        Glitter::glt_particle_manager->DispScenes(Glitter::DISP_ALPHA);
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         /*if (npr_param == 1) {
@@ -770,7 +770,7 @@ namespace rndr {
         }
 
         //gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE); // X
-        //Glitter::GltParticleManager__DispScenes(Glitter::glt_particle_manager, Glitter::DISP_TYPE_2);
+        //Glitter::glt_particle_manager->DispScenes(Glitter::DISP_TYPE_2);
         //gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         gl_state_set_depth_mask(GL_TRUE);
@@ -784,7 +784,7 @@ namespace rndr {
         gl_state_disable_depth_test();
 
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-        Glitter::GltParticleManager__DispScenes(Glitter::glt_particle_manager, Glitter::DISP_NORMAL);
+        Glitter::glt_particle_manager->DispScenes(Glitter::DISP_NORMAL);
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         gl_state_enable_depth_test();
@@ -797,11 +797,10 @@ namespace rndr {
             mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1,
             mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1);
 
-#if defined(CRE_DEV)
+#if (0)
         if (Glitter::glt_particle_manager->CheckHasLocalEffect()) { // X
-            camera* cam = camera_data;
-            double_t fov = cam->get_fov();
-            cam->set_fov(32.2673416137695);
+            float_t fov = camera_data->fov;
+            camera_data->fov = 32.2673416137695f;
             draw_pass_set_camera();
 
             rctx->obj_scene_ubo.WriteMemory(rctx->obj_scene);
@@ -821,9 +820,9 @@ namespace rndr {
                 mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL);
 
             gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-            Glitter::GltParticleManager__DispScenes(Glitter::glt_particle_manager, Glitter::DISP_LOCAL);
+            Glitter::glt_particle_manager->DispScenes(Glitter::DISP_LOCAL);
             gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-            cam->set_fov(fov);
+            camera_data->fov = fov;
             draw_pass_set_camera();
         }
 #endif

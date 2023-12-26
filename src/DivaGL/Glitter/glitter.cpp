@@ -38,23 +38,22 @@ namespace Glitter {
 
         vbo = {};
         vbo.Create(buffer_size * (size_t)max_count);
-        vbo.Bind();
+        vbo.Bind(true);
 
         if (is_quad) {
             size_t count = (size_t)max_count / 4 * 5;
-            int32_t* ebo_data = (int32_t*)_operator_new(sizeof(int32_t) * (count - 1));
-            for (size_t i = 0, j = 0, k = count / 5 - 1; i < count; i += 5, j += 4, k--) {
+            uint32_t* ebo_data = (uint32_t*)_operator_new(sizeof(uint32_t) * count);
+            for (size_t i = 0, j = 0, k = count; k; i += 5, j += 4, k -= 5) {
                 ebo_data[i + 0] = (uint32_t)(j + 0);
                 ebo_data[i + 1] = (uint32_t)(j + 1);
                 ebo_data[i + 2] = (uint32_t)(j + 3);
                 ebo_data[i + 3] = (uint32_t)(j + 2);
-                if (k)
-                    ebo_data[i + 4] = 0xFFFFFFFF;
+                ebo_data[i + 4] = 0xFFFFFFFF;
             }
 
             ebo = {};
-            ebo.Create(sizeof(uint16_t) * count, ebo_data);
-            ebo.Bind();
+            ebo.Create(sizeof(uint32_t) * count, ebo_data);
+            ebo.Bind(true);
             _operator_delete(ebo_data);
         }
         else
@@ -123,14 +122,6 @@ namespace Glitter {
         memcpy(buf, _00000001403A8552_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::DeleteBuffer;
         inject_data((void*)0x00000001403A8552, buf, 0x11);
-
-        // RenderScene
-        buf[0x00] = 0x48;
-        buf[0x01] = 0xB8;
-        *(uint64_t*)&buf[0x02] = (uint64_t)RenderScene::Disp;
-        buf[0x0A] = 0xFF;
-        buf[0x0B] = 0xE0;
-        inject_data((void*)0x00000001403AA140, buf, 0x0C);
 
         // GltParticleManager
         inject_uint64_t((void*)(0x00000001409EB880 + 0x20), (uint64_t)GltParticleManager::Disp);
