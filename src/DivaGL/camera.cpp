@@ -22,20 +22,15 @@ HOOK(void, FASTCALL, camera_data_update_projection, 0x00000001401F8E90) {
     float_t render_half_width = (float_t)res_wind_int->width * 0.5f;
     float_t render_half_height = (float_t)res_wind_int->height * 0.5f;
 
-    static float_t field_20 = tanf(atanf(tanf(0.34557518363f) * 0.75f));
+    float_t aet_depth = camera_data->aet_depth;
 
-    float_t aet_depth = sprite_half_height / field_20;
-    camera_data->aet_depth = aet_depth;
-
-    float_t fov_correct_height = sprite_half_height / tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
-    camera_data->fov_correct_height = fov_correct_height;
-
-    float_t v8 = (float_t)camera_data->min_distance / aet_depth;
-    float_t v8a = v8 * sprite_half_width;
-    float_t v8b = v8 * sprite_half_height;
+    float_t spr_2d_range = camera_data->min_distance / aet_depth;
+    float_t spr_2d_range_x = spr_2d_range * sprite_half_width;
+    float_t spr_2d_range_y = spr_2d_range * sprite_half_height;
 
     mat4 spr_2d_proj;
-    mat4_frustrum(-v8a, v8a, v8b, -v8b, camera_data->min_distance, 3000.0, &spr_2d_proj);
+    mat4_frustrum(-spr_2d_range_x, spr_2d_range_x, spr_2d_range_y, -spr_2d_range_y,
+        camera_data->min_distance, 3000.0f, &spr_2d_proj);
 
     vec3 spr_2d_viewpoint = { sprite_half_width, sprite_half_height, aet_depth };
     vec3 spr_2d_interest = { sprite_half_width, sprite_half_height, 0.0f };
@@ -43,31 +38,30 @@ HOOK(void, FASTCALL, camera_data_update_projection, 0x00000001401F8E90) {
     mat4 spr_2d_view;
     mat4_look_at(&spr_2d_viewpoint, &spr_2d_interest, &spr_2d_up, &spr_2d_view);
 
-    mat4_mul(&spr_2d_view, &spr_2d_proj, &camera_data->view_projection_aet_2d_matrix);
-    mat4_transpose(&camera_data->view_projection_aet_2d_matrix,
-        &camera_data->view_projection_aet_2d_matrix);
+    mat4_mul(&spr_2d_view, &spr_2d_proj, &spr_2d_proj);
+    mat4_transpose(&spr_2d_proj, &camera_data->view_projection_aet_2d);
 
-    float_t v13c = render_half_height / tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
+    float_t aet_3d_depth = render_half_height / tanf(camera_data->aet_fov * 0.5f * DEG_TO_RAD_FLOAT);
 
-    float_t v13 = (float_t)camera_data->min_distance / v13c;
-    float_t v13a = v13 * render_half_width;
-    float_t v13b = v13 * render_half_height;
+    float_t spr_3d_range = camera_data->min_distance / aet_3d_depth;
+    float_t spr_3d_range_x = spr_3d_range * render_half_width;
+    float_t spr_3d_range_y = spr_3d_range * render_half_height;
 
     mat4 spr_3d_proj;
-    mat4_frustrum(-v13a, v13a, v13b, -v13b, camera_data->min_distance, 3000.0, &spr_3d_proj);
+    mat4_frustrum(-spr_3d_range_x, spr_3d_range_x, spr_3d_range_y, -spr_3d_range_y,
+        camera_data->min_distance, 3000.0f, &spr_3d_proj);
 
-    vec3 spr_3d_viewpoint = { render_half_width, render_half_height, v13c };
+    vec3 spr_3d_viewpoint = { render_half_width, render_half_height, aet_3d_depth };
     vec3 spr_3d_interest = { render_half_width, render_half_height, 0.0f };
     vec3 spr_3d_up = { 0.0f, 1.0f, 0.0f };
     mat4 spr_3d_view;
     mat4_look_at(&spr_3d_viewpoint, &spr_3d_interest, &spr_3d_up, &spr_3d_view);
 
-    mat4_mul(&spr_3d_view, &spr_3d_proj, &camera_data->view_projection_aet_3d_matrix);
-    mat4_transpose(&camera_data->view_projection_aet_3d_matrix,
-        &camera_data->view_projection_aet_3d_matrix);
+    mat4_mul(&spr_3d_view, &spr_3d_proj, &spr_3d_proj);
+    mat4_transpose(&spr_3d_proj, &camera_data->view_projection_aet_3d);
 
-    render->calc_projection_matrix(&camera_data->projection_matrix,
-        camera_data->fov, (float_t)camera_data->aspect, camera_data->min_distance, camera_data->max_distance,
+    render->calc_projection_matrix(&camera_data->projection, camera_data->fov,
+        (float_t)camera_data->aspect, camera_data->min_distance, camera_data->max_distance,
         camera_data->projection_scale.x, camera_data->projection_scale.y,
         camera_data->projection_scale.z, camera_data->projection_scale.w);
     camera_data->fov_horizontal_rad = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);

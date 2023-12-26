@@ -1599,17 +1599,17 @@ namespace mdl {
     static int32_t obj_axis_aligned_bounding_box_check_visibility(
         obj_axis_aligned_bounding_box* aabb, const mat4* mat) {
         vec3 points[8];
-        points[0] = aabb->center + (aabb->size ^ vec3(0.0f, 0.0f, 0.0f));
+        points[0] = aabb->center + (aabb->size ^ vec3( 0.0f,  0.0f,  0.0f));
         points[1] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f, -0.0f));
-        points[2] = aabb->center + (aabb->size ^ vec3(-0.0f, 0.0f, 0.0f));
-        points[3] = aabb->center + (aabb->size ^ vec3(0.0f, -0.0f, -0.0f));
-        points[4] = aabb->center + (aabb->size ^ vec3(0.0f, -0.0f, 0.0f));
-        points[5] = aabb->center + (aabb->size ^ vec3(-0.0f, 0.0f, -0.0f));
-        points[6] = aabb->center + (aabb->size ^ vec3(0.0f, 0.0f, -0.0f));
-        points[7] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f, 0.0f));
+        points[2] = aabb->center + (aabb->size ^ vec3(-0.0f,  0.0f,  0.0f));
+        points[3] = aabb->center + (aabb->size ^ vec3( 0.0f, -0.0f, -0.0f));
+        points[4] = aabb->center + (aabb->size ^ vec3( 0.0f, -0.0f,  0.0f));
+        points[5] = aabb->center + (aabb->size ^ vec3(-0.0f,  0.0f, -0.0f));
+        points[6] = aabb->center + (aabb->size ^ vec3( 0.0f,  0.0f, -0.0f));
+        points[7] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f,  0.0f));
 
         mat4 view_mat;
-        mat4_mul(&camera_data->view_matrix, mat, &view_mat);
+        mat4_mul(&camera_data->view, mat, &view_mat);
         mat4_transpose(&view_mat, &view_mat);
 
         for (int32_t i = 0; i < 8; i++)
@@ -1617,7 +1617,7 @@ namespace mdl {
 
         vec4 v2[6];
         *(vec3*)&v2[0] = { 0.0f, 0.0f, -1.0f };
-        v2[0].w = (float_t)-camera_data->min_distance;
+        v2[0].w = -camera_data->min_distance;
         *(vec3*)&v2[1] = camera_data->field_1E4;
         v2[1].w = 0.0f;
         *(vec3*)&v2[2] = camera_data->field_1F0;
@@ -1627,7 +1627,7 @@ namespace mdl {
         *(vec3*)&v2[4] = camera_data->field_208;
         v2[4].w = 0.0f;
         *(vec3*)&v2[5] = { 0.0f, 0.0f, 1.0f };
-        v2[5].w = (float_t)camera_data->max_distance;
+        v2[5].w = camera_data->max_distance;
 
         for (int32_t i = 0; i < 6; i++)
             for (int32_t j = 0; j < 8; j++) {
@@ -1652,7 +1652,7 @@ namespace mdl {
         mat4_transform_point(&_mat, &sphere->center, &center);
         float_t radius = mat4_get_max_scale(&_mat) * sphere->radius;
 
-        mat4_transpose(&camera_data->view_matrix, &_mat);
+        mat4_transpose(&camera_data->view, &_mat);
         mat4_transform_point(&_mat, &center, &center);
 
         double_t min_depth = (double_t)center.z - (double_t)radius;

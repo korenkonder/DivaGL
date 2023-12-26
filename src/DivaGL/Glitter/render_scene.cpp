@@ -167,8 +167,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view_matrix, &cam_view);
-        mat4_transpose(&camera_data->inv_view_matrix, &cam_inv_view);
+        mat4_transpose(&camera_data->view, &cam_view);
+        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
 
         vec3 x_vec = { 1.0f, 0.0f, 0.0f };
         if (rend_group->flags & PARTICLE_LOCAL) {
@@ -310,8 +310,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view_matrix, &cam_view);
-        mat4_transpose(&camera_data->inv_view_matrix, &cam_inv_view);
+        mat4_transpose(&camera_data->view, &cam_view);
+        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
 
         mat4 model_mat;
         mat4 view_mat;
@@ -744,8 +744,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_projection;
-        mat4_transpose(&camera_data->view_matrix, &cam_view);
-        mat4_transpose(&camera_data->projection_matrix, &cam_projection);
+        mat4_transpose(&camera_data->view, &cam_view);
+        mat4_transpose(&camera_data->projection, &cam_projection);
 
         mat4 mat;
         mat4_transpose(&rend_group->mat_draw, &mat);

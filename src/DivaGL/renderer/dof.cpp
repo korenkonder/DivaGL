@@ -42,10 +42,9 @@ namespace renderer {
                             vec3 chara_trans = 0.0f;
                             mat4_get_translation(&mat, &chara_trans);
 
-                            mat4 view_transpose;
-                            mat4_transpose(&camera_data->view_matrix, &view_transpose);
-                            focus = -vec3::dot(*(vec3*)&view_transpose.row2, chara_trans)
-                                - view_transpose.row2.w - 0.1f;
+                            mat4 view;
+                            mat4_transpose(&camera_data->view, &view);
+                            focus = -vec3::dot(*(vec3*)&view.row2, chara_trans) - view.row2.w - 0.1f;
                             break;
                         }
                     }
@@ -59,9 +58,7 @@ namespace renderer {
                 }
                 else {
                     float_t fuzzing_range = max_def(dof_debug_data->f2.fuzzing_range, 0.01f);
-                    apply_f2(rt,
-                        rt->GetColorTex(),
-                        rt->GetDepthTex(),
+                    apply_f2(rt, rt->GetColorTex(), rt->GetDepthTex(),
                         camera_data->min_distance, camera_data->max_distance,
                         camera_data->fov * DEG_TO_RAD_FLOAT,
                         dof_debug_data->f2.focus, dof_debug_data->f2.focus_range,

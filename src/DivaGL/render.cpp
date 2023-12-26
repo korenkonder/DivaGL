@@ -217,10 +217,10 @@ namespace rndr {
         gl_state_bind_vertex_array(rctx->common_vao);
         rctx->sun_quad_ubo.Bind(0);
 
-        mat4 view_matrix;
-        mat4_transpose(&camera_data->view_matrix, &view_matrix);
-        mat4 projection_matrix;
-        mat4_transpose(&camera_data->projection_matrix, &projection_matrix);
+        mat4 view;
+        mat4_transpose(&camera_data->view, &view);
+        mat4 projection;
+        mat4_transpose(&camera_data->projection, &projection);
 
         ExposureCharaData* chara_data = exposure_chara_data;
         int32_t query_index = (this->exposure_query_index + 1) % 3;
@@ -236,11 +236,11 @@ namespace rndr {
 
             mat4 mat = mat4_identity;
             sub_1405163C0(rob_chr, 4, &mat);
-            mat4_mul(&mat, &view_matrix, &mat);
+            mat4_mul(&mat, &view, &mat);
             mat4_mul_translate(&mat, max_face_depth + 0.1f, 0.0f, -0.06f, &mat);
             mat4_clear_rot(&mat, &mat);
             mat4_scale_rot(&mat, 0.0035f, &mat);
-            mat4_mul(&mat, &projection_matrix, &mat);
+            mat4_mul(&mat, &projection, &mat);
 
             sun_quad_shader_data shader_data = {};
             mat4_transpose(&mat, &mat);
@@ -279,7 +279,7 @@ namespace rndr {
 
     void Render::calc_projection_matrix(mat4* mat, float_t fov, float_t aspect, float_t z_near, float_t z_far,
         float_t left_scale, float_t right_scale, float_t bottom_scale, float_t top_scale) {
-        float_t tan_fov = tanf(fov * DEG_TO_RAD_FLOAT * 0.5f) * z_near;
+        float_t tan_fov = (float_t)tan(fov * M_PI * (1.0 / 360.0)) * z_near;
         float_t left = -tan_fov * aspect + tan_fov * aspect * left_scale;
         float_t right = tan_fov * aspect + tan_fov * aspect * right_scale;
         float_t bottom = -tan_fov + tan_fov * bottom_scale;
@@ -312,7 +312,7 @@ namespace rndr {
         stage_index = task_stage_get_current_stage_index();
 
         cam_view_projection_prev = cam_view_projection;
-        cam_view_projection = camera_data->view_projection_matrix;
+        cam_view_projection = camera_data->view_projection;
 
         reset_exposure = camera_data->fast_change_hist1 && !camera_data->fast_change_hist0;
         if (reset_exposure) {
@@ -382,15 +382,15 @@ namespace rndr {
         if (!tex)
             return;
 
-        mat4 view_matrix;
-        mat4_transpose(&camera_data->view_matrix, &view_matrix);
-        mat4 projection_matrix;
-        mat4_transpose(&camera_data->projection_matrix, &projection_matrix);
+        mat4 view;
+        mat4_transpose(&camera_data->view, &view);
+        mat4 projection;
+        mat4_transpose(&camera_data->projection, &projection);
 
-        mat4 view_projection_matrix;
+        mat4 view_projection;
         mat4 inverse_view_projection_matrix;
-        mat4_transpose(&camera_data->view_projection_matrix, &view_projection_matrix);
-        mat4_invert(&view_projection_matrix, &inverse_view_projection_matrix);
+        mat4_transpose(&camera_data->view_projection, &view_projection);
+        mat4_invert(&view_projection, &inverse_view_projection_matrix);
 
         float_t v5 = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
         light_set* set = &light_set_data[LIGHT_SET_MAIN];
@@ -415,7 +415,7 @@ namespace rndr {
         *(vec3*)&v44 = position;
         v44.w = 1.0f;
 
-        mat4_transform_vector(&view_projection_matrix, &v44, &v44);
+        mat4_transform_vector(&view_projection, &v44, &v44);
 
         float_t v13 = 1.0f / v44.w;
         float_t v14 = v44.x * v13;
@@ -465,10 +465,10 @@ namespace rndr {
         gl_state_disable_cull_face();
 
         mat4 mat;
-        mat4_mul_translate(&view_matrix, &position, &mat);
+        mat4_mul_translate(&view, &position, &mat);
         mat4_clear_rot(&mat, &mat);
         mat4_scale_rot(&mat, v24 * 0.2f, &mat);
-        mat4_mul(&mat, &projection_matrix, &mat);
+        mat4_mul(&mat, &projection, &mat);
 
         mat4_transpose(&mat, &mat);
         shader_data.g_transform[0] = mat.row0;
@@ -481,10 +481,10 @@ namespace rndr {
         shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
         glEndQuery(GL_SAMPLES_PASSED);
 
-        mat4_mul_translate(&view_matrix, (vec3*)&v44, &mat);
+        mat4_mul_translate(&view, (vec3*)&v44, &mat);
         mat4_clear_rot(&mat, &mat);
         mat4_scale_rot(&mat, v24 * 2.0f, &mat);
-        mat4_mul(&mat, &projection_matrix, &mat);
+        mat4_mul(&mat, &projection, &mat);
 
         mat4_transpose(&mat, &mat);
         shader_data.g_transform[0] = mat.row0;
@@ -520,10 +520,10 @@ namespace rndr {
             gl_state_set_blend_func(GL_ONE, GL_ONE);
             gl_state_set_depth_mask(GL_FALSE);
 
-            mat4_mul_translate(&view_matrix, &position, &mat);
+            mat4_mul_translate(&view, &position, &mat);
             mat4_clear_rot(&mat, &mat);
             mat4_scale_rot(&mat, v24 * 1.1f, &mat);
-            mat4_mul(&mat, &projection_matrix, &mat);
+            mat4_mul(&mat, &projection, &mat);
 
             mat4_transpose(&mat, &mat);
             shader_data.g_transform[0] = mat.row0;
@@ -1346,8 +1346,8 @@ namespace rndr {
 
                 mat4 v42;
                 mat4 v43;
-                mat4_mul(&camera_data->view_matrix, &v44, &v42);
-                mat4_mul(&camera_data->projection_matrix, &v42, &v43);
+                mat4_mul(&camera_data->view, &v44, &v42);
+                mat4_mul(&camera_data->projection, &v42, &v43);
                 mat4_transpose(&v42, &v42);
                 mat4_transpose(&v43, &v43);
 

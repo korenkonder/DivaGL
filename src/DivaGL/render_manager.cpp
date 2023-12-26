@@ -1019,9 +1019,9 @@ void image_filter_scale(GLuint dst, GLuint src, const vec4 scale) {
 
 void draw_pass_set_camera() {
     camera_struct::update_data();
-    mat4_transpose(&camera_data->view_matrix, &rctx->view_mat);
-    mat4_transpose(&camera_data->projection_matrix, &rctx->proj_mat);
-    mat4_transpose(&camera_data->view_projection_matrix, &rctx->vp_mat);
+    mat4_transpose(&camera_data->view, &rctx->view_mat);
+    mat4_transpose(&camera_data->projection, &rctx->proj_mat);
+    mat4_transpose(&camera_data->view_projection, &rctx->vp_mat);
     rctx->obj_scene.set_projection_view(rctx->view_mat, rctx->proj_mat);
     camera_data->get_view_point(rctx->obj_scene.g_view_position);
     rctx->obj_scene.g_view_position.w = 0.0f;

@@ -518,7 +518,7 @@ void rob_patch() {
 static void rob_chara_age_age_disp(rob_chara_age_age* arr,
     int32_t chara_id, bool reflect, bool chara_color) {
     bool npr = !!render_manager->npr_param;
-    mat4& view = camera_data->view_matrix;
+    mat4& view = camera_data->view;
     vec3 v11 = *(vec3*)&view.row2;
     arr[chara_id * 3 + 0].disp(chara_id, npr, reflect, v11, chara_color);
     arr[chara_id * 3 + 1].disp(chara_id, npr, reflect, v11, chara_color);

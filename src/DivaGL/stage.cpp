@@ -172,12 +172,12 @@ void stage_patch() {
 }
 
 static bool object_bounding_sphere_check_visibility_shadow(obj_bounding_sphere* sphere, mat4* mat) {
-    mat4 view_matrix;
-    mat4_transpose(&camera_data->view_matrix, &view_matrix);
+    mat4 view;
+    mat4_transpose(&camera_data->view, &view);
 
     vec3 center;
     mat4_transform_point(mat, &sphere->center, &center);
-    mat4_transform_point(&view_matrix, &center, &center);
+    mat4_transform_point(&view, &center, &center);
     float_t radius = sphere->radius;
 
     Shadow* shad = shadow_ptr_get();

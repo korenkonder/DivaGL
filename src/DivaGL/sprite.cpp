@@ -1209,8 +1209,8 @@ void sprite_manager_set_res(double_t aspect, int32_t width, int32_t height) {
 
 void sprite_manager_set_view_projection(bool aet_3d) {
     view_projection_aet = aet_3d
-        ? camera_data->view_projection_aet_3d_matrix
-        : camera_data->view_projection_aet_2d_matrix;
+        ? camera_data->view_projection_aet_3d
+        : camera_data->view_projection_aet_2d;
 }
 
 void sprite_manager_free() {
