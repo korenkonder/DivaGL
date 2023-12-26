@@ -104,6 +104,10 @@ namespace rndr {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
+    void RenderManager::set_clear(bool value) {
+        clear = value;
+    }
+    
     void RenderManager::set_effect_texture(texture* value) {
         effect_texture = value;
     }

@@ -104,6 +104,7 @@ namespace rndr {
         void clear_pre_process(int32_t type);
         RenderTexture& get_render_texture(int32_t index);
         void resize(int32_t width, int32_t height);
+        void set_clear(bool value);
         void set_effect_texture(texture* value);
         void set_multisample(bool value);
         void set_npr_param(int32_t value);

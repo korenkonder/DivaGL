@@ -211,8 +211,11 @@ namespace mdl {
             args->texture_pattern_array[i] = disp_manager->texture_pattern_array[i];
 
         args->texture_transform_count = disp_manager->texture_transform_count;
-        for (int32_t i = 0; i < disp_manager->texture_transform_count && i < TEXTURE_TRANSFORM_COUNT; i++)
-            args->texture_transform_array[i] = disp_manager->texture_transform_array[i];
+        for (int32_t i = 0; i < disp_manager->texture_transform_count && i < TEXTURE_TRANSFORM_COUNT; i++) {
+            args->texture_transform_array[i].id = disp_manager->texture_transform_array[i].id;
+            mat4_transpose(&disp_manager->texture_transform_array[i].mat,
+                &args->texture_transform_array[i].mat);
+        }
 
         if (blend_color && *blend_color != 1.0f) {
             args->set_blend_color = true;
