@@ -908,7 +908,7 @@ namespace spr {
             }
             break;
         case 1:
-            draw_param.texture[0] = tex_param[0].texture->tex;
+            draw_param.texture[0] = tex_param[0].texture ? tex_param[0].texture->tex : 0;
             draw_param.sampler = rctx->sprite_samplers[0];
 
             if (args.num_vertex) {
@@ -1043,8 +1043,8 @@ namespace spr {
                 return;
             }
 
-            draw_param.texture[0] = tex_param[0].texture->tex;
-            draw_param.texture[1] = tex_param[1].texture->tex;
+            draw_param.texture[0] = tex_param[0].texture ? tex_param[0].texture->tex : 0;
+            draw_param.texture[1] = tex_param[1].texture ? tex_param[1].texture->tex : 0;
             draw_param.sampler = rctx->sprite_samplers[2];
 
             sprite_draw_vertex spr_vtx[4] = {};
