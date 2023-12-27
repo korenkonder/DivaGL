@@ -72,7 +72,7 @@ namespace Glitter {
         gl_state_bind_array_buffer(0);
         gl_state_bind_vertex_array(0);
         if (is_quad)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            gl_state_bind_element_array_buffer(0);
     }
 
     void DeleteBuffer(GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo) {
@@ -101,8 +101,7 @@ namespace Glitter {
         uint8_t buf[0x100];
 
         // Particle
-        inject_uint32_t((void*)0x000000014039A396,
-            0x1B0 + sizeof(GLuint) * 2 + sizeof(DrawListData*));
+        inject_uint32_t((void*)0x000000014039A396, sizeof(Particle));
 
         memcpy(buf, _000000014039BC78_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)Particle::CreateBuffer;

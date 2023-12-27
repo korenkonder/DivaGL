@@ -66,7 +66,7 @@ namespace Glitter {
                 continue;
 
             RenderGroup* rend_group = i;
-            if (RenderGroup_CannotDisp(rend_group) && rend_group->disp_type != disp_type)
+            if (RenderGroup_CannotDisp(rend_group) || rend_group->disp_type != disp_type)
                 continue;
 
             Disp(rend_group);

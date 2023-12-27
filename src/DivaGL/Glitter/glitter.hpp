@@ -7,6 +7,7 @@
 
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
+#include "../color.hpp"
 #include "../gl.hpp"
 #include "../gl_array_buffer.hpp"
 #include "../gl_element_array_buffer.hpp"
@@ -30,8 +31,8 @@ namespace Glitter {
     };
 
     enum DispType {
-        DISP_NORMAL = 0,
-        DISP_OPAQUE = 1,
+        DISP_OPAQUE = 0,
+        DISP_NORMAL = 1,
         DISP_ALPHA  = 2,
     };
 
@@ -71,6 +72,12 @@ namespace Glitter {
         PARTICLE_MANAGER_RESET_SCENE_COUNTER = 0x04,
         PARTICLE_MANAGER_READ_FILES          = 0x08,
     };
+    
+    enum ParticleSubFlag {
+        PARTICLE_SUB_NONE       = 0x00000000,
+        PARTICLE_SUB_UV_2ND_ADD = 0x00400000,
+        PARTICLE_SUB_USE_CURVE  = 0x40000000,
+    };
 
     enum ParticleType {
         PARTICLE_QUAD  = 0,
@@ -97,6 +104,17 @@ namespace Glitter {
         SCENE_FLAG_3   = 0x04,
     };
 
+    enum UVIndexType {
+        UV_INDEX_FIXED                  = 0,
+        UV_INDEX_INITIAL_RANDOM_FIXED   = 1,
+        UV_INDEX_RANDOM                 = 2,
+        UV_INDEX_FORWARD                = 3,
+        UV_INDEX_REVERSE                = 4,
+        UV_INDEX_INITIAL_RANDOM_FORWARD = 5,
+        UV_INDEX_INITIAL_RANDOM_REVERSE = 6,
+        UV_INDEX_USER                   = 7,
+    };
+
     struct Animation;
     struct Buffer;
     struct Camera;
@@ -104,9 +122,9 @@ namespace Glitter {
     struct Effect;
     struct Emitter;
     struct EmitterInst;
-    struct ItemBase;
+    class ItemBase;
     struct Node;
-    struct Particle;
+    class Particle;
     struct ParticleInst;
     struct Random;
     struct RenderElement;
@@ -120,10 +138,21 @@ namespace Glitter {
 #define GPM Glitter::GltParticleManager* glt_particle_manager
 #define GPM_VAL (glt_particle_manager)
 
+    struct Animation {
+        prj::vector<Curve*> curves;
+    };
+
     struct Buffer {
         vec3 position;
         vec2 uv[2];
         vec4 color;
+    };
+    
+    class ItemBase {
+    public:
+        void* __vftable;
+        prj::string name;
+        Animation animation;\
     };
 
     struct LocusHistory {
@@ -142,9 +171,80 @@ namespace Glitter {
         Sub sub;
     };
 
-    struct Particle {
-        static void CreateBuffer(size_t data);
-        static void DeleteBuffer(size_t data);
+    typedef prj::vector<prj::pair<GLint, GLsizei>> DrawListData;
+    
+    class Particle : ItemBase {
+    public:
+        struct Data {
+            ParticleFlag flags;
+            float_t life_time;
+            ParticleType type;
+            Pivot pivot;
+            Direction draw_type;
+            float_t z_offset;
+            vec3 rotation;
+            vec3 rotation_random;
+            vec3 rotation_add;
+            vec3 rotation_add_random;
+            vec3 position_offset;
+            vec3 position_offset_random;
+            vec3 base_direction;
+            vec3 direction_random;
+            float_t speed;
+            float_t speed_random;
+            float_t deceleration;
+            float_t deceleration_random;
+            vec3 gravitational_acceleration;
+            vec3 external_acceleration;
+            vec3 external_acceleration_random;
+            float_t reflection_coeff;
+            float_t reflection_coeff_random;
+            float_t dwordB4;
+            color4u8_bgra color_int;
+            vec4 color;
+            UVIndexType uv_index_type;
+            int32_t uv_index;
+            float_t frame_step_uv;
+            int32_t uv_index_start;
+            int32_t uv_index_end;
+            int32_t uv_index_count;
+            vec2 uv_scroll_add;
+            float_t uv_scroll_add_scale;
+            vec2 split_uv;
+            uint8_t split_u;
+            uint8_t split_v;
+            ParticleBlend blend_mode;
+            ParticleBlend mask_blend_mode;
+            int32_t dword104;
+            ParticleSubFlag sub_flags;
+            int32_t count;
+            int32_t locus_history_size;
+            int32_t locus_history_size_random;
+            int32_t dword118;
+            float_t emission;
+            uint64_t tex_hash;
+            uint64_t mask_tex_hash;
+            int32_t texture;
+            int32_t mask_texture;
+            char dword138[32];
+        };
+
+        struct Sub {
+            Glitter::Particle::Data data;
+            Glitter::Buffer* buffer;
+            GLArrayBuffer vbo;
+            int32_t max_count;
+            bool field_168;
+            int32_t dword16C;
+            GLuint vao;
+            GLElementArrayBuffer ebo;
+            DrawListData* draw_list;
+        };
+
+        Glitter::Particle::Sub sub;
+
+        static void CreateBuffer(Particle* ptcl);
+        static void DeleteBuffer(Particle* ptcl);
     };
 
     struct RenderElement {
@@ -188,8 +288,6 @@ namespace Glitter {
         bool buffer_init;
     };
 
-    typedef prj::vector<prj::pair<GLint, GLsizei>> DrawListData;
-
     struct RenderGroup {
         void* __vftable;
         ParticleFlag flags;
@@ -224,6 +322,7 @@ namespace Glitter {
         GLArrayBuffer vbo;
         float_t emission;
         bool use_own_buffer;
+        int32_t dword12C;
         GLuint vao;
         GLElementArrayBuffer ebo;
         size_t disp;
