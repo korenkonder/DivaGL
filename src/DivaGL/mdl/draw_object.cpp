@@ -120,7 +120,11 @@ namespace mdl {
             shaders_ft.draw_elements(GL_TRIANGLES, etc->count, GL_UNSIGNED_INT, 0);
             break;
         case mdl::ETC_OBJ_GRID:
+            glLineWidthDLL(0.2f);
             shaders_ft.draw_arrays(GL_LINES, 0, etc->count);
+            glLineWidthDLL(2.0f);
+            shaders_ft.draw_arrays(GL_LINES, (GLint)etc->count, 4);
+            glLineWidthDLL(1.0f);
             break;
         case mdl::ETC_OBJ_CUBE:
             if (etc->data.sphere.wire)
@@ -135,7 +139,7 @@ namespace mdl {
                 shaders_ft.draw_elements(GL_TRIANGLES, etc->count, GL_UNSIGNED_INT, (void*)etc->offset);
             break;
         case mdl::ETC_OBJ_PLANE:
-            shaders_ft.draw_arrays(GL_TRIANGLES, 0, etc->count);
+            shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, etc->count);
             break;
         case mdl::ETC_OBJ_CONE:
             if (etc->data.cone.wire)

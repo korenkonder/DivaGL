@@ -4,6 +4,7 @@
 */
 
 #include "disp_manager.hpp"
+#include "../Glitter/glitter.hpp"
 #include "../rob/rob.hpp"
 #include "../gl_state.hpp"
 #include "../object.hpp"
@@ -665,27 +666,108 @@ namespace mdl {
             gl_state_bind_element_array_buffer(0);
     }
 
+    static size_t gen_grid_vertices(prj::vector<float_t>& data,
+        int32_t w, int32_t h, int32_t ws, int32_t hs) {
+        const int32_t ws_half = ws / 2;
+        const int32_t hs_half = hs / 2;
+        const float_t w_flt = (float_t)w;
+        const float_t h_flt = (float_t)h;
+
+        const float_t width = w_flt * 0.5f;
+        const float_t height = h_flt * 0.5f;
+
+        data.reserve(6ULL * 2 * ws * 2);
+        for (int32_t i = 0; i <= ws; i++) {
+            if (i == ws_half)
+                continue;
+
+            const float_t w = (float_t)i * (w_flt / ((float_t)ws_half * 2.0f)) - width;
+            data.push_back(w);
+            data.push_back(0.0f);
+            data.push_back(-height);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+            data.push_back(w);
+            data.push_back(0.0f);
+            data.push_back(height);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+        }
+
+        data.reserve(6ULL * 2 * hs * 2);
+        for (int32_t i = 0; i <= hs; i++) {
+            if (i == hs_half)
+                continue;
+
+            const float_t h = (float_t)i * (h_flt / ((float_t)hs_half * 2.0f)) - height;
+            data.push_back(-width);
+            data.push_back(0.0f);
+            data.push_back(h);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+            data.push_back(width);
+            data.push_back(0.0f);
+            data.push_back(h);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+            data.push_back(0.0f);
+        }
+
+        size_t center_offset = data.size();
+
+        data.reserve(6ULL * 2 * 2 * 2);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(-height);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(height);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(-width);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(width);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        return center_offset;
+    }
+
     static void gen_cube_vertices(prj::vector<float_t>& data) {
-        data.resize(sizeof(vec3) * 2 * 4 * 6);
+        data.resize(6ULL * 2 * 4 * 6);
 
         vec3* vtx = (vec3*)data.data();
         *vtx++ = { -1.0f, -1.0f, -1.0f };
-        *vtx++ = { 0.0f,  0.0f, -1.0f };
-        *vtx++ = { 1.0f,  1.0f, -1.0f };
-        *vtx++ = { 0.0f,  0.0f, -1.0f };
-        *vtx++ = { 1.0f, -1.0f, -1.0f };
-        *vtx++ = { 0.0f,  0.0f, -1.0f };
+        *vtx++ = {  0.0f,  0.0f, -1.0f };
+        *vtx++ = {  1.0f,  1.0f, -1.0f };
+        *vtx++ = {  0.0f,  0.0f, -1.0f };
+        *vtx++ = {  1.0f, -1.0f, -1.0f };
+        *vtx++ = {  0.0f,  0.0f, -1.0f };
         *vtx++ = { -1.0f,  1.0f, -1.0f };
-        *vtx++ = { 0.0f,  0.0f, -1.0f };
+        *vtx++ = {  0.0f,  0.0f, -1.0f };
 
         *vtx++ = { -1.0f, -1.0f,  1.0f };
-        *vtx++ = { 0.0f,  0.0f,  1.0f };
-        *vtx++ = { 1.0f, -1.0f,  1.0f };
-        *vtx++ = { 0.0f,  0.0f,  1.0f };
-        *vtx++ = { 1.0f,  1.0f,  1.0f };
-        *vtx++ = { 0.0f,  0.0f,  1.0f };
+        *vtx++ = {  0.0f,  0.0f,  1.0f };
+        *vtx++ = {  1.0f, -1.0f,  1.0f };
+        *vtx++ = {  0.0f,  0.0f,  1.0f };
+        *vtx++ = {  1.0f,  1.0f,  1.0f };
+        *vtx++ = {  0.0f,  0.0f,  1.0f };
         *vtx++ = { -1.0f,  1.0f,  1.0f };
-        *vtx++ = { 0.0f,  0.0f,  1.0f };
+        *vtx++ = {  0.0f,  0.0f,  1.0f };
 
         *vtx++ = { -1.0f,  1.0f,  1.0f };
         *vtx++ = { -1.0f,  0.0f,  0.0f };
@@ -696,32 +778,32 @@ namespace mdl {
         *vtx++ = { -1.0f, -1.0f,  1.0f };
         *vtx++ = { -1.0f,  0.0f,  0.0f };
 
-        *vtx++ = { 1.0f,  1.0f, -1.0f };
-        *vtx++ = { 1.0f,  0.0f,  0.0f };
-        *vtx++ = { 1.0f,  1.0f,  1.0f };
-        *vtx++ = { 1.0f,  0.0f,  0.0f };
-        *vtx++ = { 1.0f, -1.0f, -1.0f };
-        *vtx++ = { 1.0f,  0.0f,  0.0f };
-        *vtx++ = { 1.0f, -1.0f,  1.0f };
-        *vtx++ = { 1.0f,  0.0f,  0.0f };
+        *vtx++ = {  1.0f,  1.0f, -1.0f };
+        *vtx++ = {  1.0f,  0.0f,  0.0f };
+        *vtx++ = {  1.0f,  1.0f,  1.0f };
+        *vtx++ = {  1.0f,  0.0f,  0.0f };
+        *vtx++ = {  1.0f, -1.0f, -1.0f };
+        *vtx++ = {  1.0f,  0.0f,  0.0f };
+        *vtx++ = {  1.0f, -1.0f,  1.0f };
+        *vtx++ = {  1.0f,  0.0f,  0.0f };
 
         *vtx++ = { -1.0f, -1.0f, -1.0f };
-        *vtx++ = { 0.0f, -1.0f,  0.0f };
-        *vtx++ = { 1.0f, -1.0f, -1.0f };
-        *vtx++ = { 0.0f, -1.0f,  0.0f };
-        *vtx++ = { 1.0f, -1.0f,  1.0f };
-        *vtx++ = { 0.0f, -1.0f,  0.0f };
+        *vtx++ = {  0.0f, -1.0f,  0.0f };
+        *vtx++ = {  1.0f, -1.0f, -1.0f };
+        *vtx++ = {  0.0f, -1.0f,  0.0f };
+        *vtx++ = {  1.0f, -1.0f,  1.0f };
+        *vtx++ = {  0.0f, -1.0f,  0.0f };
         *vtx++ = { -1.0f, -1.0f,  1.0f };
-        *vtx++ = { 0.0f, -1.0f,  0.0f };
+        *vtx++ = {  0.0f, -1.0f,  0.0f };
 
         *vtx++ = { -1.0f,  1.0f, -1.0f };
-        *vtx++ = { 0.0f,  1.0f,  0.0f };
-        *vtx++ = { 1.0f,  1.0f,  1.0f };
-        *vtx++ = { 0.0f,  1.0f,  0.0f };
-        *vtx++ = { 1.0f,  1.0f, -1.0f };
-        *vtx++ = { 0.0f,  1.0f,  0.0f };
+        *vtx++ = {  0.0f,  1.0f,  0.0f };
+        *vtx++ = {  1.0f,  1.0f,  1.0f };
+        *vtx++ = {  0.0f,  1.0f,  0.0f };
+        *vtx++ = {  1.0f,  1.0f, -1.0f };
+        *vtx++ = {  0.0f,  1.0f,  0.0f };
         *vtx++ = { -1.0f,  1.0f,  1.0f };
-        *vtx++ = { 0.0f,  1.0f,  0.0f };
+        *vtx++ = {  0.0f,  1.0f,  0.0f };
     }
 
     static size_t gen_cube_indices(prj::vector<uint32_t>& indices) {
@@ -756,7 +838,7 @@ namespace mdl {
         if (slices < 2 || stacks < 2)
             return;
 
-        data.reserve(sizeof(vec3) * 2);
+        data.reserve(6ULL * 2);
 
         data.push_back(0.0f);
         data.push_back(radius);
@@ -774,7 +856,7 @@ namespace mdl {
             float_t xz = cosf(stack_angle);
             float_t y = sinf(stack_angle);
 
-            data.reserve(sizeof(vec3) * 2 * slices);
+            data.reserve(6ULL * 2 * slices);
 
             for (int32_t j = 0; j < slices; j++) {
                 float_t slice_angle = (float_t)((double_t)j * slice_step);
@@ -792,7 +874,7 @@ namespace mdl {
             }
         }
 
-        data.reserve(sizeof(vec3) * 2);
+        data.reserve(6ULL * 2);
 
         data.push_back(0.0f);
         data.push_back(-radius);
@@ -922,6 +1004,114 @@ namespace mdl {
         return wire_offset;
     }
 
+    static void gen_plane_vertices(prj::vector<float_t>& data) {
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+        data.push_back(-1.0f);
+
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+
+        data.push_back(-1.0f);
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+
+        data.push_back(-1.0f);
+        data.push_back(0.0f);
+        data.push_back(-1.0f);
+
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+    }
+
+    static void gen_line_vertices(prj::vector<float_t>& data, float_t length) {
+        length *= 0.5f;
+
+        data.reserve(6ULL * 2);
+
+        data.push_back(0.0f);
+        data.push_back(length);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(-length);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+    }
+
+    static void gen_cross_vertices(prj::vector<float_t>& data) {
+        data.reserve(6ULL * 2 * 6);
+
+        data.push_back(-1.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(-1.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(-1.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(1.0f);
+
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+        data.push_back(0.0f);
+    }
+
     void DispManager::add_vertex_array(EtcObj* etc, mat4& mat) {
         EtcObjType type = etc->type;
         switch (type) {
@@ -981,6 +1171,20 @@ namespace mdl {
         case mdl::ETC_OBJ_LINE: {
             EtcObjLine& line = etc->data.line;
 
+            vec3 origin = (line.pos[0] + line.pos[1]) * 0.5f;
+            mat4_add_translate(&mat, &origin, &mat);
+
+            vec3 dir = vec3::normalize(line.pos[1] - line.pos[0]);
+            vec3 up = { 0.0f, 1.0f, 0.0f };
+            vec3 axis;
+            float_t angle;
+            Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
+
+            mat4 m = mat4_identity;
+            mat4_mul_rotation(&m, &axis, angle, &m);
+            mat4_mul(&m, &mat, &mat);
+
+            length = vec3::distance(line.pos[0], line.pos[1]);
         } break;
         case mdl::ETC_OBJ_CROSS: {
             EtcObjCross& cross = etc->data.cross;
@@ -1009,6 +1213,7 @@ namespace mdl {
                 && fabsf(i.data.cone.base - etc->data.cone.base) < 0.00001f
                 && fabsf(i.data.cone.height - etc->data.cone.height) < 0.00001f
                 || type == mdl::ETC_OBJ_LINE
+                && fabsf(vec3::distance(i.data.line.pos[0], i.data.line.pos[1]) - length) < 0.00001f
                 || type == mdl::ETC_OBJ_CROSS)
                 if (i.vertex_array) {
                     i.alive_time = 2;
@@ -1077,7 +1282,10 @@ namespace mdl {
         case mdl::ETC_OBJ_GRID: {
             EtcObjGrid& grid = etc->data.grid;
 
-            etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
+            size_t center_offset = gen_grid_vertices(vtx_data, grid.w, grid.h, grid.ws, grid.hs);
+
+            etc_vertex_array->offset = 0;
+            etc_vertex_array->count = (GLsizei)(center_offset / 6);
         } break;
         case mdl::ETC_OBJ_CUBE: {
             EtcObjCube& cube = etc->data.cube;
@@ -1104,6 +1312,8 @@ namespace mdl {
         case mdl::ETC_OBJ_PLANE: {
             EtcObjPlane& plane = etc->data.plane;
 
+            gen_plane_vertices(vtx_data);
+
             etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
         } break;
         case mdl::ETC_OBJ_CONE: {
@@ -1114,10 +1324,14 @@ namespace mdl {
         case mdl::ETC_OBJ_LINE: {
             EtcObjLine& line = etc->data.line;
 
+            gen_line_vertices(vtx_data, length);
+
             etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
         } break;
         case mdl::ETC_OBJ_CROSS: {
             EtcObjCross& cross = etc->data.cross;
+
+            gen_cross_vertices(vtx_data);
 
             etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
         } break;
@@ -1277,7 +1491,7 @@ namespace mdl {
 
                 mat4 mat;
                 mat4_translate(&i, &mat);
-                mdl::DispManager::entry_obj_etc(&mat, &etc);
+                entry_obj_etc(&mat, &etc);
             }
 
         if (show_mat_center && type == OBJ_TYPE_TRANSLUCENT)
@@ -1291,7 +1505,7 @@ namespace mdl {
 
                 mat4 mat;
                 mat4_translate(&i, &mat);
-                mdl::DispManager::entry_obj_etc(&mat, &etc);
+                entry_obj_etc(&mat, &etc);
             }
     }
 
@@ -2118,11 +2332,11 @@ namespace mdl {
         data->init_etc(mat, etc);
         if (etc->color.a == 0xFF) {
             if (!local && (obj_flags & OBJ_SHADOW))
-                mdl::DispManager::entry_list((mdl::ObjType)(OBJ_TYPE_SHADOW_CHARA + shadow_type), data);
-            mdl::DispManager::entry_list(/*local ? OBJ_TYPE_OPAQUE_LOCAL : */OBJ_TYPE_OPAQUE, data);
+                entry_list((mdl::ObjType)(OBJ_TYPE_SHADOW_CHARA + shadow_type), data);
+            entry_list(/*local ? OBJ_TYPE_OPAQUE_LOCAL : */OBJ_TYPE_OPAQUE, data);
         }
         else
-            mdl::DispManager::entry_list(/*local ? OBJ_TYPE_TRANSLUCENT_LOCAL : */OBJ_TYPE_TRANSLUCENT, data);
+            entry_list(/*local ? OBJ_TYPE_TRANSLUCENT_LOCAL : */OBJ_TYPE_TRANSLUCENT, data);
     }
 
     void DispManager::entry_obj_user(const mat4* mat, UserArgsFunc func, void* data, ObjType type) {
@@ -2188,7 +2402,10 @@ namespace mdl {
         case mdl::ETC_OBJ_SPHERE:
         case mdl::ETC_OBJ_PLANE:
         case mdl::ETC_OBJ_CONE:
+            break;
         case mdl::ETC_OBJ_LINE:
+            length = vec3::distance(etc->data.line.pos[0], etc->data.line.pos[1]);
+            break;
         case mdl::ETC_OBJ_CROSS:
             break;
         default:
@@ -2224,7 +2441,9 @@ namespace mdl {
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_LINE:
-                return i.vertex_array;
+                if (fabsf(vec3::distance(i.data.line.pos[0], i.data.line.pos[1]) - length) < 0.00001f)
+                    return i.vertex_array;
+                break;
             case mdl::ETC_OBJ_CROSS:
                 return i.vertex_array;
             }
@@ -2502,6 +2721,7 @@ namespace mdl {
 
         mat4 mat;
         mat4_translate(pos, &mat);
+        mat4_transpose(&mat, &mat);
         disp_manager->entry_obj_etc(&mat, &etc);
     }
 
