@@ -113,7 +113,7 @@ bool APIENTRY DllMain(HMODULE handle, DWORD ul_reason_for_call, LPVOID lpReserve
         freopen_s(&f_stdout, "CONOUT$", "w", stdout);*/
 
         dll_handle = (size_t)handle;
-        printf_divagl("Current version - v0.3.1.1");
+        printf_divagl("Current version - v0.3.3.0");
         printf_divagl("Attach");
         divagl_main();
         break;
