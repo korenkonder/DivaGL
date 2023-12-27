@@ -773,9 +773,11 @@ namespace rndr {
             gl_state_disable_blend();
         }
 
-        //gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE); // X
-        //Glitter::glt_particle_manager->DispScenes(Glitter::DISP_TYPE_2);
-        //gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+#if (0)
+        gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE); // X
+        Glitter::glt_particle_manager->DispScenes(Glitter::DISP_TYPE_2);
+        gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+#endif
 
         gl_state_set_depth_mask(GL_TRUE);
         draw_pass_3d_translucent(

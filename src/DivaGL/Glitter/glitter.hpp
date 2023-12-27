@@ -30,8 +30,8 @@ namespace Glitter {
     };
 
     enum DispType {
-        DISP_OPAQUE = 0,
-        DISP_NORMAL = 1,
+        DISP_NORMAL = 0,
+        DISP_OPAQUE = 1,
         DISP_ALPHA  = 2,
     };
 
