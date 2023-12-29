@@ -110,6 +110,7 @@ static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, in
                 0,
             };
             ctx = _wglCreateContextAttribsARB(hDc, 0, attrib_list);;
+            minor--;
         }
         wglMakeCurrentGLUT(hDc, ctx);
         wglDeleteContextGLUT(tmp_ctx);
