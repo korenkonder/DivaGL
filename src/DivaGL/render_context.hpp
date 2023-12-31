@@ -312,10 +312,6 @@ struct render_context {
     GLuint render_samplers[4];
     GLuint sprite_samplers[3];
 
-    int32_t sprite_width;
-    int32_t sprite_height;
-    int32_t screen_x_offset;
-    int32_t screen_y_offset;
     int32_t screen_width;
     int32_t screen_height;
 

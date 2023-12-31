@@ -144,7 +144,7 @@ namespace rndr {
         }
 
         rctx->screen_buffer.Bind();
-        glViewportDLL(0, 0, rctx->sprite_width, rctx->sprite_height);
+        glViewportDLL(0, 0, rctx->screen_width, rctx->screen_height);
         if (ssaa) {
             gl_state_active_bind_texture_2d(0, taa_tex[taa_texture]->tex);
             gl_state_bind_sampler(0, rctx->render_samplers[0]);

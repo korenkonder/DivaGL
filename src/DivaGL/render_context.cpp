@@ -160,10 +160,9 @@ void obj_batch_shader_data::set_transforms(const mat4& model, const mat4& view, 
     g_transforms[3] = temp.row3;
 }
 
-render_context::render_context() : box_vao(), lens_ghost_vao(), common_vao(),
-reflect_buffer(), render_buffer(), screen_buffer(), shadow_buffer(), empty_texture_2d(),
-empty_texture_cube_map(), samplers(), render_samplers(), sprite_samplers(), sprite_width(),
-sprite_height(), screen_x_offset(), screen_y_offset(), screen_width(), screen_height() {
+render_context::render_context() : box_vao(), lens_ghost_vao(), common_vao(), reflect_buffer(),
+render_buffer(), screen_buffer(), shadow_buffer(), empty_texture_2d(), empty_texture_cube_map(),
+samplers(), render_samplers(), sprite_samplers(), screen_width(), screen_height() {
     static const float_t box_texcoords[] = {
          1.0f,  0.0f,  0.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
          0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,
@@ -429,7 +428,7 @@ void render_context::ctrl(bool change_res) {
     if (screen_width == width && screen_height == height)
         return;
 
-    static const double_t aspect = 16.0 / 9.0;
+    /*static const double_t aspect = 16.0 / 9.0;
 
     double_t res_width = (double_t)width;
     double_t res_height = (double_t)height;
@@ -437,42 +436,33 @@ void render_context::ctrl(bool change_res) {
     if (view_aspect < aspect)
         res_height = round(res_width / aspect);
     else if (view_aspect > aspect)
-        res_width = round(res_height * aspect);
+        res_width = round(res_height * aspect);*/
 
-    int32_t render_width = (int32_t)res_width;
-    int32_t render_height = (int32_t)res_height;
-    int32_t sprite_width = (int32_t)res_width;
-    int32_t sprite_height = (int32_t)res_height;
+    /*int32_t render_width = (int32_t)res_width;
+    int32_t render_height = (int32_t)res_height;*/
     int32_t screen_width = width;
     int32_t screen_height = height;
 
     //bool render_res_change = render->inner_width != render_width || render->inner_height != render_height;
-    bool sprite_res_change = this->sprite_width != sprite_width || this->sprite_height != sprite_height;
     bool screen_res_change = this->screen_width != screen_width || this->screen_height != screen_height;
-
-    this->sprite_width = sprite_width;
-    this->sprite_height = sprite_height;
-
-    screen_x_offset = (screen_width - sprite_width) / 2 + (screen_width - sprite_width) % 2;
-    screen_y_offset = (screen_height - sprite_height) / 2 + (screen_height - sprite_height) % 2;
 
     this->screen_width = screen_width;
     this->screen_height = screen_height;
 
-    if (!change_res || /*!render_res_change && */!sprite_res_change && !screen_res_change)
+    /*if (render_res_change)
+    render.resize(render_width, render_height);*/
+    
+    if (!change_res || /*!render_res_change && */!screen_res_change)
         return;
 
-    /*if (render_res_change)
-        render.resize(render_width, render_height);*/
-
-    if (sprite_res_change)
-        render_manager->resize(sprite_width, sprite_height);
+    if (screen_res_change)
+        render_manager->resize(screen_width, screen_height);
 
     /*if (render_res_change)
           litproj_texture->Init(render_width, render_height, 0, GL_RGBA8, GL_DEPTH_COMPONENT32F);*/
 
-    /*sprite_manager_set_res((double_t)sprite_width / (double_t)sprite_height,
-        sprite_width, sprite_height);*/
+    /*sprite_manager_set_res((double_t)screen_width / (double_t)screen_height,
+        screen_width, screen_height);*/
 
     /*if (render_res_change) {
         auto init_copy_buffer = [&](RenderTexture& src, RenderTexture& dst) {
@@ -489,8 +479,8 @@ void render_context::ctrl(bool change_res) {
         init_copy_buffer(shadow_buffer, this->shadow_buffer);
     }*/
 
-    if (sprite_res_change)
-        screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA8, 0);
+    if (screen_res_change)
+        screen_buffer.Init(screen_width, screen_height, 0, GL_RGBA8, 0);
 }
 
 void render_context::free() {
@@ -516,7 +506,7 @@ void render_context::init() {
     init_copy_buffer(render_buffer, this->render_buffer);
     init_copy_buffer(shadow_buffer, this->shadow_buffer);
 
-    screen_buffer.Init(sprite_width, sprite_height, 0, GL_RGBA8, 0);
+    screen_buffer.Init(screen_width, screen_height, 0, GL_RGBA8, 0);
 }
 
 void fbo_blit(GLuint src_fbo, GLuint dst_fbo,

@@ -894,7 +894,7 @@ namespace rndr {
         gl_state_begin_event("pass_sprite");
         if (sprite_manager_get_reqlist_count(0)) {
             rndr::Render* rend = render;
-            glViewportDLL(0, 0, rctx->sprite_width, rctx->sprite_height);
+            glViewportDLL(0, 0, rend->screen_width, rend->screen_height);
 
             if (multisample && multisample_framebuffer) {
                 gl_state_bind_framebuffer(multisample_framebuffer);
@@ -909,8 +909,8 @@ namespace rndr {
             gl_state_disable_depth_test();
             gl_state_enable_blend();
             gl_state_disable_cull_face();
-            sprite_manager_set_res((double_t)rctx->sprite_width / (double_t)rctx->sprite_height,
-                rctx->sprite_width, rctx->sprite_height);
+            sprite_manager_set_res((double_t)rctx->screen_width / (double_t)rctx->screen_height,
+                rctx->screen_width, rctx->screen_height);
             sprite_manager_draw(0, true,
                 rend->temp_buffer.color_texture);
             gl_state_enable_cull_face();
@@ -921,8 +921,8 @@ namespace rndr {
                 gl_state_bind_framebuffer(0);
                 gl_state_disable_multisample();
                 fbo_blit(multisample_framebuffer, rctx->screen_buffer.fbos[0],
-                    0, 0, rctx->sprite_width, rctx->sprite_height,
-                    0, 0, rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                    0, 0, rctx->screen_width, rctx->screen_height,
+                    0, 0, rctx->screen_width, rctx->screen_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
             }
             shader::unbind();
 
@@ -930,9 +930,8 @@ namespace rndr {
         }
 
         fbo_blit(rctx->screen_buffer.fbos[0], 0,
-            0, 0, rctx->sprite_width, rctx->sprite_height,
-            rctx->screen_x_offset, rctx->screen_y_offset,
-            rctx->sprite_width, rctx->sprite_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            0, 0, rctx->screen_width, rctx->screen_height,
+            0, 0, rctx->screen_width, rctx->screen_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
         gl_state_bind_framebuffer(0);
         gl_state_end_event();
