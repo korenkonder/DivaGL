@@ -12,19 +12,22 @@
 
 #pragma once
 
-typedef enum HeapCMallocType {
-    HeapCMallocSystem = 0x00,
-    HeapCMallocTemp   = 0x01,
-    HeapCMallocMode   = 0x02,
-    HeapCMallocEvent  = 0x03,
-    HeapCMallocDebug  = 0x04,
-    HeapCMallocMax    = 0x05,
-} HeapCMallocType;
+namespace prj {
+    typedef enum HeapCMallocType {
+        HeapCMallocSystem = 0x00,
+        HeapCMallocTemp = 0x01,
+        HeapCMallocMode = 0x02,
+        HeapCMallocEvent = 0x03,
+        HeapCMallocDebug = 0x04,
+        HeapCMallocMax = 0x05,
+    } HeapCMallocType;
 
-static void* (*HeapCMallocAllocate)(HeapCMallocType type, size_t size, const char* name)
-    = (void* (*)(HeapCMallocType, size_t, const char*))0x00000001403F2A00;
-static void(*HeapCMallocFree)(HeapCMallocType type, void* data)
-    = (void(*)(HeapCMallocType, void*))0x00000001403F2960;
+    static void* (*HeapCMallocAllocate)(HeapCMallocType type, size_t size, const char* name)
+        = (void* (*)(HeapCMallocType, size_t, const char*))0x00000001403F2A00;
+    static void(*HeapCMallocFree)(HeapCMallocType type, void* data)
+        = (void(*)(HeapCMallocType, void*))0x00000001403F2960;
+};
+
 static void* (*_operator_new)(size_t) = (void* (*)(size_t))0x000000014084530C;
 static void(*_operator_delete)(void*) = (void(*)(void*))0x0000000140845378;
 

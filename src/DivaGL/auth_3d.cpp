@@ -696,13 +696,13 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
         morph = fmodf(morph, 1.0f);
         if (morph > 0.0f && morph < 1.0f) {
             sprintf_s(buf, sizeof(buf), "%.*s%03d", uid_name_length - 3, uid_name, morph_int + 1);
-            object_info morph_obj_info = obj_database_get_object_info(buf);
+            object_info morph_obj_info = object_database_get_object_info(buf);
             if (morph_obj_info.is_null())
                 morph_obj_info = o->object_info;
             disp_manager.set_morph(morph_obj_info, morph);
 
             sprintf_s(buf, sizeof(buf), "%.*s%03d", uid_name_length - 3, uid_name, morph_int);
-            object_info obj_info = obj_database_get_object_info(buf);
+            object_info obj_info = object_database_get_object_info(buf);
             if (auth->alpha < 0.999f)
                 disp_manager.entry_obj_by_object_info(&mat, obj_info, auth->alpha);
             else
@@ -714,7 +714,7 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
                 morph_int++;
 
             sprintf_s(buf, sizeof(buf), "%.*s%03d", uid_name_length - 3, uid_name, morph_int);
-            object_info obj_info = obj_database_get_object_info(buf);
+            object_info obj_info = object_database_get_object_info(buf);
             if (obj_info.is_null())
                 obj_info = o->object_info;
             disp_manager.entry_obj_by_object_info(&mat, obj_info);
@@ -723,7 +723,7 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
     else if (o->pattern.curve) {
         sprintf_s(buf, sizeof(buf), "%.*s%03d",
             uid_name_length - 3, uid_name, (int32_t)prj::roundf(o->pattern.value));
-        object_info obj_info = obj_database_get_object_info(buf);
+        object_info obj_info = object_database_get_object_info(buf);
         disp_manager.entry_obj_by_object_info(&mat, obj_info);
     }
     else

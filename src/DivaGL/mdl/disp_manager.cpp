@@ -2227,7 +2227,7 @@ namespace mdl {
         if (!object)
             return false;
 
-        prj::vector<GLuint>* textures = obj_database_get_obj_set_textures(obj_info.set_id);
+        prj::vector<GLuint>* textures = object_database_get_set_gentex(obj_info.set_id);
         obj_mesh_vertex_buffer* obj_vertex_buffer = object_info_get_mesh_vertex_buffer(obj_info, 0);
         obj_mesh_index_buffer* obj_index_buffer = object_info_get_mesh_index_buffer(obj_info, 0);
 
@@ -2264,7 +2264,7 @@ namespace mdl {
     void DispManager::entry_obj_by_object_info_object_skin(object_info obj_info,
         prj::vector<texture_pattern_struct>* texture_pattern, texture_data_struct* texture_data, float_t alpha,
         mat4* matrices, mat4* ex_data_matrices, const mat4* mat, const mat4* global_mat) {
-        obj_skin* skin = obj_database_get_object_skin(obj_info);
+        obj_skin* skin = object_database_get_object_skin(obj_info);
         if (!skin)
             return;
 
@@ -2649,8 +2649,8 @@ namespace mdl {
             || *(int32_t*)(a1 + 0x74) >= *(int32_t*)(a1 + 0x70))
             return;
 
-        int32_t set_id = obj_database_get_set_id(*(int32_t*)(a1 + 0x68));
-        int32_t id = obj_database_get_obj_set_obj_id(*(int32_t*)(a1 + 0x68), *(int32_t*)(a1 + 0x74));
+        int32_t set_id = object_database_get_set_id(*(int32_t*)(a1 + 0x68));
+        int32_t id = object_database_get_set_obj_id(*(int32_t*)(a1 + 0x68), *(int32_t*)(a1 + 0x74));
         disp_manager->set_obj_flags((mdl::ObjFlags)(*(int32_t*)(a1 + 0x84) | mdl::OBJ_40 | mdl::OBJ_20));
         mat4 mat;
         mat4_rotate_xyz(*(float_t*)(a1 + 0x78), *(float_t*)(a1 + 0x7C), *(float_t*)(a1 + 0x80), &mat);
@@ -2700,17 +2700,9 @@ namespace mdl {
         disp_manager->entry_obj_etc(&mat4_identity, etc);
     }
 
-    HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
-        obj_mesh_vertex_buffer* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
-        if (!obj_data)
-            return;
-
-        vec4 blend_color = 1.0f;
-        blend_color.w = alpha;
-
-        vec4* blend_color_ptr = alpha < 1.0f ? &blend_color : 0;
-        disp_manager->entry_obj(obj_data, obj_vert_buf, obj_index_buf, rob_chara_item_equip_mat,
-            textures, blend_color_ptr, bone_mat, 0, 0, 0, 0, 0, 0, 0, !!bone_mat);
+    HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj * obj_data, prj::vector<GLuint>*textures,
+        obj_mesh_vertex_buffer * obj_vert_buf, obj_mesh_index_buffer * obj_index_buf, mat4 * bone_mat, float_t alpha) {
+        disp_manager->entry_obj_by_obj(rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
     }
 
     HOOK(void, FASTCALL, sub_1404BCC60, 0x00000001404BCC60, vec3* pos, float_t width, float_t height) {

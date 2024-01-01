@@ -354,6 +354,8 @@ struct obj_mesh_vertex_array {
     void* field_98;
 };
 
+static_assert(sizeof(obj_mesh_vertex_array) == 0xA0, "\"obj_mesh_vertex_array\" struct should have a size of 0xA0");
+
 struct obj_mesh {
     uint32_t flags;
     obj_bounding_sphere bounding_sphere;
@@ -385,6 +387,8 @@ struct obj {
     uint32_t reserved[10];
 };
 
+static_assert(sizeof(obj) == 0x60, "\"obj\" struct should have a size of 0x60");
+
 struct obj_skin_ex_data {
     uint32_t num_osage_name;
     uint32_t num_osage_node;
@@ -399,6 +403,8 @@ struct obj_skin_ex_data {
     uint32_t reserved[7];
 };
 
+static_assert(sizeof(obj_skin_ex_data) == 0x60, "\"obj_skin_ex_data\" struct should have a size of 0x60");
+
 struct obj_skin {
     uint32_t* bone_id_array;
     mat4* bone_matrix_array;
@@ -410,6 +416,8 @@ struct obj_skin {
     int32_t field_2C;
     int32_t field_30;
 };
+
+static_assert(sizeof(obj_skin) == 0x38, "\"obj_skin\" struct should have a size of 0x38");
 
 struct object_info {
     uint16_t id;
@@ -507,15 +515,15 @@ struct obj_vertex_buffer {
 
 static_assert(sizeof(obj_vertex_buffer) == 0x10, "\"obj_vertex_buffer\" struct should have a size of 0x10");
 
-extern uint32_t(FASTCALL* obj_database_get_object_info)(const char* name);
+extern uint32_t(FASTCALL* object_database_get_object_info)(const char* name);
 extern obj* (FASTCALL* object_info_get_object)(object_info obj_info);
 extern obj_mesh_index_buffer* (FASTCALL* object_info_get_mesh_index_buffer)(object_info obj_info, int32_t a2);
-extern obj_skin* (FASTCALL* obj_database_get_object_skin)(object_info obj_info);
+extern obj_skin* (FASTCALL* object_database_get_object_skin)(object_info obj_info);
 extern obj_mesh_vertex_buffer* (FASTCALL* object_info_get_mesh_vertex_buffer)(object_info obj_info, int32_t a2);
-extern int32_t(FASTCALL* obj_database_get_obj_set_obj_id)(int32_t set_index, int32_t obj_index);
-extern GLuint(FASTCALL* obj_database_get_obj_set_texture)(int32_t set, int32_t tex_id);
-extern prj::vector<GLuint>* (FASTCALL* obj_database_get_obj_set_textures)(int32_t set);
-extern int32_t(FASTCALL* obj_database_get_set_id)(int32_t set_index);
+extern int32_t(FASTCALL* object_database_get_set_obj_id)(int32_t set_index, int32_t obj_index);
+extern GLuint(FASTCALL* object_database_get_set_texture)(int32_t set, int32_t tex_id);
+extern prj::vector<GLuint>* (FASTCALL* object_database_get_set_gentex)(int32_t set);
+extern int32_t(FASTCALL* object_database_get_set_id)(int32_t set_index);
 
 extern int32_t obj_material_texture_type_get_texcoord_index(
     obj_material_texture_type type, int32_t index);
