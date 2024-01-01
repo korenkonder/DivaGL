@@ -1942,912 +1942,458 @@ static const shader_sub_table SPRITE_table[] = {
     },
 };
 
-static const uniform_name BLINN_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_TEXTURE_COUNT,
-    U_LIGHT_0,
-    U_NORMAL,
-    U_SPECULAR,
-    U_ENV_MAP,
-    U_FOG_HEIGHT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_LIGHT_1,
-    U_ALPHA_TEST, // 11th added
+static const std::pair<uniform_name, bool> BLINN_uniform[] = {
+    //{ U16          , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_LIGHT_1      , false },
+    { U_NORMAL       , false },
+    { U_SPECULAR     , false },
+    { U_ENV_MAP      , false },
+    { U_FOG_HEIGHT   , false },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_LIGHT_1      , false },
+    { U_ALPHA_TEST   , true  }, // 11th added
 };
 
-static const uniform_name ITEM_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_MORPH,
-    U_SPECULAR_IBL,
-    U_SPECULAR,
-    U_NORMAL,
-    U_TEXTURE_COUNT,
-    U_ENV_MAP,
-    U_SELF_SHADOW,
-    U_FOG,
-    U_ALPHA_TEST,
-    U_SHADOW,
-    U_CHARA_COLOR,
-    U_TONE_CURVE,
+static const std::pair<uniform_name, bool> ITEM_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_MORPH        , true  },
+    { U_SPECULAR_IBL , false },
+    { U_SPECULAR     , false },
+    { U_NORMAL       , false },
+    { U_TEXTURE_COUNT, false },
+    { U_ENV_MAP      , false },
+    { U_SELF_SHADOW  , false },
+    { U_FOG          , false },
+    { U_ALPHA_TEST   , true  },
+    { U_SHADOW       , false },
+    { U_CHARA_COLOR  , false },
+    { U_TONE_CURVE   , false },
 };
 
-static const uniform_name STAGE_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_TEXTURE_COUNT,
-    U_ENV_MAP,
-    U_LIGHT_0,
-    U_NORMAL,
-    U_FOG_HEIGHT,
-    U_LIGHT_1,
-    U12,
-    U_ALPHA_TEST, // 11th added
+static const std::pair<uniform_name, bool> STAGE_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_ENV_MAP      , false },
+    { U_LIGHT_1      , false },
+    { U_NORMAL       , false },
+    { U_FOG_HEIGHT   , false },
+    { U_LIGHT_1      , false },
+    { U12            , false },
+    { U_ALPHA_TEST   , true  }, // 11th added
 };
 
-static const uniform_name SKIN_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_NORMAL,
-    U_SELF_SHADOW,
-    U_FOG,
-    U_ALPHA_TEST,
-    U_SHADOW,
-    U_NPR,
-    U_CHARA_COLOR,
-    U_TONE_CURVE,
+static const std::pair<uniform_name, bool> SKIN_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_NORMAL       , false },
+    { U_SELF_SHADOW  , false },
+    { U_FOG          , false },
+    { U_ALPHA_TEST   , true  },
+    { U_SHADOW       , false },
+    { U_NPR          , true  },
+    { U_CHARA_COLOR  , false },
+    { U_TONE_CURVE   , false },
 };
 
-static const uniform_name SSS_SKIN_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U37,
-    U_ALPHA_TEST,
-    U_SELF_SHADOW,
-    U_SHADOW,
-    U_NPR,
-    U26,
+static const std::pair<uniform_name, bool> SSS_SKIN_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U37            , false },
+    { U_ALPHA_TEST   , true  },
+    { U_SELF_SHADOW  , false },
+    { U_SHADOW       , false },
+    { U_NPR          , true  },
+    { U26            , false },
 };
 
-static const uniform_name SSS_FILT_uniform[] = {
-    //U16, // 0th removed
-    U_SSS_FILTER,
-    U_NPR,
+static const std::pair<uniform_name, bool> SSS_FILT_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_SSS_FILTER   , true  },
+    { U_NPR          , true },
 };
 
-static const uniform_name HAIR_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_SPECULAR_IBL,
-    U_SPECULAR,
-    U_NORMAL,
-    U_TRANSPARENCY,
-    U_TRANSLUCENCY,
-    U_ANISO,
-    U_SELF_SHADOW,
-    U_FOG,
-    U_SHADOW,
-    U_NPR,
-    U_CHARA_COLOR,
-    U_TONE_CURVE,
-    U_ALPHA_TEST, // 14th added
+static const std::pair<uniform_name, bool> HAIR_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_SPECULAR_IBL , false },
+    { U_SPECULAR     , false },
+    { U_NORMAL       , false },
+    { U_TRANSPARENCY , false },
+    { U_TRANSLUCENCY , false },
+    { U_ANISO        , false },
+    { U_SELF_SHADOW  , false },
+    { U_FOG          , false },
+    { U_SHADOW       , false },
+    { U_NPR          , false },
+    { U_CHARA_COLOR  , false },
+    { U_TONE_CURVE   , false },
+    { U_ALPHA_TEST   , true  }, // 14th added
 };
 
-static const uniform_name CLOTH_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_SPECULAR_IBL,
-    U_SPECULAR,
-    U_NORMAL,
-    U_TRANSPARENCY,
-    U_ENV_MAP,
-    U_SELF_SHADOW,
-    U_FOG,
-    U_ALPHA_TEST,
-    U_ANISO,
-    U_SHADOW,
-    U_NPR,
-    U_CHARA_COLOR,
-    U_TONE_CURVE,
+static const std::pair<uniform_name, bool> CLOTH_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_SPECULAR_IBL , false },
+    { U_SPECULAR     , false },
+    { U_NORMAL       , false },
+    { U_TRANSPARENCY , false },
+    { U_ENV_MAP      , false },
+    { U_SELF_SHADOW  , false },
+    { U_FOG          , false },
+    { U_ALPHA_TEST   , true  },
+    { U_ANISO        , false },
+    { U_SHADOW       , false },
+    { U_NPR          , false },
+    { U_CHARA_COLOR  , false },
+    { U_TONE_CURVE   , false },
 };
 
-static const uniform_name TIGHTS_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_SPECULAR,
-    U_ENV_MAP,
-    U_SELF_SHADOW,
-    U_FOG,
-    U_ALPHA_TEST,
-    U_SHADOW,
-    U_NPR,
-    U_CHARA_COLOR,
-    U_TONE_CURVE,
+static const std::pair<uniform_name, bool> TIGHTS_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_SPECULAR     , false },
+    { U_ENV_MAP      , false },
+    { U_SELF_SHADOW  , false },
+    { U_FOG          , false },
+    { U_ALPHA_TEST   , true  },
+    { U_SHADOW       , false },
+    { U_NPR          , false },
+    { U_CHARA_COLOR  , false },
+    { U_TONE_CURVE   , false },
 };
 
-static const uniform_name SKY_uniform[] = {
-    U_TEX_0_TYPE,
-    U_TEX_1_TYPE,
-    U_TEXTURE_COUNT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_FOG_HEIGHT,
-    U_ALPHA_TEST, // 6th added
+static const std::pair<uniform_name, bool> SKY_uniform[] = {
+    { U_TEX_0_TYPE   , false },
+    { U_TEX_1_TYPE   , false },
+    { U_TEXTURE_COUNT, false },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_FOG_HEIGHT   , false },
+    { U_ALPHA_TEST   , true  }, // 6th added
 };
 
-/*static const uniform_name EYEBALL_uniform[] = {
-    U_BONE_MAT,
-    U_ENV_MAP,
+/*static const std::pair<uniform_name, bool> EYEBALL_uniform[] = {
+    { U_BONE_MAT     , true  },
+    { U_ENV_MAP      , false },
 };*/
 
-/*static const uniform_name EYELENS_uniform[] = {
-    U_BONE_MAT,
-    U_SPECULAR,
-    U_ENV_MAP,
+/*static const std::pair<uniform_name, bool> EYELENS_uniform[] = {
+    { U_BONE_MAT     , true  },
+    { U_SPECULAR     , false },
+    { U_ENV_MAP      , false },
 };*/
 
-static const uniform_name GLASEYE_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_SELF_SHADOW,
-    U_FOG,
-    U18,
-    U_SHADOW,
-    U_CHARA_COLOR,
-    U_TONE_CURVE,
+static const std::pair<uniform_name, bool> GLASEYE_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_SELF_SHADOW  , false },
+    { U_FOG          , false },
+    { U18            , false },
+    { U_SHADOW       , false },
+    { U_CHARA_COLOR  , false },
+    { U_TONE_CURVE   , false },
 };
 
-/*static const uniform_name MEMBRAN_uniform[] = {
-    U_BONE_MAT,
-    U_NORMAL,
-    U_MEMBRANE,
+/*static const std::pair<uniform_name, bool> MEMBRAN_uniform[] = {
+    { U_BONE_MAT     , true  },
+    { U_NORMAL       , false },
+    { U_MEMBRANE     , false },
 };*/
 
-/*static const uniform_name SHDMAP_uniform[] = {
-    U_BONE_MAT,
-    U_TEXTURE_COUNT,
-    U_TRANSPARENCY,
-    U_LIGHT_1,
-    U2D,
+/*static const std::pair<uniform_name, bool> SHDMAP_uniform[] = {
+    { U_BONE_MAT     , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_TRANSPARENCY , false },
+    { U_LIGHT_1      , false },
+    { U2D            , true  },
 };*/
 
-/*static const uniform_name ESM_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_TEXTURE_COUNT,
-    U_TRANSPARENCY,
+/*static const std::pair<uniform_name, bool> ESM_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_TRANSPARENCY , false },
 };*/
 
-static const uniform_name ESMGAUSS_uniform[] = {
-    U_LIGHT_PROJ,
+static const std::pair<uniform_name, bool> ESMGAUSS_uniform[] = {
+    { U_LIGHT_PROJ   , true  },
 };
 
-static const uniform_name ESMFILT_uniform[] = {
-    U_ESM_FILTER,
+static const std::pair<uniform_name, bool> ESMFILT_uniform[] = {
+    { U_ESM_FILTER   , true  },
 };
 
-static const uniform_name LITPROJ_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_SPECULAR,
-    U_NORMAL,
-    U_TEXTURE_COUNT,
-    U_TRANSPARENCY,
+static const std::pair<uniform_name, bool> LITPROJ_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_SPECULAR     , false },
+    { U_NORMAL       , false },
+    { U_TEXTURE_COUNT, false },
+    { U_TRANSPARENCY , false },
 };
 
-static const uniform_name SIMPLE_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_TEXTURE_COUNT,
-    //U_NORMAL, // 3rd removed
-    //U_INSTANCE, // 4th removed
-    //U2E, // 5th removed
+static const std::pair<uniform_name, bool> SIMPLE_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_TEXTURE_COUNT, false },
+    //{ U_NORMAL       , false }, // 3rd removed
+    //{ U_INSTANCE     , false }, // 4th removed
+    //{ U2E            , false }, // 5th removed
 };
 
-static const uniform_name SIL_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_TRANSPARENCY,
-    U_TEXTURE_COUNT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U0A,
-    U_ALPHA_TEST, // 7th added
+static const std::pair<uniform_name, bool> SIL_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_TRANSPARENCY , false },
+    { U_TEXTURE_COUNT, false },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U0A            , false },
+    { U_ALPHA_TEST   , true  }, // 7th added
 };
 
-static const uniform_name LAMBERT_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_TEXTURE_COUNT,
-    U_LIGHT_0,
-    U_FOG_HEIGHT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_LIGHT_1,
-    U_ALPHA_TEST, // 8th added
+static const std::pair<uniform_name, bool> LAMBERT_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_LIGHT_1      , false },
+    { U_FOG_HEIGHT   , false },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_LIGHT_1      , false },
+    { U_ALPHA_TEST   , true  }, // 8th added
 };
 
-static const uniform_name CONSTANT_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_TEXTURE_COUNT,
-    U_FOG_HEIGHT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_ALPHA_TEST, // 6th added
+static const std::pair<uniform_name, bool> CONSTANT_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_FOG_HEIGHT   , false },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_ALPHA_TEST   , true  }, // 6th added
 };
 
-/*static const uniform_name PEEL_uniform[] = {
-    U_DEPTH_PEEL,
-    U_BONE_MAT,
+/*static const std::pair<uniform_name, bool> PEEL_uniform[] = {
+    { U_DEPTH_PEEL   , false },
+    { U_BONE_MAT     , true  },
 };*/
 
-static const uniform_name TONEMAP_uniform[] = {
-    //U16, // 0th removed
-    U_TONE_MAP,
-    U_FLARE,
-    U_SCENE_FADE,
-    U_AET_BACK,
-    U_LIGHT_PROJ,
-    U_NPR,
-    //U25, 7th removed
+static const std::pair<uniform_name, bool> TONEMAP_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_TONE_MAP     , false },
+    { U_FLARE        , false },
+    { U_SCENE_FADE   , false },
+    { U_AET_BACK     , false },
+    { U_LIGHT_PROJ   , false },
+    { U_NPR          , false },
+    //{ U25            , false }, 7th removed
 };
 
-static const uniform_name REDUCE_uniform[] = {
-    U_REDUCE,
-    U_ALPHA_MASK,
+static const std::pair<uniform_name, bool> REDUCE_uniform[] = {
+    { U_REDUCE       , true  },
+    { U_ALPHA_MASK   , true  },
 };
 
-static const uniform_name MAGNIFY_uniform[] = {
-    U_MAGNIFY,
+static const std::pair<uniform_name, bool> MAGNIFY_uniform[] = {
+    { U_MAGNIFY      , true  },
 };
 
-static const uniform_name MLAA_uniform[] = {
-    //U16, // 0th removed
-    U_ALPHA_MASK,
-    U_MLAA,
-    U_MLAA_SEARCH,
+static const std::pair<uniform_name, bool> MLAA_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_ALPHA_MASK   , true  },
+    { U_MLAA         , true  },
+    { U_MLAA_SEARCH  , true  },
 };
 
-static const uniform_name CONTOUR_uniform[] = {
-    //U16, // 0th removed
-    U24,
+static const std::pair<uniform_name, bool> CONTOUR_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U24            , false },
 };
 
-static const uniform_name CONTOUR_NPR_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> CONTOUR_NPR_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name EXPOSURE_uniform[] = {
-    U_EXPOSURE,
+static const std::pair<uniform_name, bool> EXPOSURE_uniform[] = {
+    { U_EXPOSURE     , true  },
 };
 
-static const uniform_name GAUSS_uniform[] = {
-    U_GAUSS,
+static const std::pair<uniform_name, bool> GAUSS_uniform[] = {
+    { U_GAUSS        , true  },
 };
 
-static const uniform_name SUN_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> SUN_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name SUN_NO_TEXTURED_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> SUN_NO_TEXTURED_uniform[] = {
+    { U_INVALID      , false },
 };
 
-/*static const uniform_name FADE_uniform[] = {
-    U_FADE,
+/*static const std::pair<uniform_name, bool> FADE_uniform[] = {
+    { U_FADE         , false },
 };*/
 
-static const uniform_name WATER01_uniform[] = {
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_TEXTURE_COUNT,
-    U_NORMAL,
-    U_WATER_REFLECT,
-    U_ENV_MAP,
-    U_SPECULAR,
-    U_FOG_HEIGHT,
+static const std::pair<uniform_name, bool> WATER01_uniform[] = {
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_TEXTURE_COUNT, false },
+    { U_NORMAL       , false },
+    { U_WATER_REFLECT, false },
+    { U_ENV_MAP      , false },
+    { U_SPECULAR     , false },
+    { U_FOG_HEIGHT   , false },
 };
 
-/*static const uniform_name WATER02_uniform[] = {
-    U_INVALID,
+/*static const std::pair<uniform_name, bool> WATER02_uniform[] = {
+    { U_INVALID      , false },
 };*/
 
-/*static const uniform_name WATRING_uniform[] = {
-    U_LIGHT_0,
-    U_LIGHT_1,
+/*static const std::pair<uniform_name, bool> WATRING_uniform[] = {
+    { U_LIGHT_1      , false },
+    { U_LIGHT_1      , false },
 };*/
 
-static const uniform_name W_PTCL_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> W_PTCL_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name SNOW_PT_uniform[] = {
-    U_SNOW_PARTICLE,
+static const std::pair<uniform_name, bool> SNOW_PT_uniform[] = {
+    { U_SNOW_PARTICLE, false },
 };
 
-static const uniform_name LEAF_PT_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> LEAF_PT_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name STAR_uniform[] = {
-    U_STAR,
+static const std::pair<uniform_name, bool> STAR_uniform[] = {
+    { U_STAR         , false },
 };
 
-/*static const uniform_name SNORING_uniform[] = {
-    U_TEXTURE_COUNT,
-    U_NORMAL,
-    U_SPECULAR,
-    U_LIGHT_0,
-    U_LIGHT_1,
+/*static const std::pair<uniform_name, bool> SNORING_uniform[] = {
+    { U_TEXTURE_COUNT, false },
+    { U_NORMAL       , false },
+    { U_SPECULAR     , false },
+    { U_LIGHT_1      , false },
+    { U_LIGHT_1      , false },
 };
 
-static const uniform_name SN_FOOT_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> SN_FOOT_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name SN_TSL_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> SN_TSL_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name SN_NRM_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> SN_NRM_uniform[] = {
+    { U_INVALID      , false },
 };*/
 
-static const uniform_name FLOOR_uniform[] = {
-    U_TEXTURE_COUNT,
-    U_NORMAL,
-    U_LIGHT_0,
-    U_LIGHT_1,
-    U_FOG_HEIGHT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_ALPHA_TEST, // 7th added
+static const std::pair<uniform_name, bool> FLOOR_uniform[] = {
+    { U_TEXTURE_COUNT, false },
+    { U_NORMAL       , false },
+    { U_LIGHT_1      , false },
+    { U_LIGHT_1      , false },
+    { U_FOG_HEIGHT   , false },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_ALPHA_TEST   , true  }, // 7th added
 };
 
-static const uniform_name PUDDLE_uniform[] = {
-    U_NORMAL,
-    U_LIGHT_0,
-    U_LIGHT_1,
-    U_FOG_HEIGHT,
+static const std::pair<uniform_name, bool> PUDDLE_uniform[] = {
+    { U_NORMAL       , false },
+    { U_LIGHT_1      , false },
+    { U_LIGHT_1      , false },
+    { U_FOG_HEIGHT   , false },
 };
 
-static const uniform_name S_REFL_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_REFLECT,
-    U_MORPH,
-    U_MORPH_COLOR,
-    U_ALPHA_TEST,
-    U_CLIP_PLANE,
-    U_TEXTURE_COUNT,
-    U_TONE_CURVE,
-    U_CHARA_COLOR,
+static const std::pair<uniform_name, bool> S_REFL_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_REFLECT      , true  },
+    { U_MORPH        , true  },
+    { U_MORPH_COLOR  , true  },
+    { U_ALPHA_TEST   , true  },
+    { U_CLIP_PLANE   , false },
+    { U_TEXTURE_COUNT, false },
+    { U_TONE_CURVE   , false },
+    { U_CHARA_COLOR  , false },
 };
 
-static const uniform_name S_REFR_uniform[] = {
-    U_BONE_MAT,
-    U_TRANSPARENCY,
+static const std::pair<uniform_name, bool> S_REFR_uniform[] = {
+    { U_BONE_MAT     , true  },
+    { U_TRANSPARENCY , false },
 };
 
-static const uniform_name RIPEMIT_uniform[] = {
-    U_RIPPLE,
-    U_RIPPLE_EMIT,
+static const std::pair<uniform_name, bool> RIPEMIT_uniform[] = {
+    { U_RIPPLE       , true  },
+    { U_RIPPLE_EMIT  , true  },
 };
 
-static const uniform_name RAIN_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> RAIN_uniform[] = {
+    { U_INVALID      , false },
 };
 
-/*static const uniform_name VOLLIT_uniform[] = {
-    U_INVALID,
+/*static const std::pair<uniform_name, bool> VOLLIT_uniform[] = {
+    { U_INVALID      , false },
 };*/
 
-/*static const uniform_name FENCE_uniform[] = {
-    U_INSTANCE,
-    U_FOG_HEIGHT,
+/*static const std::pair<uniform_name, bool> FENCE_uniform[] = {
+    { U_INSTANCE     , false },
+    { U_FOG_HEIGHT   , false },
 };*/
 
-static const uniform_name RIPPLE_uniform[] = {
-    U_RIPPLE,
+static const std::pair<uniform_name, bool> RIPPLE_uniform[] = {
+    { U_RIPPLE       , true  },
 };
 
-static const uniform_name FOGPTCL_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> FOGPTCL_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name PARTICL_uniform[] = {
-    U_INVALID,
+static const std::pair<uniform_name, bool> PARTICL_uniform[] = {
+    { U_INVALID      , false },
 };
 
-static const uniform_name GLITTER_PT_uniform[] = {
-    U_TEXTURE_COUNT,
-    U_TEXTURE_BLEND,
-    U_FOG_HEIGHT,
-    U_ALPHA_BLEND,
+static const std::pair<uniform_name, bool> GLITTER_PT_uniform[] = {
+    { U_TEXTURE_COUNT, false },
+    { U_TEXTURE_BLEND, false },
+    { U_FOG_HEIGHT   , false },
+    { U_ALPHA_BLEND  , false },
 };
 
-/*static const uniform_name SHOW_VEC_uniform[] = {
-    //U16, // 0th removed
-    U_BONE_MAT,
-    U_SHOW_VECTOR,
+/*static const std::pair<uniform_name, bool> SHOW_VEC_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_BONE_MAT     , true  },
+    { U_SHOW_VECTOR  , false },
 };*/
 
-static const uniform_name FONT_uniform[] = {
-    //U16, // 0th removed
-    U_INVALID, // 0th removed, 1st added
+static const std::pair<uniform_name, bool> FONT_uniform[] = {
+    //{ U16            , true  }, // 0th removed
+    { U_INVALID      , false }, // 1st added
 };
 
-static const uniform_name MOVIE_uniform[] = {
-    U_MOVIE,
+static const std::pair<uniform_name, bool> MOVIE_uniform[] = {
+    { U_MOVIE        , true  },
 };
 
-static const uniform_name IMGFILT_uniform[] = {
-    U_IMAGE_FILTER,
+static const std::pair<uniform_name, bool> IMGFILT_uniform[] = {
+    { U_IMAGE_FILTER , false },
 };
 
-static const uniform_name SPRITE_uniform[] = {
-    U_TEX_0_TYPE,
-    U_TEX_1_TYPE,
-    U_COMBINER,
-};
-
-static const bool BLINN_permut[] = {
-    // true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true,
-    true,
-    false,
-    true, // 11th added
-};
-
-static const bool ITEM_permut[] = {
-    //true, // 0th removed
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true,
-    false,
-    false,
-    false,
-};
-
-static const bool STAGE_permut[] = {
-    //true, // 0th removed
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true, // 11th added
-};
-
-static const bool SKIN_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    true,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool SSS_SKIN_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    true,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool SSS_FILT_permut[] = {
-    //true, // 0th removed
-    true,
-    true,
-};
-
-static const bool HAIR_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true, // 14th added
-};
-
-static const bool CLOTH_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool TIGHTS_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    false,
-    true,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool SKY_permut[] = {
-    false,
-    false,
-    false,
-    true,
-    true,
-    false,
-    true, // 6th added
-};
-
-/*static const bool EYEBALL_permut[] = {
-    true,
-    false,
-};*/
-
-/*static const bool EYELENS_permut[] = {
-    true,
-    false,
-    false,
-};*/
-
-static const bool GLASEYE_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-
-/*static const bool MEMBRAN_permut[] = {
-    true,
-    false,
-    false,
-};*/
-
-/*static const bool SHDMAP_permut[] = {
-    true,
-    false,
-    false,
-    false,
-    true,
-};*/
-
-/*static const bool ESM_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-};*/
-
-static const bool ESMGAUSS_permut[] = {
-    true,
-};
-
-static const bool ESMFILT_permut[] = {
-    true,
-};
-
-static const bool LITPROJ_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool SIMPLE_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    //false, // 3rd removed
-    //false, // 4th removed
-    //false, // 5th removed
-};
-
-static const bool SIL_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    true,
-    false,
-    false,
-    true, // 7th added
-};
-
-static const bool LAMBERT_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    false,
-    true,
-    true,
-    false,
-    true, // 8th added
-};
-
-static const bool CONSTANT_permut[] = {
-    //true, // 0th removed
-    true,
-    false,
-    false,
-    true,
-    true,
-    true, // 6th added
-};
-
-/*static const bool PEEL_permut[] = {
-    false,
-    true,
-};*/
-
-static const bool TONEMAP_permut[] = {
-    //true, // 0th removed
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool REDUCE_permut[] = {
-    true,
-    true,
-};
-
-static const bool MAGNIFY_permut[] = {
-    true,
-};
-
-static const bool MLAA_permut[] = {
-    //true, // 0th removed
-    true,
-    true,
-    true,
-};
-
-static const bool CONTOUR_permut[] = {
-    //true, // 0th removed
-    false,
-};
-
-static const bool CONTOUR_NPR_permut[] = {
-    false,
-};
-
-static const bool EXPOSURE_permut[] = {
-    true,
-};
-
-static const bool GAUSS_permut[] = {
-    true,
-};
-
-static const bool SUN_permut[] = {
-    false,
-};
-
-static const bool SUN_NO_TEXTURED_permut[] = {
-    false,
-};
-
-/*static const bool FADE_permut[] = {
-    false,
-};*/
-
-static const bool WATER01_permut[] = {
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool WATER02_permut[] = {
-    false,
-};
-
-/*static const bool WATRING_permut[] = {
-    false,
-    false,
-};*/
-
-static const bool W_PTCL_permut[] = {
-    false,
-};
-
-static const bool SNOW_PT_permut[] = {
-    false,
-};
-
-static const bool LEAF_PT_permut[] = {
-    false,
-};
-
-static const bool STAR_permut[] = {
-    false,
-};
-
-/*static const bool SNORING_permut[] = {
-    false,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool SN_FOOT_permut[] = {
-    false,
-};
-
-static const bool SN_TSL_permut[] = {
-    false,
-};
-
-static const bool SN_NRM_permut[] = {
-    false,
-};*/
-
-static const bool FLOOR_permut[] = {
-    false,
-    false,
-    false,
-    false,
-    false,
-    true,
-    true,
-    true, // 7th added
-};
-
-static const bool PUDDLE_permut[] = {
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool S_REFL_permut[] = {
-    //true, // 0th removed
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-};
-
-static const bool S_REFR_permut[] = {
-    true,
-    false,
-};
-
-static const bool RIPEMIT_permut[] = {
-    true,
-    true,
-};
-
-static const bool RAIN_permut[] = {
-    false,
-};
-
-/*static const bool VOLLIT_permut[] = {
-    false,
-};*/
-
-/*static const bool FENCE_permut[] = {
-    false,
-    false,
-};*/
-
-static const bool RIPPLE_permut[] = {
-    true,
-};
-
-static const bool FOGPTCL_permut[] = {
-    false,
-};
-
-static const bool PARTICL_permut[] = {
-    false,
-};
-
-static const bool GLITTER_PT_permut[] = {
-    false,
-    false,
-    false,
-    false,
-};
-
-/*static const bool SHOW_VEC_permut[] = {
-    //true, // 0th removed
-    false,
-    false,
-};*/
-
-static const bool FONT_permut[] = {
-    //true, // 0th removed
-    false, // 0th removed, 1st added
-};
-
-static const bool MOVIE_permut[] = {
-    true,
-};
-
-static const bool IMGFILT_permut[] = {
-    false,
-};
-
-static const bool SPRITE_permut[] = {
-    false,
-    false,
-    false,
+static const std::pair<uniform_name, bool> SPRITE_uniform[] = {
+    { U_TEX_0_TYPE   , false },
+    { U_TEX_1_TYPE   , false },
+    { U_COMBINER     , false },
 };
 
 struct glass_eye_struct {
@@ -2885,16 +2431,14 @@ struct glass_eye_struct {
     SHADER_FT_##n, \
     sizeof(n##_table) / sizeof(shader_sub_table), \
     n##_table, \
-    sizeof(n##_uniform) / sizeof(uniform_name), \
+    sizeof(n##_uniform) / sizeof(std::pair<uniform_name, bool>), \
     n##_uniform, \
-    n##_permut, \
 }
 
 const shader_table shader_ft_table[] = {
     {
         "SHADER_FFP",
         SHADER_FT_FFP,
-        0,
         0,
         0,
         0,

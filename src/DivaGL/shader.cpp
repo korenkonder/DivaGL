@@ -56,8 +56,8 @@ int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
 
         int32_t i = 0;
         for (i = 0; i < num_uniform && i < sizeof(uniform_val) / sizeof(int32_t); i++) {
-            const int32_t unival = uniform->arr[use_uniform[i]];
-            const int32_t unival_max = use_permut[i]
+            const int32_t unival = uniform->arr[use_uniform[i].first];
+            const int32_t unival_max = use_uniform[i].second
                 ? max_def(vp_unival_max[i], fp_unival_max[i]) : 0;
             unival_shad += unival_shad_curr * min_def(unival, unival_max);
             unival_shad_curr *= unival_max + 1;
@@ -445,7 +445,6 @@ void shader_set_data::load(farc* f, bool ignore_cache,
         shader->sub = force_malloc<shader_sub>(shader->num_sub);
         shader->num_uniform = shaders_table[i].num_uniform;
         shader->use_uniform = shaders_table[i].use_uniform;
-        shader->use_permut = shaders_table[i].use_permut;
 
         int32_t num_sub = shader->num_sub;
         const shader_sub_table* sub_table = shaders_table[i].sub;
@@ -454,7 +453,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
         vec_frag.resize(shader->num_uniform);
         int32_t* vec_vert_data = vec_vert.data();
         int32_t* vec_frag_data = vec_frag.data();
-        for (size_t j = 0; j < num_sub; j++, sub++, sub_table++) {
+        for (int32_t j = 0; j < num_sub; j++, sub++, sub_table++) {
             sub->sub_index = sub_table->sub_index;
             sub->vp_unival_max = sub_table->vp_unival_max;
             sub->fp_unival_max = sub_table->fp_unival_max;
@@ -491,15 +490,28 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 continue;
             }
 
-            uint64_t vert_file_name_cache = hash_utf8_fnv1a64m(vert_file_buf);
-            uint64_t frag_file_name_cache = hash_utf8_fnv1a64m(frag_file_buf);
-            for (int32_t i = 0; i < 64; i += 8)
-                if (((vert_file_name_cache >> i) & 0xFF) == 0)
-                    vert_file_name_cache |= 0xFFULL << i;
+            uint32_t uniform_flags = 0;
+            for (int32_t k = 0; k < shader->num_uniform; k++)
+                if (shader->use_uniform[k].second)
+                    uniform_flags |= 1 << k;
 
-            for (int32_t i = 0; i < 64; i += 8)
-                if (((frag_file_name_cache >> i) & 0xFF) == 0)
-                    frag_file_name_cache |= 0xFFULL << i;
+            char uniform_flags_buf[9];
+            for (int32_t k = 0, l = 7; k < 32; k += 4, l--) {
+                int32_t digit = (uniform_flags >> k) & 0xF;
+                if (digit >= 0x00 && digit <= 0x09)
+                    uniform_flags_buf[l] = (char)('0' + digit);
+                else
+                    uniform_flags_buf[l] = (char)('A' + (digit - 0x0A));
+            }
+            uniform_flags_buf[8] = 0;
+
+            strcat_s(vert_file_buf, sizeof(vert_file_buf), ".");
+            strcat_s(frag_file_buf, sizeof(frag_file_buf), ".");
+            strcat_s(vert_file_buf, sizeof(vert_file_buf), uniform_flags_buf);
+            strcat_s(frag_file_buf, sizeof(frag_file_buf), uniform_flags_buf);
+
+            uint64_t vert_file_name_hash = hash_utf8_fnv1a64m(vert_file_buf);
+            uint64_t frag_file_name_hash = hash_utf8_fnv1a64m(frag_file_buf);
 
             char shader_cache_file_name[MAX_PATH];
             strcpy_s(shader_cache_file_name, sizeof(shader_cache_file_name), sub_table->vp);
@@ -519,11 +531,14 @@ void shader_set_data::load(farc* f, bool ignore_cache,
             if (!ignore_cache) {
                 if (!shader_cache_file || !shader_cache_file->data)
                     printf_debug("Shader not compiled: %s %s\n", vert_file_buf, frag_file_buf);
-                else if (vert_data_hash != ((uint64_t*)shader_cache_file->data)[0]
-                    || frag_data_hash != ((uint64_t*)shader_cache_file->data)[1])
+                else if (vert_file_name_hash != ((uint64_t*)shader_cache_file->data)[0]
+                    || frag_file_name_hash != ((uint64_t*)shader_cache_file->data)[1])
+                    printf_debug("Shader flags not equal: %s %s\n", vert_file_buf, frag_file_buf);
+                else if (vert_data_hash != ((uint64_t*)shader_cache_file->data)[2]
+                    || frag_data_hash != ((uint64_t*)shader_cache_file->data)[3])
                     printf_debug("Shader hash not equal: %s %s\n", vert_file_buf, frag_file_buf);
                 else
-                    bin = (program_binary*)&((uint64_t*)shader_cache_file->data)[2];
+                    bin = (program_binary*)&((uint64_t*)shader_cache_file->data)[4];
             }
 
             if (shader->num_uniform > 0
@@ -533,8 +548,8 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 int32_t unival_shad_count = 1;
                 const int32_t* vp_unival_max = sub_table->vp_unival_max;
                 const int32_t* fp_unival_max = sub_table->fp_unival_max;
-                for (size_t k = 0; k < num_uniform; k++) {
-                    const int32_t unival_max = shader->use_permut[k]
+                for (int32_t k = 0; k < num_uniform; k++) {
+                    const int32_t unival_max = shader->use_uniform[k].second
                         ? max_def(vp_unival_max[k], fp_unival_max[k]) : 0;
                     unival_shad_count += unival_shad_curr * unival_max;
                     unival_shad_curr *= unival_max + 1;
@@ -561,19 +576,19 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     frag_buf[frag_buf_pos + num_uniform] = 0;
                     strcat_s(frag_buf, sizeof(frag_buf), ".frag");
 
-                    for (size_t k = 0; k < unival_shad_count; k++) {
-                        for (size_t l = 0, m = k; l < num_uniform; l++) {
-                            size_t unival_max = (size_t)(shader->use_permut[l]
+                    for (int32_t k = 0; k < unival_shad_count; k++) {
+                        for (int32_t l = 0, m = k; l < num_uniform; l++) {
+                            int32_t unival_max = (shader->use_uniform[l].second
                                 ? max_def(vp_unival_max[l], fp_unival_max[l]) : 0) + 1;
-                            vec_vert_data[l] = (uint32_t)(min_def(m % unival_max, vp_unival_max[l]));
+                            vec_vert_data[l] = min_def(m % unival_max, vp_unival_max[l]);
                             m /= unival_max;
                             vert_buf[vert_buf_pos + l] = (char)('0' + vec_vert_data[l]);
                         }
 
-                        for (size_t l = 0, m = k; l < num_uniform; l++) {
-                            size_t unival_max = (size_t)(shader->use_permut[l]
+                        for (int32_t l = 0, m = k; l < num_uniform; l++) {
+                            int32_t unival_max = (shader->use_uniform[l].second
                                 ? max_def(vp_unival_max[l], fp_unival_max[l]) : 0) + 1;
-                            vec_frag_data[l] = (uint32_t)(min_def(m % unival_max, fp_unival_max[l]));
+                            vec_frag_data[l] = min_def(m % unival_max, fp_unival_max[l]);
                             m /= unival_max;
                             frag_buf[frag_buf_pos + l] = (char)('0' + vec_frag_data[l]);
                         }
@@ -665,7 +680,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     free_def(shader_cache_file->data);
 
                 size_t bin_count = program_data_binary.size();
-                size_t bin_size = sizeof(uint64_t) * 2 + bin_count * sizeof(program_binary);
+                size_t bin_size = sizeof(uint64_t) * 4 + bin_count * sizeof(program_binary);
                 for (program_binary& k : program_data_binary)
                     bin_size += align_val(k.length, 0x04);
                 shader_cache_file->data = force_malloc(bin_size);
@@ -673,10 +688,12 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 shader_cache_file->compressed = true;
                 shader_cache_file->data_changed = true;
 
-                ((uint64_t*)shader_cache_file->data)[0] = vert_data_hash;
-                ((uint64_t*)shader_cache_file->data)[1] = frag_data_hash;
-                bin = (program_binary*)&((uint64_t*)shader_cache_file->data)[2];
-                size_t bin_data_base = (size_t)shader_cache_file->data + sizeof(uint64_t) * 2;
+                ((uint64_t*)shader_cache_file->data)[0] = vert_file_name_hash;
+                ((uint64_t*)shader_cache_file->data)[1] = frag_file_name_hash;
+                ((uint64_t*)shader_cache_file->data)[2] = vert_data_hash;
+                ((uint64_t*)shader_cache_file->data)[3] = frag_data_hash;
+                bin = (program_binary*)&((uint64_t*)shader_cache_file->data)[4];
+                size_t bin_data_base = (size_t)shader_cache_file->data + sizeof(uint64_t) * 4;
                 size_t bin_data = bin_data_base + bin_count * sizeof(program_binary);
                 for (program_binary& k : program_data_binary) {
                     bin->length = k.length;
@@ -745,7 +762,7 @@ void shader_set_data::unload() {
                 const int32_t* vp_unival_max = sub->vp_unival_max;
                 const int32_t* fp_unival_max = sub->fp_unival_max;
                 for (size_t k = 0; k < num_uniform; k++) {
-                    const int32_t unival_max = shader->use_permut[k]
+                    const int32_t unival_max = shader->use_uniform[k].second
                         ? max_def(vp_unival_max[k], fp_unival_max[k]) : 0;
                     unival_shad_count += unival_shad_curr * unival_max;
                     unival_shad_curr *= unival_max + 1;

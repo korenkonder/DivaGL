@@ -38,8 +38,7 @@ struct shader_table {
     int32_t num_sub;
     const shader_sub_table* sub;
     int32_t num_uniform;
-    const uniform_name* use_uniform;
-    const bool* use_permut;
+    const std::pair<uniform_name, bool>* use_uniform;
 };
 
 struct shader;
@@ -74,8 +73,7 @@ struct shader {
     int32_t num_sub;
     shader_sub* sub;
     int32_t num_uniform;
-    const uniform_name* use_uniform;
-    const bool* use_permut;
+    const std::pair<uniform_name, bool>* use_uniform;
     PFNSHADERGLSLBINDFUNCPROC bind_func;
 
     int32_t bind(shader_set_data* set, uint32_t sub_index);
