@@ -501,7 +501,6 @@ inline static uint32_t texture_get_width_mip_level(texture* tex, int32_t mip_lev
 
 static int32_t texture_load(GLenum target, GLenum internal_format,
     int32_t width, int32_t height, int32_t level, void* data) {
-    gl_state_get_all_gl_errors();
     glPixelStoreiDLL(GL_UNPACK_ALIGNMENT, 1);
     switch (internal_format) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
