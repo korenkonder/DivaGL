@@ -150,10 +150,11 @@ namespace mdl {
         const obj_sub_mesh* sub_mesh;
         const obj_mesh* mesh;
         const obj_material_data* material;
-        prj::vector<GLuint>* textures;
+        const prj::vector<GLuint>* textures;
         int32_t mat_count;
         const mat4* mats;
         GLuint vertex_buffer;
+        size_t vertex_buffer_offset;
         GLuint index_buffer;
         bool set_blend_color;
         bool chara_color;
@@ -161,6 +162,7 @@ namespace mdl {
         int32_t self_shadow;
         shadow_type_enum shadow;
         GLuint morph_vertex_buffer;
+        size_t morph_vertex_buffer_offset;
         float_t morph_weight;
         int32_t texture_pattern_count;
         texture_pattern_struct texture_pattern_array[TEXTURE_PATTERN_COUNT];
@@ -302,10 +304,11 @@ namespace mdl {
         ~ObjData();
 
         void init_etc(const mat4* mat, mdl::EtcObj* etc);
-        void init_sub_mesh(const mat4* mat,
-            float_t radius, obj_sub_mesh* sub_mesh, obj_mesh* mesh, obj_material_data* material,
-            prj::vector<GLuint>* textures, int32_t mat_count, mat4* mats, GLuint vertex_buffer,
-            GLuint index_buffer, vec4* blend_color, GLuint morph_vertex_buffer,
+        void init_sub_mesh(const mat4* mat, float_t radius,
+            const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
+            const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
+            GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
+            const vec4* blend_color, GLuint morph_vertex_buffer, size_t morph_vertex_buffer_offset,
             int32_t instances_count, mat4* instances_mat,
             void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data);
         void init_translucent(const mat4* mat, ObjTranslucentArgs* translucent);
@@ -331,7 +334,9 @@ namespace mdl {
     struct DispManager {
         struct vertex_array {
             GLuint vertex_buffer;
+            size_t vertex_buffer_offset;
             GLuint morph_vertex_buffer;
+            size_t morph_vertex_buffer_offset;
             GLuint index_buffer;
             int32_t alive_time;
             GLuint vertex_array;
@@ -410,6 +415,11 @@ namespace mdl {
         void entry_obj_by_obj(const mat4* mat,
             ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
             obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha);
+#if SHARED_OBJECT_BUFFER
+        void entry_obj_by_obj(const mat4* mat,
+            ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
+            obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha);
+#endif
         bool entry_obj_by_object_info(const mat4* mat, object_info obj_info, mat4* bone_mat = 0);
         bool entry_obj_by_object_info(const mat4* mat, object_info obj_info,
             vec4* blend_color, mat4* bone_mat, int32_t instances_count, mat4* instances_mat,

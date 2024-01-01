@@ -43,7 +43,11 @@ struct rob_chara_age_age_object {
     rob_chara_age_age_object_vertex* vertex_data;
     int32_t vertex_data_size;
     int32_t vertex_array_size;
+#if SHARED_OBJECT_BUFFER
+    obj_mesh_vertex_buffer_aft obj_vert_buf;
+#else
     obj_mesh_vertex_buffer obj_vert_buf;
+#endif
     obj_mesh_index_buffer obj_index_buf;
     vec3 trans[10];
     int32_t disp_count;

@@ -64,10 +64,10 @@ namespace mdl {
     prj::vector<DispManager::vertex_array> vertex_array_cache;
     prj::vector<DispManager::etc_vertex_array> etc_vertex_array_cache;
 
-    ObjSubMeshArgs::ObjSubMeshArgs() : sub_mesh(), mesh(), material(), textures(), mat_count(),
-        mats(), vertex_buffer(), index_buffer(), set_blend_color(), chara_color(), self_shadow(),
-        shadow(), morph_vertex_buffer(), morph_weight(), texture_pattern_count(), texture_transform_count(),
-        field_7C4(), field_7C8(), instances_count(), instances_mat(), func(), func_data() {
+    ObjSubMeshArgs::ObjSubMeshArgs() : sub_mesh(), mesh(), material(), textures(), mat_count(), mats(),
+        vertex_buffer(), vertex_buffer_offset(), index_buffer(), set_blend_color(), chara_color(), self_shadow(),
+        shadow(), morph_vertex_buffer(), morph_vertex_buffer_offset(), morph_weight(), texture_pattern_count(),
+        texture_transform_count(), field_7C4(), field_7C8(), instances_count(), instances_mat(), func(), func_data() {
 
     }
 
@@ -185,10 +185,11 @@ namespace mdl {
         disp_manager->add_vertex_array(&args.etc, this->mat);
     }
 
-    void ObjData::init_sub_mesh(const mat4* mat,
-        float_t radius, obj_sub_mesh* sub_mesh, obj_mesh* mesh, obj_material_data* material,
-        prj::vector<GLuint>* textures, int32_t mat_count, mat4* mats, GLuint vertex_buffer,
-        GLuint index_buffer, vec4* blend_color, GLuint morph_vertex_buffer,
+    void ObjData::init_sub_mesh(const mat4* mat, float_t radius,
+        const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
+        const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
+        GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
+        const vec4* blend_color, GLuint morph_vertex_buffer, size_t morph_vertex_buffer_offset,
         int32_t instances_count, mat4* instances_mat,
         void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data) {
         kind = mdl::OBJ_KIND_NORMAL;
@@ -204,8 +205,10 @@ namespace mdl {
         args->mat_count = mat_count;
         args->mats = mats;
         args->vertex_buffer = vertex_buffer;
+        args->vertex_buffer_offset = vertex_buffer_offset;
         args->index_buffer = index_buffer;
         args->morph_vertex_buffer = morph_vertex_buffer;
+        args->morph_vertex_buffer_offset = morph_vertex_buffer_offset;
 
         args->texture_pattern_count = disp_manager->texture_pattern_count;
         for (int32_t i = 0; i < disp_manager->texture_pattern_count && i < TEXTURE_PATTERN_COUNT; i++)
@@ -278,7 +281,9 @@ namespace mdl {
         const obj_material_data* material = args->material;
 
         GLuint vertex_buffer = args->vertex_buffer;
+        size_t vertex_buffer_offset = args->vertex_buffer_offset;
         GLuint morph_vertex_buffer = args->morph_vertex_buffer;
+        size_t morph_vertex_buffer_offset = args->morph_vertex_buffer_offset;
         GLuint index_buffer = args->index_buffer;
 
         int32_t texcoord_array[2] = { -1, -1 };
@@ -308,7 +313,9 @@ namespace mdl {
         DispManager::vertex_array* vertex_array = 0;
         for (DispManager::vertex_array& i : vertex_array_cache)
             if (i.alive_time >= 0 && i.vertex_buffer == vertex_buffer
+                && i.vertex_buffer_offset == vertex_buffer_offset
                 && i.morph_vertex_buffer == morph_vertex_buffer
+                && i.morph_vertex_buffer_offset == morph_vertex_buffer_offset
                 && i.index_buffer == index_buffer && i.vertex_format == vertex_format
                 && i.size_vertex == size_vertex
                 && !memcmp(i.vertex_attrib_buffer_binding,
@@ -358,7 +365,9 @@ namespace mdl {
         }
 
         vertex_array->vertex_buffer = vertex_buffer;
+        vertex_array->vertex_buffer_offset = vertex_buffer_offset;
         vertex_array->morph_vertex_buffer = morph_vertex_buffer;
+        vertex_array->morph_vertex_buffer_offset = morph_vertex_buffer_offset;
         vertex_array->index_buffer = index_buffer;
         vertex_array->alive_time = 60;
         vertex_array->vertex_format = vertex_format;
@@ -372,7 +381,7 @@ namespace mdl {
         if (index_buffer)
             gl_state_bind_element_array_buffer(index_buffer, true);
 
-        size_t offset = 0;
+        size_t offset = vertex_buffer_offset;
         if (vertex_format & OBJ_VERTEX_POSITION) {
             if (!vertex_array->vertex_attrib_array[POSITION_INDEX]) {
                 glEnableVertexAttribArray(POSITION_INDEX);
@@ -518,7 +527,7 @@ namespace mdl {
         if (morph_vertex_buffer) {
             gl_state_bind_array_buffer(morph_vertex_buffer, true);
 
-            size_t offset = 0;
+            size_t offset = morph_vertex_buffer_offset;
             if (vertex_format & OBJ_VERTEX_POSITION) {
                 if (!vertex_array->vertex_attrib_array[MORPH_POSITION_INDEX]) {
                     glEnableVertexAttribArray(MORPH_POSITION_INDEX);
@@ -2015,16 +2024,22 @@ namespace mdl {
                     continue;
 
                 GLuint morph_vertex_buffer = 0;
-                if (obj_morph_vertex_buf)
+                size_t morph_vertex_buffer_offset = 0;
+                if (obj_morph_vertex_buf) {
                     morph_vertex_buffer = obj_morph_vertex_buf[i].get_buffer();
+                    morph_vertex_buffer_offset = obj_morph_vertex_buf[i].get_offset();
+                }
 
                 GLuint index_buffer = 0;
                 if (obj_index_buf)
                     index_buffer = obj_index_buf[i].buffer;
 
                 GLuint vertex_buffer = 0;
-                if (obj_vertex_buf)
+                size_t vertex_buffer_offset = 0;
+                if (obj_vertex_buf) {
                     vertex_buffer = obj_vertex_buf[i].get_buffer();
+                    vertex_buffer_offset = obj_vertex_buf[i].get_offset();
+                }
 
                 if (!vertex_buffer || !index_buffer || obj_morph_vertex_buf && !morph_vertex_buffer)
                     continue;
@@ -2033,9 +2048,9 @@ namespace mdl {
                 if (blend_color)
                     _blend_color = *blend_color;
 
-                data->init_sub_mesh(mat, object->bounding_sphere.radius, sub_mesh,
-                    mesh, material, textures, num_bone_index, mats, vertex_buffer, index_buffer,
-                    &_blend_color, morph_vertex_buffer, instances_count, instances_mat, func, func_data);
+                data->init_sub_mesh(mat, object->bounding_sphere.radius, sub_mesh, mesh, material, textures,
+                    num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, &_blend_color,
+                    morph_vertex_buffer, morph_vertex_buffer_offset, instances_count, instances_mat, func, func_data);
 
                 if (obj_flags & mdl::OBJ_SHADOW_OBJECT) {
                     entry_list((ObjType)(OBJ_TYPE_SHADOW_OBJECT_CHARA
@@ -2211,6 +2226,41 @@ namespace mdl {
             bone_mat, 0, 0, 0, 0, 0, 0, !!bone_mat);
     }
 
+#if SHARED_OBJECT_BUFFER
+#pragma warning(push)
+#pragma warning(disable: 6386)
+    void DispManager::entry_obj_by_obj(const mat4* mat,
+        ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
+        obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
+        if (!obj)
+            return;
+
+        obj_mesh_vertex_buffer* _obj_vert_buf = new (_operator_new(
+            sizeof(obj_mesh_vertex_buffer) * obj->num_mesh)) obj_mesh_vertex_buffer[obj->num_mesh];
+        if (!_obj_vert_buf)
+            return;
+
+        for (uint32_t i = 0; i < obj->num_mesh; i++) {
+            _obj_vert_buf[i].count = obj_vert_buf[i].count;
+            _obj_vert_buf[i].buffers[0] = obj_vert_buf[i].buffers[0];
+            _obj_vert_buf[i].buffers[1] = obj_vert_buf[i].buffers[1];
+            _obj_vert_buf[i].buffers[2] = obj_vert_buf[i].buffers[2];
+            _obj_vert_buf[i].index = obj_vert_buf[i].index;
+            _obj_vert_buf[i].size = obj_vert_buf[i].get_size();
+            _obj_vert_buf[i].offset = 0;
+        }
+
+        vec4 blend_color = 1.0f;
+        blend_color.w = alpha;
+
+        vec4* blend_color_ptr = alpha < 1.0f ? &blend_color : 0;
+        disp_manager->entry_obj(obj, _obj_vert_buf, obj_index_buf, mat,
+            textures, blend_color_ptr, bone_mat, 0, 0, 0, 0, 0, 0, 0, !!bone_mat);
+        _operator_delete(_obj_vert_buf);
+    }
+#pragma warning(pop)
+#endif
+
     bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info, mat4* bone_mat) {
         vec4 blend_color = 1.0f;
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true);
@@ -2220,7 +2270,7 @@ namespace mdl {
         vec4* blend_color, mat4* bone_mat, int32_t instances_count, mat4* instances_mat,
         void(*func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data,
         bool enable_bone_mat, bool local) {
-        if (obj_info.id == -1 && obj_info.set_id == -1)
+        if (obj_info.id == (uint16_t)-1 && obj_info.set_id == (uint16_t)-1)
             return false;
 
         ::obj* object = object_info_get_object(obj_info);
@@ -2233,7 +2283,7 @@ namespace mdl {
 
         ::obj* obj_morph = 0;
         obj_mesh_vertex_buffer* obj_morph_vertex_buffer = 0;
-        if (morph.object.set_id != -1) {
+        if (morph.object.set_id != (uint16_t)-1) {
             obj_morph = object_info_get_object(morph.object);
             obj_morph_vertex_buffer = object_info_get_mesh_vertex_buffer(morph.object, 0);
         }
@@ -2353,7 +2403,9 @@ namespace mdl {
         const obj_material_data* material = args->material;
 
         GLuint vertex_buffer = args->vertex_buffer;
+        size_t vertex_buffer_offset = args->vertex_buffer_offset;
         GLuint morph_vertex_buffer = args->morph_vertex_buffer;
+        size_t morph_vertex_buffer_offset = args->morph_vertex_buffer_offset;
         GLuint index_buffer = args->index_buffer;
 
         int32_t texcoord_array[2] = { -1, -1 };
@@ -2382,7 +2434,9 @@ namespace mdl {
 
         for (DispManager::vertex_array& i : vertex_array_cache)
             if (i.alive_time > 0 && i.vertex_buffer == vertex_buffer
+                && i.vertex_buffer_offset == vertex_buffer_offset
                 && i.morph_vertex_buffer == morph_vertex_buffer
+                && i.morph_vertex_buffer_offset == morph_vertex_buffer_offset
                 && i.index_buffer == index_buffer && i.vertex_format == vertex_format
                 && i.size_vertex == size_vertex
                 && !memcmp(i.vertex_attrib_buffer_binding,
@@ -2700,10 +2754,18 @@ namespace mdl {
         disp_manager->entry_obj_etc(&mat4_identity, etc);
     }
 
-    HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj * obj_data, prj::vector<GLuint>*textures,
-        obj_mesh_vertex_buffer * obj_vert_buf, obj_mesh_index_buffer * obj_index_buf, mat4 * bone_mat, float_t alpha) {
+
+#if SHARED_OBJECT_BUFFER
+    HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
+        obj_mesh_vertex_buffer_aft* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
         disp_manager->entry_obj_by_obj(rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
     }
+#else
+    HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
+        obj_mesh_vertex_buffer* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
+        disp_manager->entry_obj_by_obj(rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
+    }
+#endif
 
     HOOK(void, FASTCALL, sub_1404BCC60, 0x00000001404BCC60, vec3* pos, float_t width, float_t height) {
         mdl::EtcObj etc(ETC_OBJ_PLANE);

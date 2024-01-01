@@ -5,6 +5,7 @@
 
 #include "object.hpp"
 #include "mdl/disp_manager.hpp"
+#include "file_handler.hpp"
 #include "gl_state.hpp"
 #include "wrap.hpp"
 #include <Helpers.h>
@@ -15,6 +16,43 @@ struct BufObjMgr {
     int32_t ib_peak_size;
     int32_t ib_all_size;
 };
+
+struct shared_ptr_prj__stack_allocator {
+    void* ptr;
+    void* ref;
+};
+
+struct ObjsetInfo {
+    p_file_handler obj_file_handler;
+    bool obj_loaded;
+    p_file_handler tex_file_handler;
+    bool tex_loaded;
+    shared_ptr_prj__stack_allocator alloc_handler;
+    obj_set* obj_set;
+    prj::vector<std::pair<uint32_t, int32_t>> obj_id_data;
+    bool field_50;
+    int32_t field_54;
+    int32_t tex_num;
+    prj::vector<GLuint> gentex;
+    prj::vector<std::pair<int32_t, int32_t>> tex_id_data;
+    bool field_90;
+    texture** textures;
+    int32_t set_id;
+    int32_t objvb_num;
+    obj_vertex_buffer* objvb;
+    int32_t objib_num;
+    obj_index_buffer* objib;
+    obj_vertex_buffer* field_C0;
+    obj_index_buffer* field_C8;
+    int32_t load_count;
+
+    void index_buffer_free();
+    bool index_buffer_load();
+    void vertex_buffer_free();
+    bool vertex_buffer_load();
+};
+
+static_assert(sizeof(ObjsetInfo) == 0xD8, "\"ObjsetInfo\" struct should have a size of 0xD8");
 
 uint32_t(FASTCALL* object_database_get_object_info)(const char* name)
     = (uint32_t(FASTCALL*)(const char* name))0x0000000140459F80;
@@ -66,6 +104,10 @@ int32_t obj_texture_attrib::get_blend() const {
     default:
         return 0;
     }
+}
+
+obj_mesh_index_buffer::obj_mesh_index_buffer() : buffer() {
+
 }
 
 bool obj_mesh_index_buffer::load(obj_mesh* mesh) {
@@ -141,6 +183,14 @@ void* obj_mesh_index_buffer::fill_data(void* data, obj_mesh* mesh) {
     return (void*)indices;
 }
 
+#if SHARED_OBJECT_BUFFER
+obj_mesh_vertex_buffer::obj_mesh_vertex_buffer() : count(), buffers(), size(), offset(), index() {
+#else
+obj_mesh_vertex_buffer::obj_mesh_vertex_buffer() : count(), buffers(), index(), target() {
+#endif
+
+}
+
 void obj_mesh_vertex_buffer::cycle_index() {
     if (++index >= count)
         index = 0;
@@ -152,7 +202,19 @@ GLuint obj_mesh_vertex_buffer::get_buffer() {
     return 0;
 }
 
+size_t obj_mesh_vertex_buffer::get_offset() {
+#if SHARED_OBJECT_BUFFER
+    if (buffers[0])
+        return offset;
+    return 0;
+#endif
+}
+
 GLsizeiptr obj_mesh_vertex_buffer::get_size() {
+#if SHARED_OBJECT_BUFFER
+    if (buffers[0])
+        return size;
+#else
     if (buffers[0]) {
         GLint buffer;
         GLint size;
@@ -162,6 +224,7 @@ GLsizeiptr obj_mesh_vertex_buffer::get_size() {
         gl_state_bind_element_array_buffer(buffer);
         return size;
     }
+#endif
     return 0;
 }
 
@@ -351,7 +414,205 @@ void* obj_mesh_vertex_buffer::fill_data(void* data, obj_mesh* mesh) {
         d += 16;
     }
 
-    return (void*)d;
+    return (void*)((size_t)data + (size_t)size_vertex * num_vertex);
+}
+
+#if SHARED_OBJECT_BUFFER
+void obj_mesh_vertex_buffer_aft::cycle_index() {
+    if (++index >= count)
+        index = 0;
+}
+
+GLuint obj_mesh_vertex_buffer_aft::get_buffer() {
+    if (index < count)
+        return buffers[index];
+    return 0;
+}
+
+GLsizeiptr obj_mesh_vertex_buffer_aft::get_size() {
+    if (buffers[0]) {
+        GLint buffer;
+        GLint size;
+        glGetIntegervDLL(GL_ARRAY_BUFFER_BINDING, &buffer);
+        gl_state_bind_element_array_buffer(buffers[0]);
+        glGetBufferParameteriv(target, GL_BUFFER_SIZE, &size);
+        gl_state_bind_element_array_buffer(buffer);
+        return size;
+    }
+    return 0;
+}
+#endif
+
+#if SHARED_OBJECT_BUFFER
+obj_index_buffer::obj_index_buffer() : mesh_num(), mesh_data(), buffer() {
+#else
+obj_index_buffer::obj_index_buffer() : mesh_num(), mesh_data() {
+#endif
+
+}
+
+bool obj_index_buffer::load(obj* obj) {
+    if (!obj)
+        return false;
+
+    mesh_num = obj->num_mesh;
+    mesh_data = new obj_mesh_index_buffer[obj->num_mesh];
+    if (!mesh_data)
+        return false;
+
+#if SHARED_OBJECT_BUFFER
+    size_t buffer_size = 0;
+    for (uint32_t i = 0; i < mesh_num; i++) {
+        obj_mesh& mesh = obj->mesh_array[i];
+        size_t num_index = 0;
+        for (uint32_t i = 0; i < mesh.num_submesh; i++)
+            num_index += mesh.submesh_array[i].num_index;
+        buffer_size += num_index * sizeof(uint16_t);
+    }
+
+    void* index = force_malloc(buffer_size);
+    if (!index) {
+        buffer = 0;
+        unload();
+        return false;
+    }
+
+    void* data = index;
+    for (uint32_t i = 0; i < mesh_num; i++) {
+        uint32_t offset = (uint32_t)((size_t)data - (size_t)index);
+        data = obj_mesh_index_buffer::fill_data(data, &obj->mesh_array[i]);
+
+        obj_mesh& mesh = obj->mesh_array[i];
+        for (uint32_t j = 0; j < mesh.num_submesh; j++)
+            mesh.submesh_array[j].index_offset += offset;
+    }
+
+    buffer = create_index_buffer(buffer_size, index);
+    if (!buffer) {
+        free_def(index);
+        unload();
+        return false;
+    }
+
+    free_def(index);
+
+    for (uint32_t i = 0; i < mesh_num; i++)
+        mesh_data[i].buffer = buffer;
+#else
+    for (uint32_t i = 0; i < mesh_num; i++)
+        if (!mesh_data[i].load(&obj->mesh_array[i]))
+            return false;
+#endif
+    return true;
+}
+
+void obj_index_buffer::unload() {
+    if (mesh_data) {
+#if SHARED_OBJECT_BUFFER
+        free_index_buffer(buffer);
+        buffer = 0;
+#else
+        for (uint32_t i = 0; i < mesh_num; i++)
+            mesh_data[i].unload();
+#endif
+        delete[] mesh_data;
+    }
+    mesh_data = 0;
+    mesh_num = 0;
+#if SHARED_OBJECT_BUFFER
+    buffer = 0;
+#endif
+}
+
+#if SHARED_OBJECT_BUFFER
+obj_vertex_buffer::obj_vertex_buffer() : mesh_num(), mesh_data(), buffers() {
+#else
+obj_vertex_buffer::obj_vertex_buffer() : mesh_num(), mesh_data() {
+#endif
+
+}
+
+bool obj_vertex_buffer::load(obj* obj) {
+    if (!obj)
+        return false;
+
+    mesh_num = obj->num_mesh;
+    mesh_data = new obj_mesh_vertex_buffer[obj->num_mesh];
+    if (!mesh_data)
+        return false;
+
+#if SHARED_OBJECT_BUFFER
+    size_t buffer_size = 0;
+    bool double_buffer = false;
+    for (uint32_t i = 0; i < mesh_num; i++) {
+        obj_mesh& mesh = obj->mesh_array[i];
+        if (!mesh.num_vertex)
+            continue;
+
+        uint32_t size_vertex = obj_vertex_format_get_vertex_size(mesh.vertex_format);
+        mesh.size_vertex = size_vertex;
+
+        buffer_size += (size_t)size_vertex * mesh.num_vertex;
+        double_buffer |= !!mesh.attrib.m.double_buffer;
+    }
+
+    int32_t count = double_buffer ? 2 : 1;
+
+    void* vertex = force_malloc(buffer_size);
+    if (!vertex) {
+        for (int32_t i = 0; i < count; i++)
+            buffers[i] = 0;
+        unload();
+        return false;
+    }
+
+    void* data = vertex;
+    for (uint32_t i = 0; i < mesh_num; i++) {
+        obj_mesh_vertex_buffer& mesh_buffer = mesh_data[i];
+        mesh_buffer.offset = (size_t)data - (size_t)vertex;
+        mesh_buffer.count = count;
+        mesh_buffer.size = (GLsizeiptr)buffer_size;
+
+        data = obj_mesh_vertex_buffer::fill_data(data, &obj->mesh_array[i]);
+    }
+
+    for (int32_t i = 0; i < count; i++) {
+        buffers[i] = create_vertex_buffer(buffer_size, vertex);
+        if (!buffers[i]) {
+            free_def(vertex);
+            unload();
+            return false;
+        }
+    }
+
+    free_def(vertex);
+
+    for (uint32_t i = 0; i < mesh_num; i++)
+        memcpy(mesh_data[i].buffers, buffers, count * sizeof(GLuint));
+#else
+    for (uint32_t i = 0; i < mesh_num; i++)
+        if (!mesh_data[i].load(&obj->mesh_array[i]))
+            return false;
+#endif
+    return true;
+}
+
+void obj_vertex_buffer::unload() {
+    if (mesh_data) {
+#if SHARED_OBJECT_BUFFER
+        for (int32_t i = 0; i < mesh_data[0].count; i++)
+            free_vertex_buffer(buffers[i]);
+#else
+        for (uint32_t i = 0; i < mesh_num; i++)
+            mesh_data[i].unload();
+#endif
+        delete[] mesh_data;
+    }
+    mesh_data = 0;
+    mesh_num = 0;
+#if SHARED_OBJECT_BUFFER
+    buffers[0] = 0;
+#endif
 }
 
 inline int32_t obj_material_texture_type_get_texcoord_index(
@@ -424,37 +685,147 @@ void obj_skin_set_matrix_buffer(obj_skin* s, mat4* matrices,
         }
 }
 
-HOOK(bool, FASTCALL, obj_mesh_index_buffer__load, 0x0000000140458040, obj_mesh_index_buffer* objib, obj_mesh* mesh) {
-    return objib->load(mesh);
-}
-
-HOOK(bool, FASTCALL, obj_mesh_vertex_buffer__load, 0x000000140458A70, obj_mesh_vertex_buffer* objvb, obj_mesh* mesh) {
-    return objvb->load(mesh);
-}
-
-HOOK(bool, FASTCALL, obj_mesh_vertex_buffer__load_dynamic, 0x0000000140458280, obj_mesh_vertex_buffer* objvb, obj_mesh* mesh) {
+HOOK(bool, FASTCALL, obj_mesh_vertex_buffer__load, 0x0000000140458280, obj_mesh_vertex_buffer* objvb, obj_mesh* mesh) {
     return objvb->load(mesh, true);
+}
+
+HOOK(bool, FASTCALL, ObjsetInfo__index_buffer_load, 0x00000001404588F0, ObjsetInfo* info) {
+    return info->index_buffer_load();
+}
+
+HOOK(bool, FASTCALL, ObjsetInfo__vertex_buffer_load, 0x00000001404589B0, ObjsetInfo* info) {
+    return info->vertex_buffer_load();
+}
+
+HOOK(void, FASTCALL, ObjsetInfo__index_buffer_free, 0x0000000140459B40, ObjsetInfo* info) {
+    info->index_buffer_free();
+}
+
+HOOK(void, FASTCALL, ObjsetInfo__vertex_buffer_free, 0x0000000140459C70, ObjsetInfo* info) {
+    info->vertex_buffer_free();
+}
+
+HOOK(obj_mesh_index_buffer*, FASTCALL, object_info_get_mesh_index_buffer, 0x000000014045A250, object_info obj_info, int32_t a2) {
+    bool(FASTCALL * object_database_check_set)(int32_t set)
+        = (bool(FASTCALL*)(int32_t set))0x00000001404577D0;
+    int32_t(FASTCALL * object_database_get_object_index)(int32_t set, uint32_t object_id)
+        = (int32_t(FASTCALL*)(int32_t set, uint32_t object_id))0x000000014045A7A0;
+    ObjsetInfo* (FASTCALL * object_database_get_objset_info)(int32_t set)
+        = (ObjsetInfo * (FASTCALL*)(int32_t set))0x000000014045AC00;
+
+    if (object_database_check_set(obj_info.set_id))
+        return 0;
+
+    ObjsetInfo* info = object_database_get_objset_info(obj_info.set_id);
+    if (!info || !info->objvb)
+        return 0;
+
+    int32_t object_index = object_database_get_object_index(obj_info.set_id, obj_info.id);
+    if (object_index >= 0) {
+        if (!a2)
+            return info->objib[object_index].mesh_data;
+        else if (info->field_C8)
+            return info->field_C8[object_index].mesh_data;
+    }
+    return 0;
+}
+
+HOOK(obj_mesh_vertex_buffer*, FASTCALL, object_info_get_mesh_vertex_buffer, 0x000000014045A480, object_info obj_info, int32_t a2) {
+    bool(FASTCALL * object_database_check_set)(int32_t set)
+        = (bool(FASTCALL*)(int32_t set))0x00000001404577D0;
+    int32_t(FASTCALL * object_database_get_object_index)(int32_t set, uint32_t object_id)
+        = (int32_t(FASTCALL*)(int32_t set, uint32_t object_id))0x000000014045A7A0;
+    ObjsetInfo* (FASTCALL * object_database_get_objset_info)(int32_t set)
+        = (ObjsetInfo * (FASTCALL*)(int32_t set))0x000000014045AC00;
+
+    if (object_database_check_set(obj_info.set_id))
+        return 0;
+
+    ObjsetInfo* info = object_database_get_objset_info(obj_info.set_id);
+    if (!info || !info->objvb)
+        return 0;
+
+    int32_t object_index = object_database_get_object_index(obj_info.set_id, obj_info.id);
+    if (object_index >= 0) {
+        if (!a2)
+            return info->objvb[object_index].mesh_data;
+        else if (info->field_C0)
+            return info->field_C0[object_index].mesh_data;
+    }
+    return 0;
 }
 
 HOOK(void, FASTCALL, obj_mesh_vertex_buffer__unload, 0x0000000140461870, obj_mesh_vertex_buffer* objvb) {
     objvb->unload();
 }
 
-HOOK(void, FASTCALL, obj_mesh_index_buffer__unload, 0x0000000140461900, obj_mesh_index_buffer* objib) {
-    objib->unload();
-}
-
 void object_patch() {
-    WRITE_CALL(0x0000000140458860, 0x000000140458A70);
-    WRITE_MEMORY(0x0000000140459BB5, uint8_t,
-        0x48, 0x8D, 0x0C, 0x30, 0x0F, 0x1F, 0x00);
+#if SHARED_OBJECT_BUFFER
+    WRITE_MEMORY(0x000000014045A4E7, uint8_t, sizeof(obj_vertex_buffer));
+#endif
 
-    INSTALL_HOOK(obj_mesh_index_buffer__load);
     INSTALL_HOOK(obj_mesh_vertex_buffer__load);
-    INSTALL_HOOK(obj_mesh_vertex_buffer__load_dynamic);
+    INSTALL_HOOK(ObjsetInfo__index_buffer_load);
+    INSTALL_HOOK(ObjsetInfo__vertex_buffer_load);
+    INSTALL_HOOK(ObjsetInfo__index_buffer_free);
+    INSTALL_HOOK(ObjsetInfo__vertex_buffer_free);
+    INSTALL_HOOK(object_info_get_mesh_index_buffer);
+    INSTALL_HOOK(object_info_get_mesh_vertex_buffer);
     INSTALL_HOOK(obj_mesh_vertex_buffer__unload);
-    INSTALL_HOOK(obj_mesh_index_buffer__unload);
 }
+
+#pragma warning(push)
+#pragma warning(disable: 6385)
+void ObjsetInfo::index_buffer_free() {
+    if (objib) {
+        for (int32_t i = 0; i < objib_num; i++)
+            objib[i].unload();
+        prj::HeapCMallocFree(prj::HeapCMallocSystem, objvb);
+    }
+
+    objib = 0;
+    objib_num = 0;
+}
+
+bool ObjsetInfo::index_buffer_load() {
+    ::obj_set* set = obj_set;
+    objib_num = set->obj_num;
+    objib = new (prj::HeapCMallocAllocate(prj::HeapCMallocSystem,
+        sizeof(obj_index_buffer) * set->obj_num, "OBJIB")) obj_index_buffer[set->obj_num];
+    if (!objib)
+        return true;
+
+    for (uint32_t i = 0; i < set->obj_num; i++)
+        if (!objib[i].load(set->obj_data[i]))
+            return false;
+    return true;
+}
+
+void ObjsetInfo::vertex_buffer_free() {
+    if (objvb) {
+        for (int32_t i = 0; i < objvb_num; i++)
+            objvb[i].unload();
+        prj::HeapCMallocFree(prj::HeapCMallocSystem, objvb);
+    }
+
+    objvb = 0;
+    objvb_num = 0;
+}
+
+bool ObjsetInfo::vertex_buffer_load() {
+    ::obj_set* set = obj_set;
+    objvb_num = set->obj_num;
+    objvb = new (prj::HeapCMallocAllocate(prj::HeapCMallocSystem,
+        sizeof(obj_vertex_buffer) * set->obj_num, "OBJVB")) obj_vertex_buffer[set->obj_num];
+    if (!objvb)
+        return true;
+
+    for (uint32_t i = 0; i < set->obj_num; i++)
+        if (!objvb[i].load(set->obj_data[i]))
+            return false;
+    return true;
+}
+#pragma warning(pop)
 
 static GLuint create_index_buffer(size_t size, const void* data) {
     GLuint buffer = 0;

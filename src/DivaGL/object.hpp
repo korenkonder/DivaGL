@@ -11,6 +11,8 @@
 #include "texture.hpp"
 #include "types.hpp"
 
+#define SHARED_OBJECT_BUFFER (1)
+
 enum obj_index_format : uint32_t {
     OBJ_INDEX_U8  = 0x00,
     OBJ_INDEX_U16 = 0x01,
@@ -419,6 +421,21 @@ struct obj_skin {
 
 static_assert(sizeof(obj_skin) == 0x38, "\"obj_skin\" struct should have a size of 0x38");
 
+struct obj_set {
+    uint32_t version;
+    uint32_t obj_num;
+    uint32_t last_obj_id;
+    obj** obj_data;
+    obj_skin** obj_skin_data;
+    const char** obj_name_data;
+    uint32_t* obj_id_data;
+    uint32_t* tex_id_data;
+    uint32_t tex_num;
+    uint32_t reserved[2];
+};
+
+static_assert(sizeof(obj_set) == 0x48, "\"obj_set\" struct should have a size of 0x48");
+
 struct object_info {
     uint16_t id;
     uint16_t set_id;
@@ -474,6 +491,8 @@ inline bool operator !=(const object_info& left, const object_info& right) {
 struct obj_mesh_index_buffer {
     GLuint buffer;
 
+    obj_mesh_index_buffer();
+
     bool load(obj_mesh* mesh);
     bool load_data(size_t size, const void* data);
     void unload();
@@ -481,16 +500,26 @@ struct obj_mesh_index_buffer {
     static void* fill_data(void* data, obj_mesh* mesh);
 };
 
+#if !SHARED_OBJECT_BUFFER
 static_assert(sizeof(obj_mesh_index_buffer) == 0x04, "\"obj_mesh_index_buffer\" struct should have a size of 0x04");
+#endif
 
 struct obj_mesh_vertex_buffer {
     int32_t count;
     GLuint buffers[3];
     int32_t index;
+#if SHARED_OBJECT_BUFFER
+    GLsizeiptr size;
+    size_t offset;
+#else
     GLenum target;
+#endif
+
+    obj_mesh_vertex_buffer();
 
     void cycle_index();
     GLuint get_buffer();
+    size_t get_offset();
     GLsizeiptr get_size();
     bool load(obj_mesh* mesh, bool dynamic = false);
     bool load_data(size_t size, const void* data, int32_t count, bool dynamic);
@@ -499,21 +528,58 @@ struct obj_mesh_vertex_buffer {
     static void* fill_data(void* data, obj_mesh* mesh);
 };
 
+#if SHARED_OBJECT_BUFFER
+struct obj_mesh_vertex_buffer_aft {
+    int32_t count;
+    GLuint buffers[3];
+    int32_t index;
+    GLenum target;
+
+    void cycle_index();
+    GLuint get_buffer();
+    GLsizeiptr get_size();
+};
+#endif
+
+#if SHARED_OBJECT_BUFFER
+static_assert(sizeof(obj_mesh_vertex_buffer_aft) == 0x18, "\"obj_mesh_vertex_buffer_aft\" struct should have a size of 0x18");
+#else
 static_assert(sizeof(obj_mesh_vertex_buffer) == 0x18, "\"obj_mesh_vertex_buffer\" struct should have a size of 0x18");
+#endif
 
 struct obj_index_buffer {
     uint32_t mesh_num;
     obj_mesh_index_buffer* mesh_data;
+#if SHARED_OBJECT_BUFFER
+    GLuint buffer;
+#endif
+
+    obj_index_buffer();
+
+    bool load(obj* obj);
+    void unload();
 };
 
+#if !SHARED_OBJECT_BUFFER
 static_assert(sizeof(obj_index_buffer) == 0x10, "\"obj_index_buffer\" struct should have a size of 0x10");
+#endif
 
 struct obj_vertex_buffer {
     uint32_t mesh_num;
     obj_mesh_vertex_buffer* mesh_data;
+#if SHARED_OBJECT_BUFFER
+    GLuint buffers[3];
+#endif
+
+    obj_vertex_buffer();
+
+    bool load(obj* obj);
+    void unload();
 };
 
+#if !SHARED_OBJECT_BUFFER
 static_assert(sizeof(obj_vertex_buffer) == 0x10, "\"obj_vertex_buffer\" struct should have a size of 0x10");
+#endif
 
 extern uint32_t(FASTCALL* object_database_get_object_info)(const char* name);
 extern obj* (FASTCALL* object_info_get_object)(object_info obj_info);
