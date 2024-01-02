@@ -505,13 +505,15 @@ void shader_set_data::load(farc* f, bool ignore_cache,
             }
             uniform_flags_buf[8] = 0;
 
-            strcat_s(vert_file_buf, sizeof(vert_file_buf), ".");
-            strcat_s(frag_file_buf, sizeof(frag_file_buf), ".");
-            strcat_s(vert_file_buf, sizeof(vert_file_buf), uniform_flags_buf);
-            strcat_s(frag_file_buf, sizeof(frag_file_buf), uniform_flags_buf);
+            strcpy_s(vert_buf, sizeof(vert_buf), vert_file_buf);
+            strcpy_s(frag_buf, sizeof(frag_buf), frag_file_buf);
+            strcat_s(vert_buf, sizeof(vert_buf), ".");
+            strcat_s(frag_buf, sizeof(frag_buf), ".");
+            strcat_s(vert_buf, sizeof(vert_buf), uniform_flags_buf);
+            strcat_s(frag_buf, sizeof(frag_buf), uniform_flags_buf);
 
-            uint64_t vert_file_name_hash = hash_utf8_fnv1a64m(vert_file_buf);
-            uint64_t frag_file_name_hash = hash_utf8_fnv1a64m(frag_file_buf);
+            uint64_t vert_file_name_hash = hash_utf8_fnv1a64m(vert_buf);
+            uint64_t frag_file_name_hash = hash_utf8_fnv1a64m(frag_buf);
 
             char shader_cache_file_name[MAX_PATH];
             strcpy_s(shader_cache_file_name, sizeof(shader_cache_file_name), sub_table->vp);
