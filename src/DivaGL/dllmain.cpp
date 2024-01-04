@@ -113,7 +113,7 @@ bool APIENTRY DllMain(HMODULE handle, DWORD ul_reason_for_call, LPVOID lpReserve
         freopen_s(&f_stdout, "CONOUT$", "w", stdout);*/
 
         dll_handle = (size_t)handle;
-        printf_divagl("Current version - v0.4.0.0");
+        printf_divagl("Current version - v0.4.1.0");
         printf_divagl("Attach");
         divagl_main();
         break;
@@ -130,5 +130,5 @@ extern "C" __declspec(dllexport) LPCWSTR GetPluginDescription(void) {
 }
 
 extern "C" __declspec(dllexport) LPCWSTR GetBuildDate(void) {
-    return L"v0.2.0.0";
+    return L"v0.4.1.0";
 }
