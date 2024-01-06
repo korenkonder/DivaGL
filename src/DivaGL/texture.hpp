@@ -29,27 +29,27 @@ struct texture_id {
 };
 
 inline bool operator >(const texture_id& left, const texture_id& right) {
-    return left.id > right.id && left.index > right.index;
+    return (((uint32_t)left.id << 24) | left.index) > (((uint32_t)right.id << 24) | right.index);
 }
 
 inline bool operator <(const texture_id& left, const texture_id& right) {
-    return left.id < right.id && left.index < right.index;
+    return (((uint32_t)left.id << 24) | left.index) < (((uint32_t)right.id << 24) | right.index);
 }
 
 inline bool operator >=(const texture_id& left, const texture_id& right) {
-    return left.id >= right.id && left.index >= right.index;
+    return (((uint32_t)left.id << 24) | left.index) >= (((uint32_t)right.id << 24) | right.index);
 }
 
 inline bool operator <=(const texture_id& left, const texture_id& right) {
-    return left.id <= right.id && left.index <= right.index;
+    return (((uint32_t)left.id << 24) | left.index) <= (((uint32_t)right.id << 24) | right.index);
 }
 
 inline bool operator ==(const texture_id& left, const texture_id& right) {
-    return left.id == right.id && left.index == right.index;
+    return (((uint32_t)left.id << 24) | left.index) == (((uint32_t)right.id << 24) | right.index);
 }
 
 inline bool operator !=(const texture_id& left, const texture_id& right) {
-    return left.id != right.id || left.index != right.index;
+    return (((uint32_t)left.id << 24) | left.index) != (((uint32_t)right.id << 24) | right.index);
 }
 
 static_assert(sizeof(texture_id) == 0x04, "\"texture_id\" struct should have a size of 0x04");

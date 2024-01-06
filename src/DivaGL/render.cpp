@@ -764,8 +764,9 @@ namespace rndr {
         renderer::DOF3* dof = new renderer::DOF3;
         this->dof = renderer__DOF3__DOF3(dof, render_post_width[0], render_post_height[0]);
 
-        transparency_tex[0] = texture_load_tex_2d(texture_id(0x25, texture_counter++),
-            GL_RGBA16F, render_post_width[0], render_post_height[0], 0, 0, 0);
+        for (int32_t i = 0; i < 1; i++)
+            transparency_tex[i] = texture_load_tex_2d(texture_id(0x25, texture_counter++),
+                GL_RGBA16F, render_post_width[0], render_post_height[0], 0, 0, 0);
 
         renderer::Transparency* (FASTCALL * renderer__Transparency__Transparency)(
             renderer::Transparency * transparency, GLuint color_texture,
@@ -926,15 +927,17 @@ namespace rndr {
         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 
         for (int32_t i = 0; i < 3; i++) {
+            texture_id id = taa_tex[i]->id;
             texture_free(taa_tex[i]);
-            taa_tex[i] = texture_load_tex_2d(texture_id(0x25, texture_counter++),
-                GL_RGBA8, render_post_width[0], render_post_height[0], 0, 0, 0);
+            taa_tex[i] = texture_load_tex_2d(id, GL_RGBA8,
+                render_post_width[0], render_post_height[0], 0, 0, 0);
             taa_buffer[i].SetColorDepthTextures(taa_tex[i]->tex, 0, rend_texture[0].GetDepthTex());
         }
 
+        texture_id aet_back_tex_id = aet_back_tex->id;
         texture_free(aet_back_tex);
-        aet_back_tex = texture_load_tex_2d(texture_id(0x25, texture_counter++),
-            GL_RGBA8, render_post_width[0], render_post_height[0], 0, 0, 0);
+        aet_back_tex = texture_load_tex_2d(aet_back_tex_id, GL_RGBA8,
+            render_post_width[0], render_post_height[0], 0, 0, 0);
         aet_back_texture.SetColorDepthTextures(aet_back_tex->tex, 0, rend_texture[0].GetDepthTex());
 
         mlaa_buffer.Init(render_post_width[0], render_post_height[0], 0, GL_RGBA8, GL_DEPTH_COMPONENT24);
@@ -953,15 +956,13 @@ namespace rndr {
 
         dof->resize(render_post_width[0], render_post_height[0]);
 
-        for (int32_t i = 0; i < 1; i++)
-            if (transparency_tex[i]) {
-                texture_free(transparency_tex[i]);
-                transparency_tex[i] = 0;
-                texture_counter--;
-            }
+        for (int32_t i = 0; i < 1; i++) {
+            texture_id id = taa_tex[i]->id;
+            texture_free(transparency_tex[i]);
+            transparency_tex[i] = texture_load_tex_2d(id, GL_RGBA16F,
+                render_post_width[0], render_post_height[0], 0, 0, 0);
+        }
 
-        transparency_tex[0] = texture_load_tex_2d(texture_id(0x25, texture_counter++),
-            GL_RGBA16F, render_post_width[0], render_post_height[0], 0, 0, 0);
         transparency->resize(transparency_tex[0]->tex, rend_texture[0].GetDepthTex(),
             render_post_width[0], render_post_height[0]);
     }
