@@ -4,10 +4,10 @@
 */
 
 #include "auth_3d.hpp"
+#include "../KKdLib/hash.hpp"
 #include "light_param/fog.hpp"
 #include "mdl/disp_manager.hpp"
 #include "rob/rob.hpp"
-#include "object.hpp"
 #include "frame_rate_control.hpp"
 #include "render_context.hpp"
 #include "sprite.hpp"
@@ -139,6 +139,7 @@ struct auth_3d_curve {
     auth_3d_key curve;
     prj::string name;
     float_t value;
+    uint32_t type;
 };
 
 static_assert(sizeof(auth_3d_curve) == 0x70, "\"auth_3d_curve\" struct should have a size of 0x70");
@@ -484,16 +485,119 @@ struct auth_3d {
     prj::vector<auth_3d_object_hrc*> object_hrc_list;
     prj::vector<auth_3d_m_object_hrc> m_object_hrc;
     prj::vector<auth_3d_m_object_hrc*> m_object_hrc_list;
-    prj::vector<std::string> field_BE0;
-    prj::vector<std::string> object_list_string;
-    prj::vector<std::string> object_hrc_list_string;
-    prj::vector<std::string> m_object_hrc_list_string;
+    prj::vector<prj::string> field_BE0;
+    prj::vector<prj::string> object_list_string;
+    prj::vector<prj::string> object_hrc_list_string;
+    prj::vector<prj::string> m_object_hrc_list_string;
     prj::vector<auth_3d_auth_2d> auth_2d;
     int32_t state;
     prj::vector<struct auth_3d_event_adapter*> field_C60;
 };
 
 static_assert(sizeof(auth_3d) == 0xC78, "\"auth_3d\" struct should have a size of 0xC78");
+
+enum auth_3d_material_list_flags {
+    AUTH_3D_MATERIAL_LIST_BLEND_COLOR = 0x01,
+    AUTH_3D_MATERIAL_LIST_EMISSION    = 0x02,
+};
+
+struct auth_3d_material_list {
+    auth_3d_material_list_flags flags;
+    auth_3d_rgba blend_color;
+    auth_3d_rgba emission;
+    uint64_t hash;
+};
+
+struct string_range {
+    char* begin;
+    char* end;
+};
+
+struct string_range_capacity {
+    string_range range;
+    char* capacity_end;
+};
+
+struct pair_string_range_string_range {
+    string_range key;
+    string_range value;
+};
+
+static_assert(sizeof(pair_string_range_string_range) == 0x20, "\"CanonicalProperties\" struct should have a size of 0x20");
+
+struct CanonicalProperties {
+    prj::string data;
+    prj::vector<pair_string_range_string_range> key_value_pair_storage;
+};
+
+static_assert(sizeof(CanonicalProperties) == 0x38, "\"CanonicalProperties\" struct should have a size of 0x38");
+
+struct struc_8 {
+    float_t max_frame;
+    void* data;
+    size_t data_size;
+    bool field_18;
+    CanonicalProperties CanProp;
+    bool field_58;
+    int32_t field_5C;
+    int32_t field_60;
+    int32_t field_64;
+    int64_t field_68;
+    bool field_70;
+    void* binary_data;
+    size_t binary_size;
+    bool field_88;
+};
+
+static_assert(sizeof(struc_8) == 0x90, "\"struc_8\" struct should have a size of 0x90");
+
+static string_range* (FASTCALL* CanonicalProperties__GetValueStringRange)(
+    CanonicalProperties* CanProp, string_range str_rng)
+    = (string_range * (FASTCALL*)(CanonicalProperties * CanProp, string_range str_rng))0x00000001400AE4F0;
+static prj::string* (FASTCALL* CanonicalProperties__GetValueString)(
+    CanonicalProperties* CanProp, prj::string* str, string_range str_rng)
+    = (prj::string * (FASTCALL*)(CanonicalProperties * CanProp, prj::string * str, string_range str_rng))0x00000001401AD640;
+static void(FASTCALL* auth_3d_rgba__free)(auth_3d_rgba* rgba)
+= (void(FASTCALL*)(auth_3d_rgba * rgba))0x00000001401B8900;
+static void (FASTCALL* auth_3d_rgba__ctrl)(auth_3d_rgba* rgba, float_t frame)
+    = (void (FASTCALL*)(auth_3d_rgba * rgba, float_t frame))0x00000001401D4070;
+static bool (FASTCALL* auth_3d_key__parse)(auth_3d_key* k, struc_8* a2, string_range_capacity str_rng_cap)
+= (bool (FASTCALL*)(auth_3d_key * k, struc_8 * a2, string_range_capacity str_rng_cap))0x00000001401DB1A0;
+static bool (FASTCALL* auth_3d_rgba__parse)(auth_3d_rgba* rgba, struc_8* a2, string_range_capacity str_rng_cap)
+    = (bool (FASTCALL*)(auth_3d_rgba * rgba, struc_8 * a2, string_range_capacity str_rng_cap))0x00000001401DB520;
+
+static void auth_3d_material_list_ctrl(auth_3d_material_list* ml, float_t frame);
+static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, string_range_capacity str_rng_cap);
+static void auth_3d_set_material_list(auth_3d* auth);
+static prj::string string_init_CanonicalProperties_string_range(CanonicalProperties& CanProp, string_range str_rng);
+static string_range_capacity string_range_capacity_init_char_ptr(string_range_capacity str_rng_cap, const char* str);
+
+HOOK(void, FASTCALL, auth_3d_curve_array_free, 0x00000001401C2E30,
+    prj::vector<auth_3d_curve>* vec, auth_3d_curve* begin, auth_3d_curve* end) {
+    while (begin != end) {
+        if (begin->name.capacity() >= 0x10)
+            _operator_delete(((uint64_t**)&begin->name)[0]);
+        ((uint64_t*)&begin->name)[3] = 15;
+        ((uint64_t*)&begin->name)[2] = 0;
+        ((char*)&begin->name)[0] = 0;
+
+        if (begin->type == 1) {
+            auth_3d_material_list* ml = (auth_3d_material_list*)begin->curve.keys;
+            auth_3d_rgba__free(&ml->blend_color);
+            auth_3d_rgba__free(&ml->emission);
+            delete ml;
+        }
+        else {
+            if (((kft3**)&begin->curve.keys_vec)[0]) {
+                _operator_delete(((kft3**)&begin->curve.keys_vec)[0]);
+                ((kft3**)&begin->curve.keys_vec)[0] = 0;
+                ((kft3**)&begin->curve.keys_vec)[1] = 0;
+                ((kft3**)&begin->curve.keys_vec)[2] = 0;
+            }
+        }
+        begin++;
+    }
+}
 
 HOOK(void, FASTCALL, auth_3d_m_object_hrc_disp, 0x00000001401D0760, auth_3d_m_object_hrc* moh, auth_3d* auth) {
     if (!auth->visible || !moh->model_transform.visible)
@@ -743,8 +847,141 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
         implOfauth_3d_object_hrc_disp(i, auth);
 }
 
+HOOK(void, FASTCALL, auth_3d__disp, 0x00000001401D1230, auth_3d* auth) {
+    if (auth->state != 2 || !auth->enable || auth->bone_mats)
+        return;
+
+    auth_3d_set_material_list(auth);
+    originalauth_3d__disp(auth);
+    disp_manager->set_material_list();
+}
+
+HOOK(void, FASTCALL, auth_3d_curve__ctrl, 0x00000001401D4140, auth_3d_curve* c, float_t frame) {
+    if (c->type == 1)
+        auth_3d_material_list_ctrl((auth_3d_material_list*)c->curve.keys, frame);
+    else
+        originalauth_3d_curve__ctrl(c, frame);
+}
+
+HOOK(bool, FASTCALL, auth_3d_curve_parse, 0x00000001401DA230,
+    auth_3d_curve* c, struc_8* a2, string_range_capacity str_rng_cap) {
+    string_range_capacity name = string_range_capacity_init_char_ptr(str_rng_cap, ".name");
+    c->name.assign(string_init_CanonicalProperties_string_range(a2->CanProp, name.range));
+
+    string_range_capacity ml_str = string_range_capacity_init_char_ptr(str_rng_cap, ".ml");
+    if (CanonicalProperties__GetValueStringRange(&a2->CanProp, ml_str.range)) {
+        auth_3d_material_list* ml = (auth_3d_material_list*)_operator_new(sizeof(auth_3d_material_list));
+        memset(ml, 0, sizeof(auth_3d_material_list));
+        auth_3d_material_list_parse(ml, a2, ml_str);
+        ml->hash = hash_fnv1a64m(c->name.data(), c->name.size());
+        c->curve.keys = (kft3*)ml;
+        c->type = 1;
+    }
+    else {
+        string_range_capacity cv = string_range_capacity_init_char_ptr(str_rng_cap, ".cv");
+        auth_3d_key__parse(&c->curve, a2, cv);
+        c->type = 0;
+    }
+    return true;
+}
+
 void auth_3d_patch() {
+    WRITE_MEMORY_STRING(0x00000001401A3DBE, "\x48\x8B"
+        "\x43\x60\x48\x83\xC3\x70\x48\x83\xC7\x70\x48\x89\x47\xF8\x48\x8D"
+        "\x43\xF8\x48\x3B\xC6\x75\x8B\x48\x8B\x5C\x24\x30\x48\x8B\xC7\x48"
+        "\x8B\x74\x24\x38\x48\x83\xC4\x20\x5F\xC3", 0x2C);
+    WRITE_MEMORY_STRING(0x00000001401A72FF, "\x4C\x89\x40\x38", 0x04);
+    WRITE_MEMORY_STRING(0x00000001401B316A, "\x48\x8B\x43\x68\x48\x89"
+        "\x47\x68\x48\x8B\xC7\x48\x8B\x5C\x24\x48\x48\x83\xC4\x30\x5F\xC3", 0x16);
+
+    INSTALL_HOOK(auth_3d_curve_array_free);
     INSTALL_HOOK(auth_3d_m_object_hrc_disp);
     INSTALL_HOOK(auth_3d_object_hrc_disp);
     INSTALL_HOOK(auth_3d_object_disp);
+    INSTALL_HOOK(auth_3d__disp);
+    INSTALL_HOOK(auth_3d_curve__ctrl);
+    INSTALL_HOOK(auth_3d_curve_parse);
+}
+
+static void auth_3d_material_list_ctrl(auth_3d_material_list* ml, float_t frame) {
+    auth_3d_rgba__ctrl(&ml->blend_color, frame);
+    auth_3d_rgba__ctrl(&ml->emission, frame);
+}
+
+static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, string_range_capacity str_rng_cap) {
+    ml->flags = (auth_3d_material_list_flags)0;
+    string_range_capacity blend_color = string_range_capacity_init_char_ptr(str_rng_cap, ".blend_color");
+    if (CanonicalProperties__GetValueStringRange(&a2->CanProp, blend_color.range)) {
+        auth_3d_rgba__parse(&ml->blend_color, a2, blend_color);
+        enum_or(ml->flags, AUTH_3D_MATERIAL_LIST_BLEND_COLOR);
+    }
+
+    string_range_capacity emission = string_range_capacity_init_char_ptr(str_rng_cap, ".emission");
+    if (CanonicalProperties__GetValueStringRange(&a2->CanProp, emission.range)) {
+        auth_3d_rgba__parse(&ml->emission, a2, emission);
+        enum_or(ml->flags, AUTH_3D_MATERIAL_LIST_EMISSION);
+    }
+    return true;
+}
+
+static void auth_3d_set_material_list(auth_3d* auth) {
+    int32_t mat_list_count = 0;
+    material_list_struct mat_list[TEXTURE_PATTERN_COUNT];
+    for (auth_3d_curve& i : auth->curve) {
+        if (i.type != 1)
+            continue;
+
+        auth_3d_material_list* ml = (auth_3d_material_list*)i.curve.keys;
+        if (!ml->flags)
+            continue;
+
+        if (ml->flags & AUTH_3D_MATERIAL_LIST_BLEND_COLOR) {
+            vec4& blend_color = mat_list[mat_list_count].blend_color;
+            vec4u8& has_blend_color = mat_list[mat_list_count].has_blend_color;
+
+            blend_color = ml->blend_color.value;
+            has_blend_color.x = ml->blend_color.has_got[0];
+            has_blend_color.y = ml->blend_color.has_got[1];
+            has_blend_color.z = ml->blend_color.has_got[2];
+            has_blend_color.w = ml->blend_color.has_got[3];
+        }
+        else {
+            mat_list[mat_list_count].blend_color = {};
+            mat_list[mat_list_count].has_blend_color = {};
+        }
+
+        if (ml->flags & AUTH_3D_MATERIAL_LIST_EMISSION) {
+            vec4& emission = mat_list[mat_list_count].emission;
+            vec4u8& has_emission = mat_list[mat_list_count].has_emission;
+
+            emission = ml->emission.value;
+            has_emission.x = ml->emission.has_got[0];
+            has_emission.y = ml->emission.has_got[1];
+            has_emission.z = ml->emission.has_got[2];
+            has_emission.w = ml->emission.has_got[3];
+        }
+        else {
+            mat_list[mat_list_count].emission = {};
+            mat_list[mat_list_count].has_emission = {};
+        }
+
+        mat_list[mat_list_count].hash = ml->hash;
+        mat_list_count++;
+    }
+
+    disp_manager->set_material_list(mat_list_count, mat_list);
+}
+
+static string_range_capacity string_range_capacity_init_char_ptr(string_range_capacity str_rng_cap, const char* str) {
+    char* end = str_rng_cap.range.end;
+    while (end != str_rng_cap.capacity_end && *str)
+        *end++ = *str++;
+    str_rng_cap.range.end = end;
+    return str_rng_cap;
+}
+
+static prj::string string_init_CanonicalProperties_string_range(CanonicalProperties& CanProp, string_range str_rng) {
+    prj::string str;
+    CanonicalProperties__GetValueString(&CanProp, &str, str_rng);
+    return str;
 }
