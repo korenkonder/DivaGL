@@ -19,9 +19,6 @@
 #include "render_manager.hpp"
 #include "render_texture.hpp"
 
-#define TEXTURE_PATTERN_COUNT 24
-#define TEXTURE_TRANSFORM_COUNT 24
-
 struct draw_state_stats {
     int32_t object_draw_count;
     int32_t object_translucent_draw_count;

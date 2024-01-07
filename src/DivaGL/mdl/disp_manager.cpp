@@ -2008,7 +2008,7 @@ namespace mdl {
                     mats = alloc_mat4_array(num_bone_index);
                     if (bone_mat)
                         for (int32_t k = 0; k < num_bone_index; k++, bone_index++)
-                            mats[k] = bone_mat[*bone_index];
+                            mat4_transpose(&bone_mat[*bone_index], &mats[k]);
                     else
                         for (int32_t k = 0; k < num_bone_index; k++)
                             mats[k] = mat4_identity;

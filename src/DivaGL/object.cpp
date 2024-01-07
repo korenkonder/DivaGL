@@ -657,31 +657,29 @@ void obj_skin_set_matrix_buffer(obj_skin* s, mat4* matrices,
     if (!s->num_bone)
         return;
 
+    uint32_t* bone_id = s->bone_id_array;
+    mat4* bone_matrix = s->bone_matrix_array;
     if (mat)
-        for (uint32_t i = 0; i < s->num_bone; i++) {
+        for (uint32_t i = 0; i < s->num_bone; i++, bone_id++, bone_matrix++, matrix_buffer++) {
             mat4 temp;
-            int32_t bone_id = s->bone_id_array[i];
-            if (bone_id & 0x8000)
-                mat4_mul(&ex_data_matrices[bone_id & 0x7FFF], mat, &temp);
+            if (*bone_id & 0x8000)
+                mat4_mul(&ex_data_matrices[*bone_id & 0x7FFF], mat, &temp);
             else
-                mat4_mul(&matrices[bone_id], mat, &temp);
+                mat4_mul(&matrices[*bone_id], mat, &temp);
 
             mat4_mul(global_mat, &temp, &temp);
-            mat4_mul(&temp, &s->bone_matrix_array[i], &matrix_buffer[i]);
-            mat4_transpose(&matrix_buffer[i], &matrix_buffer[i]);
+            mat4_mul(&temp, bone_matrix, matrix_buffer);
         }
     else
-        for (uint32_t i = 0; i < s->num_bone; i++) {
+        for (uint32_t i = 0; i < s->num_bone; i++, bone_id++, bone_matrix++, matrix_buffer++) {
             mat4 temp;
-            int32_t bone_id = s->bone_id_array[i];
-            if (bone_id & 0x8000)
-                temp = ex_data_matrices[bone_id & 0x7FFF];
+            if (*bone_id & 0x8000)
+                temp = ex_data_matrices[*bone_id & 0x7FFF];
             else
-                temp = matrices[bone_id];
+                temp = matrices[*bone_id];
 
             mat4_mul(global_mat, &temp, &temp);
-            mat4_mul(&temp, &s->bone_matrix_array[i], &matrix_buffer[i]);
-            mat4_transpose(&matrix_buffer[i], &matrix_buffer[i]);
+            mat4_mul(&temp, bone_matrix, matrix_buffer);
         }
 }
 
