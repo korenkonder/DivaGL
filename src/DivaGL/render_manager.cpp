@@ -70,7 +70,7 @@ namespace rndr {
     }
 
     void RenderManager::clear_pre_process(int32_t type) {
-        for (std::list<draw_pre_process>::iterator i = pre_process.begin(); i != pre_process.end(); i++)
+        for (auto i = pre_process.begin(); i != pre_process.end(); i++)
             if (i->type == type) {
                 pre_process.erase(i);
                 break;
