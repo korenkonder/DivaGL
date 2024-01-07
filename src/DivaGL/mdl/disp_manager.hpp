@@ -159,7 +159,7 @@ namespace mdl {
         bool set_blend_color;
         bool chara_color;
         vec4 blend_color;
-        int32_t self_shadow;
+        bool self_shadow;
         shadow_type_enum shadow;
         GLuint morph_vertex_buffer;
         size_t morph_vertex_buffer_offset;
@@ -308,8 +308,8 @@ namespace mdl {
             const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
             const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
             GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
-            const vec4* blend_color, GLuint morph_vertex_buffer, size_t morph_vertex_buffer_offset,
-            int32_t instances_count, mat4* instances_mat,
+            const vec4& blend_color, GLuint morph_vertex_buffer,
+            size_t morph_vertex_buffer_offset, int32_t instances_count, mat4* instances_mat,
             void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data);
         void init_translucent(const mat4* mat, ObjTranslucentArgs* translucent);
         void init_user(const mat4* mat, UserArgsFunc func, void* data);

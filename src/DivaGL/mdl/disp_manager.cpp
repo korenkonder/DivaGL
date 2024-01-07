@@ -189,8 +189,8 @@ namespace mdl {
         const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
         const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
         GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
-        const vec4* blend_color, GLuint morph_vertex_buffer, size_t morph_vertex_buffer_offset,
-        int32_t instances_count, mat4* instances_mat,
+        const vec4& blend_color, GLuint morph_vertex_buffer,
+        size_t morph_vertex_buffer_offset, int32_t instances_count, mat4* instances_mat,
         void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data) {
         kind = mdl::OBJ_KIND_NORMAL;
         mat4_transpose(mat, &this->mat);
@@ -221,9 +221,9 @@ namespace mdl {
                 &args->texture_transform_array[i].mat);
         }
 
-        if (blend_color && *blend_color != 1.0f) {
+        if (blend_color != 1.0f) {
             args->set_blend_color = true;
-            args->blend_color = *blend_color;
+            args->blend_color = blend_color;
         }
         else {
             args->set_blend_color = false;
@@ -231,7 +231,7 @@ namespace mdl {
         }
 
         args->chara_color = disp_manager->chara_color;
-        args->self_shadow = disp_manager->obj_flags & (mdl::OBJ_8 | mdl::OBJ_4) ? 1 : 0;
+        args->self_shadow = !!(disp_manager->obj_flags & (mdl::OBJ_8 | mdl::OBJ_4));
         args->shadow = disp_manager->shadow_type;
         args->texture_color_coefficients = disp_manager->texture_color_coefficients;
         args->texture_color_coefficients.w = disp_manager->wet_param;
@@ -2049,7 +2049,7 @@ namespace mdl {
                     _blend_color = *blend_color;
 
                 data->init_sub_mesh(mat, object->bounding_sphere.radius, sub_mesh, mesh, material, textures,
-                    num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, &_blend_color,
+                    num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, _blend_color,
                     morph_vertex_buffer, morph_vertex_buffer_offset, instances_count, instances_mat, func, func_data);
 
                 if (obj_flags & mdl::OBJ_SHADOW_OBJECT) {
