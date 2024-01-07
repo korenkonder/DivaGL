@@ -430,4 +430,5 @@ bool txp_set::unpack_file_modern(const void* data, size_t size, uint32_t signatu
 
 txp_set& txp_set::operator=(const txp_set& set) {
     textures.assign(set.textures.begin(), set.textures.end());
+    return *this;
 }
