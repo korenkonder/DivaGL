@@ -270,12 +270,14 @@ void(FASTCALL* sub_1405163C0)(size_t rob_chr, int32_t index, mat4* mat)
     = (void(FASTCALL*)(size_t rob_chr, int32_t index, mat4 * mat))0x00000001405163C0;
 float_t(FASTCALL* rob_chara_get_max_face_depth)(size_t rob_chr)
     = (float_t(FASTCALL*)(size_t rob_chr))0x0000000140516510;
+mat4* (FASTCALL* rob_chara_get_bone_data_mat)(size_t rob_chr, mot_bone_index index)
+    = (mat4 * (FASTCALL*)(size_t rob_chr, mot_bone_index index))0x0000000140516730;
 mat4* (FASTCALL* sub_140516740)(size_t rob_chr)
     = (mat4 * (FASTCALL*)(size_t rob_chr))0x0000000140516740;
 mat4* (FASTCALL* rob_chara_get_adjust_data_mat)(size_t rob_chr)
     = (mat4 * (FASTCALL*)(size_t rob_chr))0x0000000140516750;
-bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr, int32_t chara_id)
-    = (bool(FASTCALL*)(size_t rob_chr, int32_t chara_id))0x0000000140531F50;
+bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr_smth, int32_t chara_id)
+    = (bool(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140531F50;
 size_t(FASTCALL* get_rob_chara_smth)() = (size_t(FASTCALL*)())0x00000001405320E0;
 size_t(FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id)
     = (size_t(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140532030;

@@ -42,8 +42,7 @@ static const GLuint MORPH_TEXCOORD0_INDEX = 13;
 static const GLuint MORPH_TEXCOORD1_INDEX = 14;
 static const GLuint      BONE_INDEX_INDEX = 15;
 
-material_list_struct::material_list_struct() : blend_color(),
-has_blend_color(), emission(), has_emission() {
+material_list_struct::material_list_struct() : blend_color(), has_blend_color(), emission(), has_emission() {
     hash = (uint32_t)-1;
 }
 

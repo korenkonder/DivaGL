@@ -54,6 +54,12 @@ struct ObjsetInfo {
 
 static_assert(sizeof(ObjsetInfo) == 0xD8, "\"ObjsetInfo\" struct should have a size of 0xD8");
 
+void (FASTCALL* object_database_unload_set)(int32_t set)
+    = (void (FASTCALL*)(int32_t set))0x00000001404599B0;
+obj_mesh* (FASTCALL* object_info_get_mesh_by_index)(object_info object, int32_t mesh_index)
+    = (obj_mesh * (FASTCALL*)(object_info object, int32_t mesh_index))0x0000000140459D40;
+int32_t(FASTCALL* object_info_get_mesh_index)(object_info object, const char* mesh_name)
+    = (int32_t(FASTCALL*)(object_info object, const char* mesh_name))0x0000000140459DE0;
 uint32_t(FASTCALL* object_database_get_object_info)(const char* name)
     = (uint32_t(FASTCALL*)(const char* name))0x0000000140459F80;
 obj* (FASTCALL* object_info_get_object)(object_info obj_info)
@@ -72,6 +78,10 @@ prj::vector<GLuint>* (FASTCALL* object_database_get_set_gentex)(int32_t set)
     = (prj::vector<GLuint> * (FASTCALL*)(int32_t set))0x000000014045A9E0;
 int32_t(FASTCALL* object_database_get_set_id)(int32_t set_index)
     = (int32_t(FASTCALL*)(int32_t set_index))0x000000014045AA10;
+int32_t(FASTCALL* object_database_load_set)(int32_t set)
+    = (int32_t(FASTCALL*)(int32_t set))0x000000014045C6A0;
+bool (FASTCALL* object_database_load_obj_set_check_not_read)(int32_t set)
+    = (bool(FASTCALL*)(int32_t set))0x000000014045DA60;
 
 static BufObjMgr& bufobj_mgr = *(BufObjMgr*)0x00000001411A34D0;
 

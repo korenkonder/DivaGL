@@ -92,11 +92,16 @@ extern texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format,
 extern texture* texture_txp_load(txp* t, texture_id id);
 extern void texture_txp_store(texture* tex, txp* t);
 
+extern void texture_array_free(texture** arr);
+
 extern void texture_set_params(GLenum target, int32_t max_mipmap_level, bool use_high_anisotropy);
 
 extern void texture_params_get(GLuint tex_0 = 0, texture_param* tex_0_param = 0,
     GLuint tex_1 = 0, texture_param* tex_1_param = 0, GLuint tex_2 = 0, texture_param* tex_2_param = 0);
 extern void texture_params_restore(texture_param* tex_0_param = 0,
     texture_param* tex_1_param = 0, texture_param* tex_2_param = 0);
+
+extern bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids);
+extern bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids);
 
 extern void texture_patch();
