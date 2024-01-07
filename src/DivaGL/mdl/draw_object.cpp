@@ -400,7 +400,7 @@ namespace mdl {
         const obj_material_data* material = args->material;
         const prj::vector<GLuint>* textures = args->textures;
         if (draw_state->shader_index != -1) {
-            rctx->obj_batch.g_material_state_emission = material->material.color.emission;
+            rctx->obj_batch.g_material_state_emission = args->emission;
             draw_object_material_set_uniform(material, false);
             if (material->material.attrib.m.alpha_texture)
                 uniform->arr[U_TEXTURE_COUNT] = 0;
@@ -762,7 +762,7 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
     if (!sss_data_get()->enable)
         rctx->obj_batch.g_material_state_ambient.w = 1.0f;
     rctx->obj_batch.g_material_state_diffuse = material->material.color.diffuse;
-    rctx->obj_batch.g_material_state_emission = material->material.color.emission;
+    rctx->obj_batch.g_material_state_emission = args->emission;
 
     float_t line_light;
     if (lighting_type == OBJ_MATERIAL_SHADER_LIGHTING_PHONG) {
@@ -945,7 +945,7 @@ static void draw_object_material_set_reflect(const mdl::ObjSubMeshArgs* args) {
     else {
         ambient = material->material.color.ambient;
         diffuse = material->material.color.diffuse;
-        emission = material->material.color.emission;
+        emission = args->emission;
         specular = material->material.color.specular;
     }
 

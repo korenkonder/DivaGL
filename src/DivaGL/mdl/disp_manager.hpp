@@ -14,6 +14,7 @@
 #include "../object.hpp"
 #include "../shadow.hpp"
 
+#define MATERIAL_LIST_COUNT 24
 #define TEXTURE_PATTERN_COUNT 24
 #define TEXTURE_TRANSFORM_COUNT 24
 
@@ -108,6 +109,18 @@ namespace mdl {
     };
 }
 
+struct material_list_struct {
+    uint64_t hash;
+    vec4 blend_color;
+    vec4u8 has_blend_color;
+    vec4 emission;
+    vec4u8 has_emission;
+
+    material_list_struct();
+    material_list_struct(uint64_t hash, vec4& blend_color,
+        vec4u8& has_blend_color, vec4& emission, vec4u8& has_emission);
+};
+
 struct morph_struct {
     object_info object;
     float_t weight;
@@ -159,6 +172,7 @@ namespace mdl {
         bool set_blend_color;
         bool chara_color;
         vec4 blend_color;
+        vec4 emission;
         bool self_shadow;
         shadow_type_enum shadow;
         GLuint morph_vertex_buffer;
@@ -308,7 +322,7 @@ namespace mdl {
             const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
             const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
             GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
-            const vec4& blend_color, GLuint morph_vertex_buffer,
+            const vec4& blend_color, const vec4& emission, GLuint morph_vertex_buffer,
             size_t morph_vertex_buffer_offset, int32_t instances_count, mat4* instances_mat,
             void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data);
         void init_translucent(const mat4* mat, ObjTranslucentArgs* translucent);
@@ -454,6 +468,7 @@ namespace mdl {
         void set_chara_color(bool value = false);
         void set_culling_finc(bool(FASTCALL* func)(obj_bounding_sphere*) = 0);
         void set_obj_flags(ObjFlags flags = (ObjFlags)0);
+        void set_material_list(int32_t count = 0, const material_list_struct* value = 0);
         void set_morph(object_info object = {}, float_t weight = 0.0f);
         void set_shadow_type(shadow_type_enum type = SHADOW_CHARA);
         void set_texture_color_coefficients(vec4& value);

@@ -42,6 +42,17 @@ static const GLuint MORPH_TEXCOORD0_INDEX = 13;
 static const GLuint MORPH_TEXCOORD1_INDEX = 14;
 static const GLuint      BONE_INDEX_INDEX = 15;
 
+material_list_struct::material_list_struct() : blend_color(),
+has_blend_color(), emission(), has_emission() {
+    hash = (uint32_t)-1;
+}
+
+material_list_struct::material_list_struct(uint64_t hash, vec4& blend_color,
+    vec4u8& has_blend_color, vec4& emission, vec4u8& has_emission) : hash(hash), blend_color(blend_color),
+    has_blend_color(has_blend_color), emission(emission), has_emission(has_emission) {
+
+}
+
 texture_pattern_struct::texture_pattern_struct() {
     src = (uint32_t)-1;
     dst = (uint32_t)-1;
@@ -63,6 +74,9 @@ texture_transform_struct::texture_transform_struct(uint32_t id, const mat4& mat)
 namespace mdl {
     prj::vector<DispManager::vertex_array> vertex_array_cache;
     prj::vector<DispManager::etc_vertex_array> etc_vertex_array_cache;
+
+    int32_t material_list_count;
+    material_list_struct material_list_array[MATERIAL_LIST_COUNT];
 
     ObjSubMeshArgs::ObjSubMeshArgs() : sub_mesh(), mesh(), material(), textures(), mat_count(), mats(),
         vertex_buffer(), vertex_buffer_offset(), index_buffer(), set_blend_color(), chara_color(), self_shadow(),
@@ -189,7 +203,7 @@ namespace mdl {
         const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
         const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
         GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
-        const vec4& blend_color, GLuint morph_vertex_buffer,
+        const vec4& blend_color, const vec4& emission, GLuint morph_vertex_buffer,
         size_t morph_vertex_buffer_offset, int32_t instances_count, mat4* instances_mat,
         void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data) {
         kind = mdl::OBJ_KIND_NORMAL;
@@ -229,6 +243,8 @@ namespace mdl {
             args->set_blend_color = false;
             args->blend_color = 1.0f;
         }
+
+        args->emission = emission;
 
         args->chara_color = disp_manager->chara_color;
         args->self_shadow = !!(disp_manager->obj_flags & (mdl::OBJ_8 | mdl::OBJ_4));
@@ -2044,12 +2060,79 @@ namespace mdl {
                 if (!vertex_buffer || !index_buffer || obj_morph_vertex_buf && !morph_vertex_buffer)
                     continue;
 
+                uint64_t material_hash = hash_utf8_fnv1a64m(material->material.name);
+
+                material_list_struct* mat_list = 0;
+                for (int32_t k = 0; k < material_list_count; k++)
+                    if (material_list_array[k].hash == material_hash) {
+                        mat_list = &material_list_array[k];
+                        break;
+                    }
+
                 vec4 _blend_color = 1.0f;
-                if (blend_color)
-                    _blend_color = *blend_color;
+                vec4 _emission = 0.0f;
+
+                if (mat_list) {
+                    bool has_blend_color = false;
+                    if (mat_list->has_blend_color.x) {
+                        _blend_color.x = mat_list->blend_color.x;
+                        has_blend_color = true;
+                    }
+
+                    if (mat_list->has_blend_color.y) {
+                        _blend_color.y = mat_list->blend_color.y;
+                        has_blend_color = true;
+                    }
+
+                    if (mat_list->has_blend_color.z) {
+                        _blend_color.z = mat_list->blend_color.z;
+                        has_blend_color = true;
+                    }
+
+                    if (mat_list->has_blend_color.w) {
+                        _blend_color.w = mat_list->blend_color.w;
+                        has_blend_color = true;
+                    }
+
+                    if (blend_color) {
+                        if (!has_blend_color)
+                            _blend_color = *blend_color;
+                        else
+                            _blend_color *= *blend_color;
+                    }
+
+                    bool has_emission = false;
+                    if (mat_list->has_emission.x) {
+                        _emission.x = mat_list->emission.x;
+                        has_emission = true;
+                    }
+
+                    if (mat_list->has_emission.y) {
+                        _emission.y = mat_list->emission.y;
+                        has_emission = true;
+                    }
+
+                    if (mat_list->has_emission.z) {
+                        _emission.z = mat_list->emission.z;
+                        has_emission = true;
+                    }
+
+                    if (mat_list->has_emission.w) {
+                        _emission.w = mat_list->emission.w;
+                        has_emission = true;
+                    }
+
+                    if (!has_emission)
+                        _emission = material->material.color.emission;
+                }
+                else {
+                    if (blend_color)
+                        _blend_color = *blend_color;
+                    _emission = material->material.color.emission;
+                }
 
                 data->init_sub_mesh(mat, object->bounding_sphere.radius, sub_mesh, mesh, material, textures,
-                    num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, _blend_color,
+                    num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, _blend_color, _emission,
                     morph_vertex_buffer, morph_vertex_buffer_offset, instances_count, instances_mat, func, func_data);
 
                 if (obj_flags & mdl::OBJ_SHADOW_OBJECT) {
@@ -2638,6 +2721,20 @@ namespace mdl {
 
     void DispManager::set_obj_flags(ObjFlags flags) {
         obj_flags = flags;
+    }
+
+    void DispManager::set_material_list(int32_t count, const material_list_struct* value) {
+        if (count > MATERIAL_LIST_COUNT)
+            return;
+
+        material_list_count = count;
+
+        if (count)
+            for (int32_t i = 0; i < count; i++)
+                material_list_array[i] = value[i];
+        else
+            for (int32_t i = 0; i < MATERIAL_LIST_COUNT; i++)
+                material_list_array[i] = {};
     }
 
     void DispManager::set_morph(object_info object, float_t weight) {
