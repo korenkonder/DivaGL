@@ -9,6 +9,7 @@
 #include "../KKdLib/hash.hpp"
 #include "auth_3d.hpp"
 #include "file_handler.hpp"
+#include "frame_rate_control.hpp"
 #include "gl_state.hpp"
 #include "gl_element_array_buffer.hpp"
 #include "render_context.hpp"
@@ -79,7 +80,7 @@ struct EffectFogRing {
     bool display;
     int32_t current_stage_index;
     prj::vector<int32_t> stage_indices;
-    void* frame_rate_control; // FrameRateControl
+    FrameRateControl* frame_rate_control;
 
     void draw();
 };

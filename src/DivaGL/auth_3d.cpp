@@ -8,6 +8,7 @@
 #include "mdl/disp_manager.hpp"
 #include "rob/rob.hpp"
 #include "object.hpp"
+#include "frame_rate_control.hpp"
 #include "render_context.hpp"
 #include "sprite.hpp"
 #include "texture.hpp"
@@ -450,7 +451,7 @@ struct auth_3d {
     chara_index dst_chara;
     int32_t pos;
     int64_t field_A8;
-    void* frame_rate; // FrameRateControl
+    FrameRateControl* frame_rate;
     float_t frame;
     float_t req_frame;
     float_t max_frame;

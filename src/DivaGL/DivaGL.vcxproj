@@ -251,6 +251,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="color.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="file_handler.cpp" />
+    <ClCompile Include="frame_rate_control.cpp" />
     <ClCompile Include="mdl\disp_manager.cpp" />
     <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="Glitter\glitter.cpp" />
@@ -295,6 +296,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="camera.hpp" />
     <ClInclude Include="color.hpp" />
     <ClInclude Include="file_handler.hpp" />
+    <ClInclude Include="frame_rate_control.hpp" />
     <ClInclude Include="mdl\disp_manager.hpp" />
     <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="gl.hpp" />
