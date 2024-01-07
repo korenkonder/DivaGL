@@ -63,4 +63,6 @@ struct txp_set {
     bool produce_enrs(enrs* enrs);
     bool unpack_file(const void* data, bool big_endian);
     bool unpack_file_modern(const void* data, size_t size, uint32_t signature);
+
+    txp_set& operator=(const txp_set& set);
 };

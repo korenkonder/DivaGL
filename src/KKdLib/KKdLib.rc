@@ -33,7 +33,7 @@ BEGIN
             VALUE "FileDescription", "KKdLib"
             VALUE "FileVersion", "0.7.1.0"
             VALUE "InternalName", "KKdLib"
-            VALUE "LegalCopyright", "korenkonder (C) 2017-2023"
+            VALUE "LegalCopyright", "korenkonder (C) 2017-2024"
             VALUE "OriginalFilename", "KKdLib"
             VALUE "ProductName", "KKdLib"
             VALUE "ProductVersion", "0.7.1.0"
