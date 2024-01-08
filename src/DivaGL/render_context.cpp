@@ -425,7 +425,7 @@ void render_context::ctrl(bool change_res) {
 
     int32_t width = rect.right - rect.left;
     int32_t height = rect.bottom - rect.top;
-    if (screen_width == width && screen_height == height)
+    if (!width || !height || screen_width == width && screen_height == height)
         return;
 
     /*static const double_t aspect = 16.0 / 9.0;

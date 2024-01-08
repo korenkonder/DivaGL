@@ -7,7 +7,6 @@
 #include "../KKdLib/half_t.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
-#include "inject.hpp"
 #include "print.hpp"
 #include "uniform.hpp"
 #include <Helpers.h>
@@ -1620,7 +1619,7 @@ void wrap_addresses() {
     for (int i = 0; i < 78; i++)
         if (wrap_addr_dll[i].func != *(size_t*)wrap_addr_dll[i].address) {
             wrap_addr_dll[i].orig_func = *(size_t*)wrap_addr_dll[i].address;
-            inject_uint64_t((void*)wrap_addr_dll[i].address, wrap_addr_dll[i].func);
+            WRITE_MEMORY(wrap_addr_dll[i].address, uint64_t, wrap_addr_dll[i].func);
         }
 
     for (int i = 0; i < 9; i++)
@@ -1633,7 +1632,7 @@ void wrap_addresses() {
     for (int i = 0; i < 27; i++)
         if (wrap_addr_glut[i].func != *(size_t*)(glut_handle + wrap_addr_glut[i].address)) {
             wrap_addr_glut[i].orig_func = *(size_t*)(glut_handle + wrap_addr_glut[i].address);
-            inject_uint64_t((void*)(glut_handle + wrap_addr_glut[i].address), wrap_addr_glut[i].func);
+            WRITE_MEMORY(glut_handle + wrap_addr_glut[i].address, uint64_t, wrap_addr_glut[i].func);
         }
 
     for (int i = 0; i < 7; i++)
@@ -1646,7 +1645,7 @@ void wrap_addresses() {
     for (int i = 0; i < 50; i++)
         if (wrap_addr[i].func != *(size_t*)wrap_addr[i].address) {
             wrap_addr[i].orig_func = *(size_t*)wrap_addr[i].address;
-            inject_uint64_t((void*)wrap_addr[i].address, wrap_addr[i].func);
+            WRITE_MEMORY(wrap_addr[i].address, uint64_t, wrap_addr[i].func);
         }
 
     for (int i = 0; i < 1057; i++)

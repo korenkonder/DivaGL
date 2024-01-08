@@ -19,6 +19,8 @@
 #include "texture.hpp"
 #include <Helpers.h>
 
+static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int32_t a5);
+
 #ifdef DEBUG
 static void APIENTRY gl_debug_output(GLenum source, GLenum type, uint32_t id,
     GLenum severity, GLsizei length, const char* message, const void* userParam);
@@ -74,6 +76,7 @@ HOOK(int32_t, FASTCALL, data_free, 0x000000140192490) {
 
     int32_t ret = originaldata_free();
     delete rctx;
+    rctx = 0;
     return ret;
 }
 
@@ -253,6 +256,63 @@ void hook_funcs() {
 
     INSTALL_HOOK(env_set_blend_color);
     INSTALL_HOOK(env_set_offset_color);
+
+    uint8_t buf[0x0C] = {};
+    buf[0x00] = 0x48; // mov rax, 0
+    buf[0x01] = 0xB8;
+    buf[0x0A] = 0xFF; // jmp rax
+    buf[0x0B] = 0xE0;
+
+    *(uint64_t*)&buf[0x02] = (uint64_t)&printf_proxy;
+    WRITE_MEMORY_STRING(0x00000001401D3860, buf, 0x0C);
+
+    *(uint64_t*)&buf[0x02] = (uint64_t)&printf_proxy;
+    WRITE_MEMORY_STRING(0x00000001400DE640, buf, 0x0C);
+
+    *(uint64_t*)&buf[0x02] = (uint64_t)&gl_state_get;
+    WRITE_MEMORY_STRING(0x0000000140442FB4, buf, 0x0C);
+
+    extern size_t glut_handle;
+    *(uint64_t*)&buf[0x02] = (uint64_t)&glut_create_context;
+    WRITE_MEMORY_STRING(glut_handle + 0x0000A970, buf, 0x0C);
+
+    // Patch font shader index
+    WRITE_MEMORY(0x00000001401982D8, uint32_t, SHADER_FT_FONT);
+}
+
+static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int32_t a5) {
+    extern size_t glut_handle;
+    HDC& hDc = *(HDC*)(glut_handle + 0x55F20);
+
+    wrap_addresses();
+
+    if (true/*a5*/) {
+        typedef HGLRC(GLAPIENTRY* PFNWGLCREATECONTEXTGLUTPROC)(HDC hDc);
+
+        HGLRC tmp_ctx = wglCreateContextGLUT(hDc);;
+        wglMakeCurrentGLUT(hDc, tmp_ctx);
+        PFNWGLCREATECONTEXTATTRIBSARBPROC _wglCreateContextAttribsARB
+            = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddressGLUT("wglCreateContextAttribsARB");
+
+        int32_t minor = 6;
+        HGLRC ctx = 0;
+        while (!ctx || minor < 3) {
+            const int32_t attrib_list[] = {
+                WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+                WGL_CONTEXT_MINOR_VERSION_ARB, minor,
+                WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
+                0,
+            };
+            ctx = _wglCreateContextAttribsARB(hDc, 0, attrib_list);;
+            minor--;
+        }
+        wglMakeCurrentGLUT(hDc, ctx);
+        wglDeleteContextGLUT(tmp_ctx);
+        return ctx;
+    }
+    else
+        return wglCreateContextGLUT(hDc);
 }
 
 #ifdef DEBUG

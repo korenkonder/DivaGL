@@ -24,10 +24,10 @@ namespace Glitter {
     }
 
     void GltParticleManager::Disp(GPM) {
-        if (glt_particle_manager->flags & PARTICLE_MANAGER_NOT_DISP)
+        if (GPM_VAL->flags & PARTICLE_MANAGER_NOT_DISP)
             return;
 
-        for (Scene*& i : glt_particle_manager->scenes)
+        for (Scene*& i : GPM_VAL->scenes)
             if (i)
                 Scene::CalcDisp(i);
     }
