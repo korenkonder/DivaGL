@@ -6,7 +6,6 @@
 #include <Windows.h>
 #include "../KKdLib/default.hpp"
 #include "hook.hpp"
-#include "inject.hpp"
 #include "print.hpp"
 #include "wrap.hpp"
 #include <intrin.h>
@@ -98,7 +97,6 @@ void FASTCALL divagl_main() {
     printf_divagl("Patching memory");
     hook_funcs();
     wrap_patch();
-    inject_patches();
 }
 
 bool APIENTRY DllMain(HMODULE handle, DWORD ul_reason_for_call, LPVOID lpReserved) {

@@ -246,33 +246,34 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="auth_3d.cpp" />
-    <ClCompile Include="camera.cpp" />
-    <ClCompile Include="color.cpp" />
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="file_handler.cpp" />
-    <ClCompile Include="frame_rate_control.cpp" />
-    <ClCompile Include="mdl\disp_manager.cpp" />
-    <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="Glitter\glitter.cpp" />
     <ClCompile Include="Glitter\particle.cpp" />
     <ClCompile Include="Glitter\particle_manager.cpp" />
     <ClCompile Include="Glitter\render_group.cpp" />
     <ClCompile Include="Glitter\render_scene.cpp" />
     <ClCompile Include="Glitter\scene.cpp" />
+    <ClCompile Include="auth_3d.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="effect.cpp" />
+    <ClCompile Include="file_handler.cpp" />
+    <ClCompile Include="frame_rate_control.cpp" />
     <ClCompile Include="gl_state.cpp" />
-    <ClCompile Include="inject.cpp" />
+    <ClCompile Include="hook.cpp" />
     <ClCompile Include="light_param\fog.cpp" />
     <ClCompile Include="light_param\light.cpp" />
+    <ClCompile Include="mdl\disp_manager.cpp" />
+    <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="print.cpp" />
     <ClCompile Include="render.cpp" />
-    <ClCompile Include="renderer\dof.cpp" />
-    <ClCompile Include="renderer\fbo.cpp" />
-    <ClCompile Include="renderer\transparency.cpp" />
     <ClCompile Include="render_context.cpp" />
     <ClCompile Include="render_manager.cpp" />
     <ClCompile Include="render_texture.cpp" />
+    <ClCompile Include="renderer\dof.cpp" />
+    <ClCompile Include="renderer\fbo.cpp" />
+    <ClCompile Include="renderer\transparency.cpp" />
     <ClCompile Include="resolution_mode.cpp" />
     <ClCompile Include="rob\rob.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -282,42 +283,41 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="stage_param.cpp" />
-    <ClCompile Include="effect.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="uniform.cpp" />
-    <ClCompile Include="hook.cpp" />
     <ClCompile Include="wrap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DivaGL.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Glitter\glitter.hpp" />
     <ClInclude Include="auth_3d.hpp" />
     <ClInclude Include="camera.hpp" />
     <ClInclude Include="color.hpp" />
+    <ClInclude Include="effect.hpp" />
     <ClInclude Include="file_handler.hpp" />
     <ClInclude Include="frame_rate_control.hpp" />
-    <ClInclude Include="mdl\disp_manager.hpp" />
-    <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="gl.hpp" />
-    <ClInclude Include="Glitter\glitter.hpp" />
     <ClInclude Include="gl_array_buffer.hpp" />
     <ClInclude Include="gl_element_array_buffer.hpp" />
     <ClInclude Include="gl_shader_storage_buffer.hpp" />
-    <ClInclude Include="gl_uniform_buffer.hpp" />
     <ClInclude Include="gl_state.hpp" />
-    <ClInclude Include="inject.hpp" />
+    <ClInclude Include="gl_uniform_buffer.hpp" />
+    <ClInclude Include="hook.hpp" />
     <ClInclude Include="light_param\fog.hpp" />
     <ClInclude Include="light_param\light.hpp" />
+    <ClInclude Include="mdl\disp_manager.hpp" />
+    <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="object.hpp" />
     <ClInclude Include="print.hpp" />
     <ClInclude Include="render.hpp" />
-    <ClInclude Include="renderer\dof.hpp" />
-    <ClInclude Include="renderer\fbo.hpp" />
-    <ClInclude Include="renderer\transparency.hpp" />
     <ClInclude Include="render_context.hpp" />
     <ClInclude Include="render_manager.hpp" />
     <ClInclude Include="render_texture.hpp" />
+    <ClInclude Include="renderer\dof.hpp" />
+    <ClInclude Include="renderer\fbo.hpp" />
+    <ClInclude Include="renderer\transparency.hpp" />
     <ClInclude Include="resolution_mode.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rob\rob.hpp" />
@@ -328,11 +328,9 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="sprite.hpp" />
     <ClInclude Include="stage.hpp" />
     <ClInclude Include="stage_param.hpp" />
-    <ClInclude Include="effect.hpp" />
     <ClInclude Include="texture.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="uniform.hpp" />
-    <ClInclude Include="hook.hpp" />
     <ClInclude Include="wrap.hpp" />
   </ItemGroup>
   <ItemGroup>

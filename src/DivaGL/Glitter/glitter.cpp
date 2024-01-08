@@ -4,26 +4,22 @@
 */
 
 #include "glitter.hpp"
-#include "../inject.hpp"
 #include "../gl_state.hpp"
 #include "../wrap.hpp"
+#include <Helpers.h>
 
 namespace Glitter {
     void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec1, const vec3* vec2) {
         *axis = vec3::cross(*vec1, *vec2);
         *angle = vec3::length(*axis);
+
         if (*angle >= 0.000001f)
-            *angle = asinf(min_def(*angle, 1.0f));
+            *angle = asinf(clamp_def(*angle, -1.0f, 1.0f));
         else {
             *angle = 0.0f;
-            axis->x = vec1->z;
-            axis->y = 0.0f;
-            axis->z = vec1->x;
-            if (vec3::length(*axis) < 0.000001f) {
-                axis->x = -vec1->y;
-                axis->y = vec1->x;
-                axis->z = 0.0f;
-            }
+            *axis = vec3::cross(vec3(0.0f, 1.0f, 0.0f), *vec1);
+            if (vec3::length(*axis) < 0.000001f)
+                *axis = vec3::cross(vec3(0.0f, 0.0f, 1.0f), *vec1);
         }
 
         if (vec3::dot(*vec1, *vec2) < 0.0f)
@@ -101,28 +97,28 @@ namespace Glitter {
         uint8_t buf[0x100];
 
         // Particle
-        inject_uint32_t((void*)0x000000014039A396, sizeof(Particle));
+        WRITE_MEMORY(0x000000014039A396, uint32_t, sizeof(Particle));
 
         memcpy(buf, _000000014039BC78_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)Particle::CreateBuffer;
-        inject_data((void*)0x000000014039BC78, buf, 0x11);
+        WRITE_MEMORY_STRING(0x000000014039BC78, buf, 0x11);
 
         memcpy(buf, _00000001403AEA7E_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)Particle::DeleteBuffer;
-        inject_data((void*)0x00000001403AEA7E, buf, 0x11);
+        WRITE_MEMORY_STRING(0x00000001403AEA7E, buf, 0x11);
 
         // RenderGroup
-        inject_uint32_t((void*)0x00000001403A9740, sizeof(RenderGroup));
+        WRITE_MEMORY(0x00000001403A9740, uint32_t, sizeof(RenderGroup));
 
         memcpy(buf, _00000001403A5CA7_patch_data, 0x14);
         *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::CreateBuffer;
-        inject_data((void*)0x00000001403A5CA7, buf, 0x14);
+        WRITE_MEMORY_STRING(0x00000001403A5CA7, buf, 0x14);
 
         memcpy(buf, _00000001403A8552_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::DeleteBuffer;
-        inject_data((void*)0x00000001403A8552, buf, 0x11);
+        WRITE_MEMORY_STRING(0x00000001403A8552, buf, 0x11);
 
         // GltParticleManager
-        inject_uint64_t((void*)(0x00000001409EB880 + 0x20), (uint64_t)GltParticleManager::Disp);
+        WRITE_MEMORY(0x00000001409EB880 + 0x20, uint64_t, (uint64_t)GltParticleManager::Disp);
     }
 }
