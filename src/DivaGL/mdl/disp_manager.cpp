@@ -4,6 +4,7 @@
 */
 
 #include "disp_manager.hpp"
+#include "../../KKdLib/hash.hpp"
 #include "../Glitter/glitter.hpp"
 #include "../rob/rob.hpp"
 #include "../gl_state.hpp"
@@ -1586,7 +1587,7 @@ namespace mdl {
 
         switch (type) {
         case OBJ_TYPE_TRANSLUCENT:
-        case OBJ_TYPE_TRANSLUCENT_NO_SHADOW:
+        case OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS:
         //case OBJ_TYPE_TRANSLUCENT_LOCAL:
             if (depth_mask)
                 func = draw_sub_mesh_translucent;
@@ -1695,7 +1696,7 @@ namespace mdl {
 
         switch (type) {
         case OBJ_TYPE_TRANSLUCENT:
-        case OBJ_TYPE_TRANSLUCENT_NO_SHADOW:
+        case OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS:
         case OBJ_TYPE_REFLECT_TRANSLUCENT:
         case OBJ_TYPE_REFRACT_TRANSLUCENT:
             if (!depth_mask)
@@ -1927,7 +1928,7 @@ namespace mdl {
         obj_mesh_index_buffer* obj_index_buf, const mat4* mat,
         prj::vector<GLuint>* textures, vec4* blend_color, mat4* bone_mat, ::obj* object_morph,
         obj_mesh_vertex_buffer* obj_morph_vertex_buf, int32_t instances_count, mat4* instances_mat,
-        void(*func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data,
+        void(*func)(const mdl::ObjSubMeshArgs*), const ObjSubMeshArgs* func_data,
         bool enable_bone_mat, bool local) {
         if (!obj_vertex_buf || !obj_index_buf)
             return false;
@@ -2231,9 +2232,9 @@ namespace mdl {
                         if (!attrib.translucent_priority)
                             /*if (local)
                                 entry_list(OBJ_TYPE_TRANSLUCENT_LOCAL, data);
-                            else */if (mesh->attrib.m.translucent_no_shadow
-                                || obj_flags & mdl::OBJ_TRANSLUCENT_NO_SHADOW) {
-                                entry_list(OBJ_TYPE_TRANSLUCENT_NO_SHADOW, data);
+                            else */if (mesh->attrib.m.translucent_sort_by_radius
+                                || obj_flags & mdl::OBJ_TRANSLUCENT_SORT_BY_RADIUS) {
+                                entry_list(OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, data);
                             }
                             else
                                 entry_list(OBJ_TYPE_TRANSLUCENT, data);

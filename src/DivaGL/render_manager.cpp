@@ -703,7 +703,7 @@ namespace rndr {
 
         if (alpha_z_sort) {
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT, 1);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_NO_SHADOW, 2);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, 2);
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, 1);
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, 1);
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3, 1);
@@ -768,7 +768,7 @@ namespace rndr {
             gl_state_enable_blend();
             gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl_state_set_depth_mask(GL_FALSE);
-            disp_manager->draw(mdl::OBJ_TYPE_TRANSLUCENT_NO_SHADOW);
+            disp_manager->draw(mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS);
             disp_manager->draw(mdl::OBJ_TYPE_TRANSLUCENT);
             gl_state_disable_blend();
         }
@@ -859,7 +859,7 @@ namespace rndr {
 
         if (alpha_z_sort) {
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT, 1);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_NO_SHADOW, 2);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, 2);
         }
 
         if (opaque_z_sort)
@@ -875,7 +875,7 @@ namespace rndr {
             if (draw_pass_3d[DRAW_PASS_3D_TRANSPARENT])
                 draw_task_draw_objects_by_type_show_vector(mdl::OBJ_TYPE_TRANSPARENT, i);
             if (draw_pass_3d[DRAW_PASS_3D_TRANSLUCENT]) {
-                draw_task_draw_objects_by_type_show_vector(mdl::OBJ_TYPE_TRANSLUCENT_NO_SHADOW, i);
+                draw_task_draw_objects_by_type_show_vector(mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, i);
                 draw_task_draw_objects_by_type_show_vector(mdl::OBJ_TYPE_TRANSLUCENT, i);
             }
         }
