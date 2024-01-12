@@ -106,6 +106,13 @@ namespace mdl {
         OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3,
         OBJ_TYPE_USER,
         OBJ_TYPE_MAX,
+        OBJ_TYPE_OPAQUE_LOCAL = OBJ_TYPE_MAX,
+        OBJ_TYPE_TRANSLUCENT_LOCAL,
+        OBJ_TYPE_TRANSPARENT_LOCAL,
+        OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL,
+        OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL,
+        OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL,
+        OBJ_TYPE_LOCAL_MAX,
     };
 }
 
@@ -451,6 +458,7 @@ namespace mdl {
         GLuint get_vertex_array(const ObjSubMeshArgs* args);
         GLuint get_vertex_array(const mdl::EtcObj* etc);
         bool get_chara_color();
+        prj::list<mdl::ObjData*>& get_obj_list(mdl::ObjType type);
         void get_morph(object_info& object, float_t& weight);
         void get_obj_center(mat4& mat, const mdl::ObjSubMeshArgs* args, vec3& center);
         int32_t get_obj_count(ObjType type);

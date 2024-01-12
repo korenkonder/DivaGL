@@ -312,6 +312,8 @@ struct render_context {
     int32_t screen_width;
     int32_t screen_height;
 
+    prj::list<mdl::ObjData*> obj_local[mdl::OBJ_TYPE_LOCAL_MAX - mdl::OBJ_TYPE_MAX];
+
     render_context();
     ~render_context();
 

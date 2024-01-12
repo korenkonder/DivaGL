@@ -710,7 +710,7 @@ namespace rndr {
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, 1);
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, 1);
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3, 1);
-            //disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL, 1);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL, 1);
         }
 
         if (opaque_z_sort)
@@ -1587,9 +1587,9 @@ static int32_t draw_pass_3d_get_translucent_count() {
     count += disp_manager->get_obj_count(mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_3);
     count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3);
     count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3);
-    //count += disp_manager->get_obj_count(mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL);
-    //count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL);
-    //count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL);
+    count += disp_manager->get_obj_count(mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL);
+    count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL);
+    count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL);
     return count;
 }
 
@@ -1745,8 +1745,7 @@ static int32_t draw_pass_3d_translucent_count_layers(int32_t* alpha_array,
 
 static void draw_pass_3d_translucent_has_objects(bool* arr, mdl::ObjType type) {
     disp_manager->calc_obj_radius(&rctx->view_mat, type);
-    prj::list<mdl::ObjData*>& vec = disp_manager->obj[type];
-    for (mdl::ObjData*& i : vec)
+    for (mdl::ObjData*& i : disp_manager->get_obj_list(type))
         switch (i->kind) {
         case mdl::OBJ_KIND_NORMAL: {
             int32_t alpha = (int32_t)(i->args.sub_mesh.blend_color.w * 255.0f);

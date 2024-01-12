@@ -1458,7 +1458,7 @@ namespace mdl {
         std::vector<vec3> alpha_center;
         std::vector<vec3> mat_center;
 
-        for (ObjData*& i : obj[type]) {
+        for (ObjData*& i : get_obj_list(type)) {
             vec3 center = 0.0f;
             bool v50 = false;
             switch (i->kind) {
@@ -1564,7 +1564,7 @@ namespace mdl {
     }
 
     void DispManager::draw(ObjType type, int32_t depth_mask, bool a4) {
-        if (get_obj_count(type) < 1)
+        if (type < 0 || type >= mdl::OBJ_TYPE_LOCAL_MAX || get_obj_count(type) < 1)
             return;
 
         int32_t alpha_test = 0;
@@ -1588,7 +1588,7 @@ namespace mdl {
         switch (type) {
         case OBJ_TYPE_TRANSLUCENT:
         case OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS:
-        //case OBJ_TYPE_TRANSLUCENT_LOCAL:
+        case OBJ_TYPE_TRANSLUCENT_LOCAL:
             if (depth_mask)
                 func = draw_sub_mesh_translucent;
             else
@@ -1598,7 +1598,7 @@ namespace mdl {
             alpha_threshold = 0.0f;
             break;
         case OBJ_TYPE_TRANSPARENT:
-        //case OBJ_TYPE_TRANSPARENT_LOCAL:
+        case OBJ_TYPE_TRANSPARENT_LOCAL:
             alpha_test = 1;
             min_alpha = 0.1f;
             alpha_threshold = 0.5f;
@@ -1676,7 +1676,7 @@ namespace mdl {
         rctx->obj_batch.g_max_alpha = { 0.0f, 0.0f, alpha_threshold, min_alpha };
         uniform->arr[U_ALPHA_TEST] = alpha_test;
 
-        for (ObjData*& i : obj[type]) {
+        for (ObjData*& i : get_obj_list(type)) {
             switch (i->kind) {
             case OBJ_KIND_NORMAL: {
                 draw_sub_mesh(&i->args.sub_mesh, &i->mat, func);
@@ -1723,7 +1723,7 @@ namespace mdl {
     }
 
     void DispManager::draw_translucent(ObjType type, int32_t alpha) {
-        if (get_obj_count(type) < 1)
+        if (type < 0 || type >= mdl::OBJ_TYPE_LOCAL_MAX || get_obj_count(type) < 1)
             return;
 
         int32_t alpha_test = 0;
@@ -1748,7 +1748,7 @@ namespace mdl {
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1:
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2:
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3:
-        //case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL:
+        case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL:
             gl_state_set_depth_mask(GL_FALSE);
             alpha_test = 1;
             min_alpha = 0.0f;
@@ -1757,7 +1757,7 @@ namespace mdl {
         case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1:
         case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2:
         case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3:
-        //case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL:
+        case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL:
             alpha_test = 1;
             min_alpha = 0.1f;
             alpha_threshold = 0.5f;
@@ -1766,7 +1766,7 @@ namespace mdl {
         rctx->obj_batch.g_max_alpha = { 0.0f, 0.0f, alpha_threshold, min_alpha };
         uniform->arr[U_ALPHA_TEST] = alpha_test;
 
-        for (ObjData*& i : obj[type]) {
+        for (ObjData*& i : get_obj_list(type)) {
             switch (i->kind) {
             case OBJ_KIND_NORMAL: {
                 int32_t a = (int32_t)(i->args.sub_mesh.blend_color.w * 255.0f);
@@ -1818,7 +1818,7 @@ namespace mdl {
         uniform_value_reset();
         gl_state_get();
 
-        for (ObjData*& i : obj[type]) {
+        for (ObjData*& i : get_obj_list(type)) {
             switch (i->type) {
             case OBJ_KIND_NORMAL: {
                 draw_sub_mesh_show_vector(&i->args.sub_mesh,
@@ -1835,7 +1835,7 @@ namespace mdl {
     }*/
 
     void DispManager::entry_list(ObjType type, ObjData* data) {
-        obj[type].push_back(data);
+        get_obj_list(type).push_back(data);
     }
 
     static int32_t obj_axis_aligned_bounding_box_check_visibility(
@@ -2154,8 +2154,8 @@ namespace mdl {
                                 if (obj_flags & mdl::OBJ_ALPHA_ORDER_1)
                                     entry_list(OBJ_TYPE_OPAQUE_ALPHA_ORDER_1, data);
                                 else if (obj_flags & mdl::OBJ_ALPHA_ORDER_2)
-                                    entry_list(/*local ? OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL
-                                        : */OBJ_TYPE_OPAQUE_ALPHA_ORDER_2, data);
+                                    entry_list(local ? OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL
+                                        : OBJ_TYPE_OPAQUE_ALPHA_ORDER_2, data);
                                 else
                                     entry_list(OBJ_TYPE_OPAQUE_ALPHA_ORDER_3, data);
                             }
@@ -2163,8 +2163,8 @@ namespace mdl {
                                 if (obj_flags & mdl::OBJ_ALPHA_ORDER_1)
                                     entry_list(OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1, data);
                                 else if (obj_flags & mdl::OBJ_ALPHA_ORDER_2)
-                                    entry_list(/*local ? OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL
-                                        : */OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2, data);
+                                    entry_list(local ? OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL
+                                        : OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2, data);
                                 else
                                     entry_list(OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3, data);
                             }
@@ -2176,8 +2176,8 @@ namespace mdl {
                         if (obj_flags & mdl::OBJ_ALPHA_ORDER_1)
                             entry_list(OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, data);
                         else if (obj_flags & mdl::OBJ_ALPHA_ORDER_2)
-                            entry_list(/*local ? OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL
-                                : */OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, data);
+                            entry_list(local ? OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL
+                                : OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, data);
                         else
                             entry_list(OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3, data);
                     }
@@ -2194,8 +2194,8 @@ namespace mdl {
 
                         if (attrib.punch_through) {
                             if (!(obj_flags & mdl::OBJ_NO_TRANSLUCENCY))
-                                entry_list(/*local ? OBJ_TYPE_TRANSPARENT_LOCAL
-                                    : */OBJ_TYPE_TRANSPARENT, data);
+                                entry_list(local ? OBJ_TYPE_TRANSPARENT_LOCAL
+                                    : OBJ_TYPE_TRANSPARENT, data);
 
                             if (obj_flags & mdl::OBJ_CHARA_REFLECT)
                                 entry_list(OBJ_TYPE_REFLECT_CHARA_OPAQUE, data);
@@ -2208,8 +2208,8 @@ namespace mdl {
                         }
                         else {
                             if (!(obj_flags & mdl::OBJ_NO_TRANSLUCENCY))
-                                entry_list(/*local ? OBJ_TYPE_OPAQUE_LOCAL
-                                    : */OBJ_TYPE_OPAQUE, data);
+                                entry_list(local ? OBJ_TYPE_OPAQUE_LOCAL
+                                    : OBJ_TYPE_OPAQUE, data);
 
                             if (obj_flags & mdl::OBJ_20)
                                 entry_list(OBJ_TYPE_TYPE_6, data);
@@ -2230,9 +2230,9 @@ namespace mdl {
                     }
                     else if (!(obj_flags & mdl::OBJ_NO_TRANSLUCENCY)) {
                         if (!attrib.translucent_priority)
-                            /*if (local)
+                            if (local)
                                 entry_list(OBJ_TYPE_TRANSLUCENT_LOCAL, data);
-                            else */if (mesh->attrib.m.translucent_sort_by_radius
+                            else if (mesh->attrib.m.translucent_sort_by_radius
                                 || obj_flags & mdl::OBJ_TRANSLUCENT_SORT_BY_RADIUS) {
                                 entry_list(OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, data);
                             }
@@ -2285,13 +2285,13 @@ namespace mdl {
             if (obj_flags & mdl::OBJ_ALPHA_ORDER_1)
                 entry_list(OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, data);
             else if (obj_flags & mdl::OBJ_ALPHA_ORDER_2)
-                entry_list(/*local ? OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL
-                    : */OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, data);
+                entry_list(local ? OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL
+                    : OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, data);
             else if (obj_flags & mdl::OBJ_ALPHA_ORDER_3)
                 entry_list(OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3, data);
             else
-                entry_list(/*local ? OBJ_TYPE_TRANSLUCENT_LOCAL
-                    : */OBJ_TYPE_TRANSLUCENT, data);
+                entry_list(local ? OBJ_TYPE_TRANSLUCENT_LOCAL
+                    : OBJ_TYPE_TRANSLUCENT, data);
         }
         return true;
     }
@@ -2466,10 +2466,10 @@ namespace mdl {
         if (etc->color.a == 0xFF) {
             if (!local && (obj_flags & OBJ_SHADOW))
                 entry_list((mdl::ObjType)(OBJ_TYPE_SHADOW_CHARA + shadow_type), data);
-            entry_list(/*local ? OBJ_TYPE_OPAQUE_LOCAL : */OBJ_TYPE_OPAQUE, data);
+            entry_list(local ? OBJ_TYPE_OPAQUE_LOCAL : OBJ_TYPE_OPAQUE, data);
         }
         else
-            entry_list(/*local ? OBJ_TYPE_TRANSLUCENT_LOCAL : */OBJ_TYPE_TRANSLUCENT, data);
+            entry_list(local ? OBJ_TYPE_TRANSLUCENT_LOCAL : OBJ_TYPE_TRANSLUCENT, data);
     }
 
     void DispManager::entry_obj_user(const mat4* mat, UserArgsFunc func, void* data, ObjType type) {
@@ -2592,6 +2592,12 @@ namespace mdl {
         return chara_color;
     }
 
+    prj::list<mdl::ObjData*>& DispManager::get_obj_list(mdl::ObjType type) {
+#pragma warning(suppress: 33010)
+#pragma warning(suppress: 33011)
+        return type >= mdl::OBJ_TYPE_MAX ? rctx->obj_local[type - mdl::OBJ_TYPE_MAX] : disp_manager->obj[type];
+    }
+
     void DispManager::get_morph(object_info& object, float_t& weight) {
         weight = morph.weight;
         object = morph.object;
@@ -2615,7 +2621,7 @@ namespace mdl {
     }
 
     int32_t DispManager::get_obj_count(ObjType type) {
-        return (int32_t)obj[type].size();
+        return (int32_t)get_obj_list(type).size();
     }
 
     ObjFlags DispManager::get_obj_flags() {
@@ -2661,7 +2667,7 @@ namespace mdl {
     }
 
     void DispManager::obj_sort(mat4* view, ObjType type, int32_t compare_func) {
-        prj::list<ObjData*>& list = obj[type];
+        prj::list<ObjData*>& list = get_obj_list(type);
         if (list.size() < 1)
             return;
 
@@ -2706,6 +2712,9 @@ namespace mdl {
         texture_specular_offset = 0.0f;
 
         for (prj::list<ObjData*>& i : obj)
+            i.clear();
+
+        for (prj::list<ObjData*>& i : rctx->obj_local)
             i.clear();
 
         buffer_reset();
