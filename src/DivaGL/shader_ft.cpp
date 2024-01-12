@@ -388,13 +388,13 @@ static const int32_t esm_filter_erosion_fpt_unival_max[] = {
 };
 
 static const int32_t lit_proj_vpt_unival_max[] = {
-    //1, 1, 0, 1, 0, 0,
-    1, 0, 1, 0, 0, // 0th removed
+    //1, 1, 0, 1, 0, 0, 0, // 6th added
+    1, 0, 1, 0, 0, 0, // 0th removed, 6th added
 };
 
 static const int32_t lit_proj_fpt_unival_max[] = {
-    //0, 0, 1, 1, 2, 1,
-    0, 1, 1, 2, 1, // 0th removed
+    //0, 0, 1, 1, 2, 1, 1,  // 6th added
+    0, 1, 1, 2, 1, 1, // 0th removed, 6th added
 };
 
 static const int32_t simple_vpt_unival_max[] = {
@@ -2137,6 +2137,7 @@ static const std::pair<uniform_name, bool> LITPROJ_uniform[] = {
     { U_NORMAL       , false },
     { U_TEXTURE_COUNT, false },
     { U_TRANSPARENCY , false },
+    { U_ALPHA_TEST   , true  }, // 6th added
 };
 
 static const std::pair<uniform_name, bool> SIMPLE_uniform[] = {
