@@ -1946,7 +1946,7 @@ static const std::pair<uniform_name, bool> BLINN_uniform[] = {
     //{ U16          , true  }, // 0th removed
     { U_BONE_MAT     , true  },
     { U_TEXTURE_COUNT, false },
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_NORMAL       , false },
     { U_SPECULAR     , false },
     { U_ENV_MAP      , false },
@@ -1981,7 +1981,7 @@ static const std::pair<uniform_name, bool> STAGE_uniform[] = {
     { U_MORPH_COLOR  , true  },
     { U_TEXTURE_COUNT, false },
     { U_ENV_MAP      , false },
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_NORMAL       , false },
     { U_FOG_HEIGHT   , false },
     { U_LIGHT_1      , false },
@@ -2163,7 +2163,7 @@ static const std::pair<uniform_name, bool> LAMBERT_uniform[] = {
     //{ U16            , true  }, // 0th removed
     { U_BONE_MAT     , true  },
     { U_TEXTURE_COUNT, false },
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_FOG_HEIGHT   , false },
     { U_MORPH        , true  },
     { U_MORPH_COLOR  , true  },
@@ -2258,7 +2258,7 @@ static const std::pair<uniform_name, bool> WATER01_uniform[] = {
 };*/
 
 /*static const std::pair<uniform_name, bool> WATRING_uniform[] = {
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_LIGHT_1      , false },
 };*/
 
@@ -2282,7 +2282,7 @@ static const std::pair<uniform_name, bool> STAR_uniform[] = {
     { U_TEXTURE_COUNT, false },
     { U_NORMAL       , false },
     { U_SPECULAR     , false },
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_LIGHT_1      , false },
 };
 
@@ -2301,7 +2301,7 @@ static const std::pair<uniform_name, bool> SN_NRM_uniform[] = {
 static const std::pair<uniform_name, bool> FLOOR_uniform[] = {
     { U_TEXTURE_COUNT, false },
     { U_NORMAL       , false },
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_LIGHT_1      , false },
     { U_FOG_HEIGHT   , false },
     { U_MORPH        , true  },
@@ -2311,7 +2311,7 @@ static const std::pair<uniform_name, bool> FLOOR_uniform[] = {
 
 static const std::pair<uniform_name, bool> PUDDLE_uniform[] = {
     { U_NORMAL       , false },
-    { U_LIGHT_1      , false },
+    { U_LIGHT_0      , false },
     { U_LIGHT_1      , false },
     { U_FOG_HEIGHT   , false },
 };

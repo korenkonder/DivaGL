@@ -1324,7 +1324,7 @@ static bool draw_pass_shadow_litproj() {
     glClearDepthf(1.0f);
     glClearDLL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (!draw_pass_shadow_litproj_set_mat(false)) {
+    if (!draw_pass_shadow_litproj_set_mat(true)) {
         gl_state_bind_framebuffer(0);
         return false;
     }

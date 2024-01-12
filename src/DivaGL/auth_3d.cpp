@@ -622,7 +622,7 @@ HOOK(void, FASTCALL, auth_3d_m_object_hrc_disp, 0x00000001401D0760, auth_3d_m_ob
         disp_manager.set_shadow_type(shadow_type);
 
         Shadow* shad = shadow_ptr_get();
-        if (shad && flags & mdl::OBJ_SHADOW) {
+        if (shad && (flags & mdl::OBJ_SHADOW)) {
             disp_manager.set_shadow_type(SHADOW_STAGE);
 
             mat4* m = &moh->model_transform.mat;
