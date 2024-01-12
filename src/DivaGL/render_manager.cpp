@@ -158,10 +158,13 @@ namespace rndr {
     }
 
     void RenderManager::render_all() {
-        static const GLfloat color_clear[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        if (!rctx)
+            return;
+
+        static const vec4 color_clear = 0.0f;
 
         gl_state_bind_framebuffer(0);
-        glClearBufferfv(GL_COLOR, 0, color_clear);
+        glClearBufferfv(GL_COLOR, 0, (float_t*)&color_clear);
 
         static const int32_t ibl_texture_index[] = {
             9, 10, 11, 12, 13
@@ -1342,7 +1345,7 @@ static bool draw_pass_shadow_litproj_set() {
     if (!stage_param_data_litproj_current)
         return 0;
 
-    static const vec4 color_clear = 1.0f;
+    static const vec4 color_clear = 0.0f;
     static const GLfloat depth_clear = 1.0f;
 
     litproj_shadow[0].Bind();
