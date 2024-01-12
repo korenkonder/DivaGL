@@ -12,6 +12,7 @@
 #include "effect.hpp"
 #include "object.hpp"
 #include "print.hpp"
+#include "pv_game.hpp"
 #include "resource.h"
 #include "shader_ft.hpp"
 #include "sprite.hpp"
@@ -54,6 +55,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     object_patch();
     render_manager_patch();
     rob_patch();
+    pv_game_patch();
     sprite_patch();
     stage_patch();
     texture_patch();

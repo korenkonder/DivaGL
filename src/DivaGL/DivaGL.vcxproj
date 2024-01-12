@@ -50,6 +50,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -267,6 +270,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="print.cpp" />
+    <ClCompile Include="pv_game.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="render_context.cpp" />
     <ClCompile Include="render_manager.cpp" />
@@ -311,6 +315,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="object.hpp" />
     <ClInclude Include="print.hpp" />
+    <ClInclude Include="pv_game.hpp" />
     <ClInclude Include="render.hpp" />
     <ClInclude Include="render_context.hpp" />
     <ClInclude Include="render_manager.hpp" />
@@ -341,5 +346,11 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
   <ItemGroup>
     <None Include="..\..\res\ft_shaders.farc" />
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="common.asm" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
 </Project>
