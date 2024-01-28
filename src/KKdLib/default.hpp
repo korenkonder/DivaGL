@@ -113,7 +113,7 @@ inline double __CRTDECL actgh(double _X) {
 
 template <typename T, typename U>
 inline T lerp_def(T x, T y, U blend) {
-    return ((U)1 - blend) * x + blend * y;
+    return ((T)1 - (T)blend) * x + blend * y;
 }
 
 extern void* force_malloc(size_t size);

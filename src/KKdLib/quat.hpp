@@ -38,6 +38,7 @@ struct quat {
     static quat lerp(const quat& left, const quat& right, const float_t blend);
     static quat slerp(const quat& left, const quat& right, const float_t blend);
     static quat normalize(const quat& left);
+    static quat normalize_rcp(const quat& left);
     static quat rcp(const quat& left);
     static quat min(const quat& min, const quat& max);
     static quat max(const quat& min, const quat& max);
@@ -111,109 +112,59 @@ inline quat::quat(float_t m00, float_t m01, float_t m02, float_t m10,
 }
 
 inline quat operator +(const quat& left, const quat& right) {
-    __m128 yt;
-    quat z;
-    *(quat*)&yt = right;
-    _mm_storeu_ps((float*)&z, _mm_add_ps(_mm_loadu_ps((const float*)&left), yt));
-    return z;
+    return quat::store_xmm(_mm_add_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator +(const quat& left, const float_t right) {
-    __m128 yt;
-    quat z;
-    yt = _mm_set_ss(right);
-    _mm_storeu_ps((float*)&z, _mm_add_ps(_mm_loadu_ps((const float*)&left), _mm_shuffle_ps(yt, yt, 0)));
-    return z;
+    return quat::store_xmm(_mm_add_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator -(const quat& left, const quat& right) {
-    __m128 yt;
-    quat z;
-    *(quat*)&yt = right;
-    _mm_storeu_ps((float*)&z, _mm_sub_ps(_mm_loadu_ps((const float*)&left), yt));
-    return z;
+    return quat::store_xmm(_mm_sub_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator -(const quat& left, const float_t right) {
-    __m128 yt;
-    quat z;
-    yt = _mm_set_ss(right);
-    _mm_storeu_ps((float*)&z, _mm_sub_ps(_mm_loadu_ps((const float*)&left), _mm_shuffle_ps(yt, yt, 0)));
-    return z;
+    return quat::store_xmm(_mm_sub_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator *(const quat& left, const quat& right) {
-    __m128 yt;
-    quat z;
-    *(quat*)&yt = right;
-    _mm_storeu_ps((float*)&z, _mm_mul_ps(_mm_loadu_ps((const float*)&left), yt));
-    return z;
+    return quat::store_xmm(_mm_mul_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator *(const quat& left, const float_t right) {
-    __m128 yt;
-    quat z;
-    yt = _mm_set_ss(right);
-    _mm_storeu_ps((float*)&z, _mm_mul_ps(_mm_loadu_ps((const float*)&left), _mm_shuffle_ps(yt, yt, 0)));
-    return z;
+    return quat::store_xmm(_mm_mul_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator /(const quat& left, const quat& right) {
-    __m128 yt;
-    quat z;
-    *(quat*)&yt = right;
-    _mm_storeu_ps((float*)&z, _mm_div_ps(_mm_loadu_ps((const float*)&left), yt));
-    return z;
+    return quat::store_xmm(_mm_div_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator /(const quat& left, const float_t right) {
-    __m128 yt;
-    quat z;
-    yt = _mm_set_ss(right);
-    _mm_storeu_ps((float*)&z, _mm_div_ps(_mm_loadu_ps((const float*)&left), _mm_shuffle_ps(yt, yt, 0)));
-    return z;
+    return quat::store_xmm(_mm_div_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator &(const quat& left, const quat& right) {
-    __m128 yt;
-    quat z;
-    *(quat*)&yt = right;
-    _mm_storeu_ps((float*)&z, _mm_and_ps(_mm_loadu_ps((const float*)&left), yt));
-    return z;
+    return quat::store_xmm(_mm_and_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator &(const quat& left, const float_t right) {
-    __m128 yt;
-    quat z;
-    yt = _mm_set_ss(right);
-    _mm_storeu_ps((float*)&z, _mm_and_ps(_mm_loadu_ps((const float*)&left), _mm_shuffle_ps(yt, yt, 0)));
-    return z;
+    return quat::store_xmm(_mm_and_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator ^(const quat& left, const quat& right) {
-    __m128 yt;
-    quat z;
-    *(quat*)&yt = right;
-    _mm_storeu_ps((float*)&z, _mm_xor_ps(_mm_loadu_ps((const float*)&left), yt));
-    return z;
+    return quat::store_xmm(_mm_xor_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator ^(const quat& left, const float_t right) {
-    __m128 yt;
-    quat z;
-    yt = _mm_set_ss(right);
-    _mm_storeu_ps((float*)&z, _mm_xor_ps(_mm_loadu_ps((const float*)&left), _mm_shuffle_ps(yt, yt, 0)));
-    return z;
+    return quat::store_xmm(_mm_xor_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat operator -(const quat& left) {
-    quat z;
-    _mm_storeu_ps((float*)&z, _mm_xor_ps(_mm_loadu_ps((const float*)&left), vec4_neg));
-    return z;
+    return quat::store_xmm(_mm_xor_ps(quat::load_xmm(left), vec4_neg));
 }
 
 inline __m128 quat::load_xmm(const float_t data) {
-    __m128 _data = _mm_set_ss(data);
+    __m128 _data = _mm_load_ss(&data);
     return _mm_shuffle_ps(_data, _data, 0);
 }
 
@@ -270,7 +221,7 @@ inline quat quat::mul(const quat& in_q1, const quat& in_q2) {
 
 inline float_t quat::dot(const quat& left, const quat& right) {
     __m128 zt;
-    zt = _mm_mul_ps(_mm_loadu_ps((const float*)&(left)), _mm_loadu_ps((const float*)&(right)));
+    zt = _mm_mul_ps(quat::load_xmm(left), quat::load_xmm(right));
     zt = _mm_hadd_ps(zt, zt);
     return _mm_cvtss_f32(_mm_hadd_ps(zt, zt));
 }
@@ -278,7 +229,7 @@ inline float_t quat::dot(const quat& left, const quat& right) {
 inline float_t quat::length(const quat& left) {
     __m128 xt;
     __m128 zt;
-    xt = _mm_loadu_ps((const float*)&left);
+    xt = quat::load_xmm(left);
     zt = _mm_mul_ps(xt, xt);
     zt = _mm_hadd_ps(zt, zt);
     return _mm_cvtss_f32(_mm_sqrt_ss(_mm_hadd_ps(zt, zt)));
@@ -287,7 +238,7 @@ inline float_t quat::length(const quat& left) {
 inline float_t quat::length_squared(const quat& left) {
     __m128 xt;
     __m128 zt;
-    xt = _mm_loadu_ps((const float*)&left);
+    xt = quat::load_xmm(left);
     zt = _mm_mul_ps(xt, xt);
     zt = _mm_hadd_ps(zt, zt);
     return _mm_cvtss_f32(_mm_hadd_ps(zt, zt));
@@ -295,7 +246,7 @@ inline float_t quat::length_squared(const quat& left) {
 
 inline float_t quat::distance(const quat& left, const quat& right) {
     __m128 zt;
-    zt = _mm_sub_ps(_mm_loadu_ps((const float*)&(left)), _mm_loadu_ps((const float*)&(right)));
+    zt = _mm_sub_ps(quat::load_xmm(left), quat::load_xmm(right));
     zt = _mm_mul_ps(zt, zt);
     zt = _mm_hadd_ps(zt, zt);
     return _mm_cvtss_f32(_mm_sqrt_ss(_mm_hadd_ps(zt, zt)));
@@ -303,7 +254,7 @@ inline float_t quat::distance(const quat& left, const quat& right) {
 
 inline float_t quat::distance_squared(const quat& left, const quat& right) {
     __m128 zt;
-    zt = _mm_sub_ps(_mm_loadu_ps((const float*)&(left)), _mm_loadu_ps((const float*)&(right)));
+    zt = _mm_sub_ps(quat::load_xmm(left), quat::load_xmm(right));
     zt = _mm_mul_ps(zt, zt);
     zt = _mm_hadd_ps(zt, zt);
     return _mm_cvtss_f32(_mm_hadd_ps(zt, zt));
@@ -352,64 +303,58 @@ inline quat quat::slerp(const quat& left, const quat& right, const float_t blend
 inline quat quat::normalize(const quat& left) {
     __m128 xt;
     __m128 zt;
-    quat z;
-    xt = _mm_loadu_ps((const float*)&left);
+    xt = quat::load_xmm(left);
     zt = _mm_mul_ps(xt, xt);
     zt = _mm_hadd_ps(zt, zt);
     zt = _mm_sqrt_ss(_mm_hadd_ps(zt, zt));
-    if (zt.m128_f32[0] != 0.0f)
-        zt.m128_f32[0] = 1.0f / zt.m128_f32[0];
-    _mm_storeu_ps((float*)&z, _mm_mul_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
-    return z;
+    if (_mm_cvtss_f32(zt) != 0.0f)
+        return quat::store_xmm(_mm_div_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
+    return quat::store_xmm(xt);
+}
+
+inline quat quat::normalize_rcp(const quat& left) {
+    __m128 xt;
+    __m128 zt;
+    xt = quat::load_xmm(left);
+    zt = _mm_mul_ps(xt, xt);
+    zt = _mm_hadd_ps(zt, zt);
+    zt = _mm_sqrt_ss(_mm_hadd_ps(zt, zt));
+    if (_mm_cvtss_f32(zt) != 0.0f)
+        zt = _mm_div_ss(quat::load_xmm(1.0f), zt);
+    return quat::store_xmm(_mm_mul_ps(xt, _mm_shuffle_ps(zt, zt, 0)));
 }
 
 inline quat quat::rcp(const quat& left) {
-    quat z;
-    _mm_storeu_ps((float*)&z, _mm_div_ps(_mm_loadu_ps((const float*)&(quat_identity)), _mm_loadu_ps((const float*)&left)));
-    return z;
+    return quat::store_xmm(_mm_div_ps(quat::load_xmm(1.0f), quat::load_xmm(left)));
 }
 
 inline quat quat::min(const quat& left, const quat& right) {
-    quat z;
-    _mm_storeu_ps((float*)&z, _mm_min_ps(_mm_loadu_ps((const float*)&(left)), _mm_loadu_ps((const float*)&(right))));
-    return z;
+    return quat::store_xmm(_mm_min_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat quat::max(const quat& left, const quat& right) {
-    quat z;
-    _mm_storeu_ps((float*)&z, _mm_max_ps(_mm_loadu_ps((const float*)&(left)), _mm_loadu_ps((const float*)&(right))));
-    return z;
+    return quat::store_xmm(_mm_max_ps(quat::load_xmm(left), quat::load_xmm(right)));
 }
 
 inline quat quat::clamp(const quat& left, const quat& min, const quat& max) {
-    quat w;
-    _mm_storeu_ps((float*)&w, _mm_min_ps(_mm_max_ps(_mm_loadu_ps((const float*)&left),
-        _mm_loadu_ps((const float*)&(min))), _mm_loadu_ps((const float*)&(max))));
-    return w;
+    return quat::store_xmm(_mm_min_ps(_mm_max_ps(quat::load_xmm(left),
+        quat::load_xmm(min)), quat::load_xmm(max)));
 }
 
 inline quat quat::clamp(const quat& left, const float_t min, const float_t max) {
-    __m128 yt;
-    __m128 zt;
-    quat w;
-    yt = _mm_set_ss(min);
-    zt = _mm_set_ss(max);
-    _mm_storeu_ps((float*)&w, _mm_min_ps(_mm_max_ps(_mm_loadu_ps((const float*)&left),
-        _mm_shuffle_ps(yt, yt, 0)), _mm_shuffle_ps(zt, zt, 0)));
-    return w;
+    return quat::store_xmm(_mm_min_ps(_mm_max_ps(quat::load_xmm(left),
+        quat::load_xmm(min)), quat::load_xmm(max)));
 }
 
 inline quat quat::mult_min_max(const quat& left, const quat& min, const quat& max) {
     __m128 xt;
     __m128 yt;
     __m128 wt;
-    quat w;
-    xt = _mm_loadu_ps((const float*)&left);
-    yt = _mm_xor_ps(_mm_loadu_ps((const float*)&(min)), vec4_neg);
+    xt = quat::load_xmm(left);
+    yt = _mm_xor_ps(quat::load_xmm(min), vec4_neg);
     wt = _mm_or_ps(_mm_and_ps(yt, _mm_cmplt_ps(xt, vec4::load_xmm(0.0f))),
-        _mm_and_ps(_mm_loadu_ps((const float*)&(max)), _mm_cmpge_ps(xt, vec4::load_xmm(0.0f))));
-    _mm_storeu_ps((float*)&w, _mm_mul_ps(xt, wt));
-    return w;
+        _mm_and_ps(quat::load_xmm(max), _mm_cmpge_ps(xt, vec4::load_xmm(0.0f))));
+    return quat::store_xmm(_mm_mul_ps(xt, wt));
 }
 
 inline quat quat::mult_min_max(const quat& left, const float_t min, const float_t max) {
@@ -417,30 +362,24 @@ inline quat quat::mult_min_max(const quat& left, const float_t min, const float_
     __m128 yt;
     __m128 zt;
     __m128 wt;
-    quat w;
-    xt = _mm_loadu_ps((const float*)&left);
-    yt = _mm_set_ss(min);
-    yt = _mm_shuffle_ps(yt, yt, 0);
-    zt = _mm_set_ss(max);
-    zt = _mm_shuffle_ps(zt, zt, 0);
+    xt = quat::load_xmm(left);
+    yt = quat::load_xmm(min);
+    zt = quat::load_xmm(max);
     yt = _mm_xor_ps(yt, vec4_neg);
     wt = _mm_or_ps(_mm_and_ps(yt, _mm_cmplt_ps(xt, vec4::load_xmm(0.0f))),
         _mm_and_ps(zt, _mm_cmpge_ps(xt, vec4::load_xmm(0.0f))));
-    _mm_storeu_ps((float*)&w, _mm_mul_ps(xt, wt));
-    return w;
+    return quat::store_xmm(_mm_mul_ps(xt, wt));
 }
 
 inline quat quat::div_min_max(const quat& left, const quat& min, const quat& max) {
     __m128 xt;
     __m128 yt;
     __m128 wt;
-    quat w;
-    xt = _mm_loadu_ps((const float*)&left);
-    yt = _mm_xor_ps(_mm_loadu_ps((const float*)&(min)), vec4_neg);
+    xt = quat::load_xmm(left);
+    yt = _mm_xor_ps(quat::load_xmm(min), vec4_neg);
     wt = _mm_or_ps(_mm_and_ps(yt, _mm_cmplt_ps(xt, vec4::load_xmm(0.0f))),
-        _mm_and_ps(_mm_loadu_ps((const float*)&(max)), _mm_cmpge_ps(xt, vec4::load_xmm(0.0f))));
-    _mm_storeu_ps((float*)&w, _mm_div_ps(xt, wt));
-    return w;
+        _mm_and_ps(quat::load_xmm(max), _mm_cmpge_ps(xt, vec4::load_xmm(0.0f))));
+    return quat::store_xmm(_mm_div_ps(xt, wt));
 }
 
 inline quat quat::div_min_max(const quat& left, const float_t min, const float_t max) {
@@ -448,15 +387,11 @@ inline quat quat::div_min_max(const quat& left, const float_t min, const float_t
     __m128 yt;
     __m128 zt;
     __m128 wt;
-    quat w;
-    xt = _mm_loadu_ps((const float*)&left);
-    yt = _mm_set_ss(min);
-    yt = _mm_shuffle_ps(yt, yt, 0);
-    zt = _mm_set_ss(max);
-    zt = _mm_shuffle_ps(zt, zt, 0);
+    xt = quat::load_xmm(left);
+    yt = quat::load_xmm(min);
+    zt = quat::load_xmm(max);
     yt = _mm_xor_ps(yt, vec4_neg);
     wt = _mm_or_ps(_mm_and_ps(yt, _mm_cmplt_ps(xt, vec4::load_xmm(0.0f))),
         _mm_and_ps(zt, _mm_cmpge_ps(xt, vec4::load_xmm(0.0f))));
-    _mm_storeu_ps((float*)&w, _mm_div_ps(xt, wt));
-    return w;
+    return quat::store_xmm(_mm_div_ps(xt, wt));
 }

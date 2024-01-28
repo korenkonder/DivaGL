@@ -17,9 +17,11 @@ struct pof {
     ~pof();
 
     void add(stream& s, int64_t offset);
+    uint32_t length();
     void read(stream& s);
     void write(stream& s);
-    uint32_t length();
+
+    pof& operator=(const pof& p);
 };
 
 extern void io_write_offset_pof_add(stream& s, int64_t val,

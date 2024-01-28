@@ -48,7 +48,7 @@ inline float_t half_to_float(half_t h) {
 inline half_t float_to_half(float_t val) {
     extern bool f16c;
     if (f16c)
-        return (half_t)_mm_cvtsi128_si32(_mm_cvtps_ph(_mm_set_ss(val), _MM_FROUND_CUR_DIRECTION));
+        return (half_t)_mm_cvtsi128_si32(_mm_cvtps_ph(_mm_load_ss(&val), _MM_FROUND_CUR_DIRECTION));
     return float_to_half_convert(val);
 }
 
@@ -62,6 +62,6 @@ inline double_t half_to_double(half_t h) {
 inline half_t double_to_half(double_t val) {
     extern bool f16c;
     if (f16c)
-        return (half_t)_mm_cvtsi128_si32(_mm_cvtps_ph(_mm_cvtpd_ps(_mm_set_sd(val)), _MM_FROUND_CUR_DIRECTION));
+        return (half_t)_mm_cvtsi128_si32(_mm_cvtps_ph(_mm_cvtpd_ps(_mm_load_sd(&val)), _MM_FROUND_CUR_DIRECTION));
     return double_to_half_convert(val);
 }

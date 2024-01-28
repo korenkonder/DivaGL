@@ -619,8 +619,6 @@ static void farc_pack_files(farc* f, stream& s, farc_signature signature, farc_f
                 s.write_int32_t_reverse_endianness((int32_t)i.size, true);
                 s.write_int32_t_reverse_endianness(0x00, true);
             }
-            s.write_int32_t_reverse_endianness(
-                (int32_t)((i.compressed ? FARC_GZIP : 0x00) | (i.encrypted ? FARC_AES : 0x00)), true);
         }
         break;
     }

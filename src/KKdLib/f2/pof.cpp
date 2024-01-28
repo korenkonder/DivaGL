@@ -28,6 +28,31 @@ void pof::add(stream& s, int64_t offset) {
     vec.push_back(s.get_position() + offset);
 }
 
+uint32_t pof::length() {
+    uint32_t l = 4;
+    size_t j = 0;
+    uint8_t bit_shift = (uint8_t)(shift_x ? 3 : 2);
+    size_t v = ((size_t)1 << bit_shift) - 1;
+
+    for (int64_t& i : vec) {
+        size_t o = i;
+        if (o & v)
+            break;
+        else if (&i != vec.data()) {
+            size_t k = o - j;
+            if (!k)
+                continue;
+            j = o;
+            o = k;
+        }
+        else
+            j = o;
+
+        if (pof_length_get_size(&l, o >> bit_shift))
+            break;
+    }
+    return l;
+}
 void pof::read(stream& s) {
     vec.clear();
 
@@ -96,30 +121,10 @@ void pof::write(stream& s) {
         s.write_uint8_t(0);
 }
 
-uint32_t pof::length() {
-    uint32_t l = 4;
-    size_t j = 0;
-    uint8_t bit_shift = (uint8_t)(shift_x ? 3 : 2);
-    size_t v = ((size_t)1 << bit_shift) - 1;
-
-    for (int64_t& i : vec) {
-        size_t o = i;
-        if (o & v)
-            break;
-        else if (&i != vec.data()) {
-            size_t k = o - j;
-            if (!k)
-                continue;
-            j = o;
-            o = k;
-        }
-        else
-            j = o;
-
-        if (pof_length_get_size(&l, o >> bit_shift))
-            break;
-    }
-    return l;
+pof& pof::operator=(const pof& p) {
+    vec.assign(p.vec.begin(), p.vec.end());
+    shift_x = p.shift_x;
+    return *this;
 }
 
 inline void io_write_offset_pof_add(stream& s, int64_t val,

@@ -42,6 +42,15 @@ void enrs_entry::append(enrs_sub_entry&& data) {
     sub.push_back(data);
 }
 
+enrs_entry& enrs_entry::operator=(const enrs_entry& ee) {
+    offset = ee.offset;
+    count = ee.count;
+    size = ee.size;
+    repeat_count = ee.repeat_count;
+    sub.assign(ee.sub.begin(), ee.sub.end());
+    return *this;
+}
+
 enrs::enrs() {
 
 }
@@ -196,6 +205,11 @@ void enrs::write(stream& s) {
 
 End:
     s.align_write(0x10);
+}
+
+enrs& enrs::operator=(const enrs& e) {
+    vec.assign(e.vec.begin(), e.vec.end());
+    return *this;
 }
 
 inline static bool enrs_length_get_size_type(uint32_t* length, size_t val) {

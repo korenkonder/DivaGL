@@ -200,6 +200,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
       <UseFullPaths>false</UseFullPaths>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

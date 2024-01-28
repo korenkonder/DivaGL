@@ -9,6 +9,8 @@ const __m128 vec2_neg = { -0.0f, -0.0f,  0.0f,  0.0f };
 const __m128 vec3_neg = { -0.0f, -0.0f, -0.0f,  0.0f };
 const __m128 vec4_neg = { -0.0f, -0.0f, -0.0f, -0.0f };
 
+extern const __m128d vec2d_neg = { -0.0, -0.0f };
+
 const __m128i vec2i_abs = {
     (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
     (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
@@ -28,4 +30,9 @@ const __m128i vec4i_abs = {
     (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
     (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
     (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
+};
+
+extern const __m128i vec2i64_abs = {
+    (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
+    (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0xFF, (char)0x7F,
 };

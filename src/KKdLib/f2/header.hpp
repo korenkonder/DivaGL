@@ -28,7 +28,7 @@ struct f2_header {
     uint32_t section_size;          // 0x14
     uint32_t version;               // 0x18
     uint32_t unknown0;              // 0x1C
-    uint32_t murmurhash;           // 0x20
+    uint32_t murmurhash;            // 0x20
     uint32_t unknown1[3];           // 0x24
     uint32_t inner_signature;       // 0x30
     uint32_t unknown2[3];           // 0x34

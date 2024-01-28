@@ -83,6 +83,45 @@ inline std::vector<float_t> interpolate_linear(float_t p1, float_t p2, size_t f1
     return arr;
 }
 
+inline double_t interpolate_linear_value(const double_t p1, const double_t p2,
+    const double_t f1, const double_t f2, const double_t f) {
+    if (p1 == p2)
+        return p1;
+
+    double_t t = (f - f1) / (f2 - f1);
+    return (1.0 - t) * p1 + t * p2;
+}
+
+inline vec2d interpolate_linear_value(const vec2d p1, const vec2d p2,
+    const vec2d f1, const vec2d f2, const vec2d f) {
+    if (p1 == p2)
+        return p1;
+
+    __m128d _p1 = vec2d::load_xmm(p1);
+    __m128d _p2 = vec2d::load_xmm(p2);
+    __m128d _f1 = vec2d::load_xmm(f1);
+    __m128d _f2 = vec2d::load_xmm(f2);
+    __m128d _f = vec2d::load_xmm(f);
+
+    const __m128d _1 = vec2d::load_xmm(1.0);
+
+    __m128d t = _mm_div_pd(_mm_sub_pd(_f, _f1), _mm_sub_pd(_f2, _f1));
+    return vec2d::store_xmm(_mm_add_pd(_mm_mul_pd(_p1, _mm_sub_pd(_1, t)), _mm_mul_pd(_p2, t)));
+}
+
+inline std::vector<double_t> interpolate_linear(double_t p1, double_t p2, size_t f1, size_t f2) {
+    size_t length = f2 - f1 + 1;
+    if (p1 == p2)
+        return std::vector<double_t>(length, p1);
+
+    std::vector<double_t> arr(length);
+    double_t* a = arr.data();
+    for (size_t i = 0, j = length; j; i++, j--, a++)
+        *a = interpolate_linear_value(p1, p2,
+            (double_t)f1, (double_t)f2, (double_t)(f1 + i));
+    return arr;
+}
+
 inline float_t interpolate_chs_value(const float_t p1, const float_t p2,
     const float_t t1, const float_t t2, const float_t f1, const float_t f2, const float_t f) {
     if (p1 == p2 && fabsf(t1) == 0.0f && fabsf(t2) == 0.0f)
@@ -225,9 +264,85 @@ inline std::vector<float_t> interpolate_chs(const float_t p1, const float_t p2,
     return arr;
 }
 
+inline double_t interpolate_chs_value(const double_t p1, const double_t p2,
+    const double_t t1, const double_t t2, const double_t f1, const double_t f2, const double_t f) {
+    if (p1 == p2 && fabs(t1) == 0.0 && fabs(t2) == 0.0)
+        return p1;
+
+    double_t df = f2 - f1;
+    double_t t = (f - f1) / df;
+    double_t t_2 = t * t;
+    double_t t_3 = t_2 * t;
+    double_t t_23 = 3.0f * t_2;
+    double_t t_32 = 2.0f * t_3;
+
+    double_t h00 = t_32 - t_23 + 1.0f;
+    double_t h01 = t_23 - t_32;
+    double_t h10 = t_3 - 2.0f * t_2 + t;
+    double_t h11 = t_3 - t_2;
+
+    return h00 * p1 + h01 * p2 + h10 * (t1 * df) + h11 * (t2 * df);
+}
+
+inline vec2d interpolate_chs_value(const vec2d p1, const vec2d p2,
+    const vec2d t1, const vec2d t2, const vec2d f1, const vec2d f2, const vec2d f) {
+    if (p1 == p2 && vec2d::abs(t1) == 0.0 && vec2d::abs(t2) == 0.0)
+        return p1;
+
+    __m128d _p1 = vec2d::load_xmm(p1);
+    __m128d _p2 = vec2d::load_xmm(p2);
+    __m128d _t1 = vec2d::load_xmm(t1);
+    __m128d _t2 = vec2d::load_xmm(t2);
+    __m128d _f1 = vec2d::load_xmm(f1);
+    __m128d _f2 = vec2d::load_xmm(f2);
+    __m128d _f = vec2d::load_xmm(f);
+
+    const __m128d _1 = vec2d::load_xmm(1.0);
+    const __m128d _2 = vec2d::load_xmm(2.0);
+    const __m128d _3 = vec2d::load_xmm(3.0);
+
+    __m128d df = _mm_sub_pd(_f2, _f1);
+    __m128d t = _mm_div_pd(_mm_sub_pd(_f, _f1), df);
+    __m128d t_2 = _mm_mul_pd(t, t);
+    __m128d t_3 = _mm_mul_pd(t_2, t);
+    __m128d t_23 = _mm_mul_pd(_3, t_2);
+    __m128d t_32 = _mm_mul_pd(_2, t_3);
+
+    __m128d h00 = _mm_add_pd(_mm_sub_pd(t_32, t_23), _1);
+    __m128d h01 = _mm_sub_pd(t_23, t_32);
+    __m128d h10 = _mm_add_pd(_mm_sub_pd(t_3, _mm_mul_pd(_2, t_2)), t);
+    __m128d h11 = _mm_sub_pd(t_3, t_2);
+
+    _p1 = _mm_mul_pd(h00, _p1);
+    _p2 = _mm_mul_pd(h01, _p2);
+    _t1 = _mm_mul_pd(h10, _mm_mul_pd(_t1, df));
+    _t2 = _mm_mul_pd(h11, _mm_mul_pd(_t2, df));
+    return vec2d::store_xmm(_mm_add_pd(_mm_add_pd(_p1, _p2), _mm_add_pd(_t1, _t2)));
+}
+
+inline std::vector<double_t> interpolate_chs(const double_t p1, const double_t p2,
+    const double_t t1, const double_t t2, const size_t f1, const size_t f2) {
+    size_t length = f2 - f1 + 1;
+    if (p1 == p2 && fabs(t1) == 0.0 && fabs(t2) == 0.0)
+        return std::vector<double_t>(length, p1);
+
+    std::vector<double_t> arr(length);
+    double_t* a = arr.data();
+    for (size_t i = 0, j = length; j; i++, j--, a++)
+        *a = interpolate_chs_value(p1, p2, t1, t2,
+            (double_t)f1, (double_t)f2, (double_t)(f1 + i));
+    return arr;
+}
+
 extern void interpolate_chs_reverse_value(float_t* arr, size_t length,
     float_t& t1, float_t& t2, size_t f1, size_t f2, size_t f);
+extern void interpolate_chs_reverse_value(float_t* arr, size_t length, float_t& t1a, float_t& t2a,
+    float_t& t1b, float_t& t2b, float_t& t1c, float_t& t2c, size_t f1, size_t f2, size_t f);
+extern void interpolate_chs_reverse_value(double_t* arr, size_t length,
+    double_t& t1, double_t& t2, size_t f1, size_t f2, size_t f);
 extern void interpolate_chs_reverse(float_t* arr, size_t length,
     float_t& t1, float_t& t2, size_t f1, size_t f2);
+extern void interpolate_chs_reverse(double_t* arr, size_t length,
+    double_t& t1, double_t& t2, size_t f1, size_t f2);
 extern int32_t interpolate_chs_reverse_sequence(
     std::vector<float_t>& values_src, std::vector<kft3>& values, bool fast = false);
