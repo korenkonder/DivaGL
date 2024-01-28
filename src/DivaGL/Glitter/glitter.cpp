@@ -99,6 +99,9 @@ namespace Glitter {
         // Particle
         WRITE_MEMORY(0x000000014039A396, uint32_t, sizeof(Particle));
 
+        WRITE_MEMORY_STRING(0x000000014039BBAF, "\xE9\x7D\x01\x00\x00", 0x05);
+        WRITE_MEMORY_STRING(0x00000001403AEA75, "\xEB\x3F", 0x02);
+
         memcpy(buf, _000000014039BC78_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)Particle::CreateBuffer;
         WRITE_MEMORY_STRING(0x000000014039BC78, buf, 0x11);
@@ -109,6 +112,8 @@ namespace Glitter {
 
         // RenderGroup
         WRITE_MEMORY(0x00000001403A9740, uint32_t, sizeof(RenderGroup));
+
+        WRITE_MEMORY_STRING(0x00000001403A5C59, "\xEB\x4C", 0x02);
 
         memcpy(buf, _00000001403A5CA7_patch_data, 0x14);
         *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::CreateBuffer;
