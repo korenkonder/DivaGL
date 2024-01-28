@@ -108,6 +108,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -135,6 +136,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
       <UseFullPaths>false</UseFullPaths>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -165,6 +167,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
       <UseFullPaths>false</UseFullPaths>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
