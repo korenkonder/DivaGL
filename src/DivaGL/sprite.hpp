@@ -66,11 +66,6 @@ struct SpriteHeader {
     SpriteData* sprdata;
 };
 
-struct shared_ptr_prj__stack_allocator {
-    void* ptr;
-    void* ref;
-};
-
 struct SprSet {
     void* vftable;
     int32_t flag;
@@ -152,6 +147,10 @@ namespace spr {
         SPR_PRIO_30,
         SPR_PRIO_31,
         SPR_PRIO_MAX,
+
+        SPR_PRIO_BACKGROUND = SPR_PRIO_03,
+        SPR_PRIO_DEFAULT    = SPR_PRIO_07,
+        SPR_PRIO_DEBUG      = SPR_PRIO_29,
     };
 
     struct SpriteVertex {

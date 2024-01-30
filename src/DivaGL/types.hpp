@@ -62,6 +62,9 @@ bool operator!=(Allocator<T> const& x, Allocator<U> const& y) noexcept {
 }
 
 namespace prj {
+    template<typename T, typename U>
+    using pair = std::pair<T, U>;
+
     using string = std::basic_string<char, std::char_traits<char>, Allocator<char>>;
 
     template<typename T>
@@ -71,8 +74,10 @@ namespace prj {
     using list = std::list<T, Allocator<T>>;
 
     template<typename T, typename U>
-    using map = std::map<T, U, Allocator<std::pair<T, U>>>;
-
-    template<typename T, typename U>
-    using pair = std::pair<T, U>;
+    using map = std::map<T, U, std::less<T>, Allocator<pair<T, U>>>;
 }
+
+struct shared_ptr_prj__stack_allocator {
+    void* ptr;
+    void* ref;
+};

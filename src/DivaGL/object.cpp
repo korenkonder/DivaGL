@@ -17,11 +17,6 @@ struct BufObjMgr {
     int32_t ib_all_size;
 };
 
-struct shared_ptr_prj__stack_allocator {
-    void* ptr;
-    void* ref;
-};
-
 struct ObjsetInfo {
     p_file_handler obj_file_handler;
     bool obj_loaded;
