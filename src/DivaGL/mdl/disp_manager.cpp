@@ -2873,6 +2873,10 @@ namespace mdl {
     }
 #endif
 
+    HOOK(void, FASTCALL, disp_manager_refresh, 0x0000000140439D20) {
+        disp_manager->refresh();
+    }
+
     HOOK(void, FASTCALL, sub_1404BCC60, 0x00000001404BCC60, vec3* pos, float_t width, float_t height) {
         mdl::EtcObj etc(ETC_OBJ_PLANE);
         etc.color = *spr_color;
@@ -2892,6 +2896,7 @@ namespace mdl {
         INSTALL_HOOK(DispManager__entry_obj);
         INSTALL_HOOK(DispManager__entry_obj_etc);
         INSTALL_HOOK(DispManager__entry_obj_by_obj);
+        INSTALL_HOOK(disp_manager_refresh);
         INSTALL_HOOK(sub_1404BCC60);
     }
 }
