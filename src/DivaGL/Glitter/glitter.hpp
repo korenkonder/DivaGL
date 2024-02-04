@@ -11,6 +11,7 @@
 #include "../gl.hpp"
 #include "../gl_array_buffer.hpp"
 #include "../gl_element_array_buffer.hpp"
+#include "../task.hpp"
 #include "../types.hpp"
 #include "../texture.hpp"
 
@@ -118,6 +119,7 @@ namespace Glitter {
     struct Animation;
     struct Buffer;
     struct Camera;
+    struct Counter;
     struct Curve;
     struct Effect;
     struct Emitter;
@@ -133,7 +135,7 @@ namespace Glitter {
 
     struct BatchShaderData;
     struct Scene;
-    struct GltParticleManager;
+    class GltParticleManager;
 
 #define GPM Glitter::GltParticleManager* glt_particle_manager
 #define GPM_VAL (glt_particle_manager)
@@ -153,6 +155,14 @@ namespace Glitter {
         void* __vftable;
         prj::string name;
         Animation animation;\
+    };
+
+    struct Counter {
+        int32_t value;
+
+        void Increment();
+        int32_t GetValue();
+        void Reset();
     };
 
     struct LocusHistory {
@@ -386,9 +396,8 @@ namespace Glitter {
         static void CalcDisp(Scene* sc);
     };
 
-    struct GltParticleManager {
-        void* __vftable;
-        uint8_t app_task_data[0x60];
+    class GltParticleManager : public app::Task {
+    public:
         prj::map<uint64_t, EffectGroup> effect_groups;
         void* field_78;
         uint64_t field_80;
@@ -405,18 +414,14 @@ namespace Glitter {
         float_t delta_frame;
         prj::map<uint64_t, uint32_t> resources;
         uint32_t texture_counter;
-        int32_t field_F4;
-        int32_t field_F8;
-        int32_t random;
-        int32_t counter;
-        int32_t field_104;
 
         void DispScenes(DispType disp_type);
 
         static void Disp(GPM);
     };
 
-    extern GPM;
+    extern GltParticleManager* glt_particle_manager;
+    extern Counter* counter;
 
     extern void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec0, const vec3* vec1);
 

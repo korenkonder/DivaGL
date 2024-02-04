@@ -7,7 +7,7 @@
 #include "../gl_state.hpp"
 
 namespace Glitter {
-    GPM = (GltParticleManager*)0x000000141199BB0;
+    GltParticleManager* glt_particle_manager = (GltParticleManager*)0x000000141199BB0;
 
     void GltParticleManager::DispScenes(DispType disp_type) {
         if (flags & PARTICLE_MANAGER_NOT_DISP)

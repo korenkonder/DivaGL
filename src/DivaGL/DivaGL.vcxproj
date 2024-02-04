@@ -253,6 +253,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Glitter\counter.cpp" />
     <ClCompile Include="Glitter\glitter.cpp" />
     <ClCompile Include="Glitter\particle.cpp" />
     <ClCompile Include="Glitter\particle_manager.cpp" />
@@ -291,6 +292,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="stage_param.cpp" />
+    <ClCompile Include="task.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="uniform.cpp" />
     <ClCompile Include="wrap.cpp" />
@@ -337,6 +339,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="sprite.hpp" />
     <ClInclude Include="stage.hpp" />
     <ClInclude Include="stage_param.hpp" />
+    <ClInclude Include="task.hpp" />
     <ClInclude Include="texture.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="uniform.hpp" />
