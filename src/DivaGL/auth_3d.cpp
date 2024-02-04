@@ -633,8 +633,8 @@ HOOK(void, FASTCALL, auth_3d_m_object_hrc_disp, 0x00000001401D0760, auth_3d_m_ob
                 }
 
             mat4 mat = i.model_transform.mat;
-            mat4 t = *m;
-            mat4_mul(&mat, &t, &mat);
+            mat4_mul(m, &mat, &mat);
+            mat4_transpose(&mat, &mat);
 
             vec3 pos = *(vec3*)&mat.row3;
             pos.y -= 0.2f;
@@ -682,16 +682,18 @@ HOOK(void, FASTCALL, auth_3d_object_hrc_disp, 0x00000001401D04A0, auth_3d_object
     else if (flags & mdl::OBJ_SHADOW) {
         disp_manager.set_shadow_type(SHADOW_STAGE);
 
-        mat4* m = &oh->node.front().model_transform.mat;
+        mat4 mat = oh->node.front().model_transform.mat;
         for (auth_3d_object_node& i : oh->node)
             if (i.mat) {
-                m = i.mat;
+                mat = *i.mat;
                 break;
             }
+        mat4_transpose(&mat, &mat);
 
         Shadow* shad = shadow_ptr_get();
         if (shad) {
-            vec3 pos = *(vec3*)&m->row3;
+            vec3 pos;
+            mat4_get_translation(&mat, &pos);
             pos.y -= 0.2f;
             shad->field_1D0[SHADOW_STAGE].push_back(pos);
         }
