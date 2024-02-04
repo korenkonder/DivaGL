@@ -6,6 +6,18 @@
 #include <thread>
 #include "file_handler.hpp"
 
+p_file_handler::p_file_handler() : ptr() {
+    static p_file_handler* (FASTCALL * p_file_handler__p_file_handler)(p_file_handler * pfhndl)
+        = (p_file_handler * (FASTCALL*)(p_file_handler * pfhndl))0x0000000140180940;
+    p_file_handler__p_file_handler(this);
+}
+
+p_file_handler::~p_file_handler() {
+    static void(FASTCALL * p_file_handler___p_file_handler)(p_file_handler * pfhndl)
+        = (void(FASTCALL*)(p_file_handler * pfhndl))0x0000000140180D50;
+    p_file_handler___p_file_handler(this);
+}
+
 void p_file_handler::call_free_callback() {
     static void(FASTCALL * p_file_handler__call_free_callback)(p_file_handler * pfhndl)
         = (void(FASTCALL*)(p_file_handler * pfhndl))0x0000000140181F30;
@@ -24,9 +36,9 @@ const void* p_file_handler::get_data() {
     return p_file_handler__get_data(this);
 }
 
-ssize_t p_file_handler::get_size() {
-    static ssize_t(FASTCALL * p_file_handler__get_size)(p_file_handler * pfhndl)
-        = (ssize_t(FASTCALL*)(p_file_handler * pfhndl))0x0000000140183250;
+size_t p_file_handler::get_size() {
+    static size_t(FASTCALL * p_file_handler__get_size)(p_file_handler * pfhndl)
+        = (size_t(FASTCALL*)(p_file_handler * pfhndl))0x0000000140183250;
     return p_file_handler__get_size(this);
 }
 
@@ -36,6 +48,14 @@ bool p_file_handler::read_file(const char* farc_path, const char* file_path, prj
         = (bool (FASTCALL*)(p_file_handler * pfhndl, const char* farc_path,
             const char* file_path, prj::HeapCMallocType heap_malloc_type, bool cache))0x0000000140183430;
     return p_file_handler__read_file(this, farc_path, file_path, heap_malloc_type, cache);
+}
+
+bool p_file_handler::read_file_path(const char* file_path, prj::HeapCMallocType heap_malloc_type) {
+    static bool (FASTCALL * p_file_handler__read_file_path)(p_file_handler * pfhndl,
+        const char* file_path, prj::HeapCMallocType heap_malloc_type)
+        = (bool (FASTCALL*)(p_file_handler * pfhndl,
+            const char* file_path, prj::HeapCMallocType heap_malloc_type))0x00000001401836C0;
+    return p_file_handler__read_file_path(this, file_path, heap_malloc_type);
 }
 
 void p_file_handler::read_now() {
