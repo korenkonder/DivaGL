@@ -1104,7 +1104,8 @@ namespace spr {
             sprite_draw_param& draw_param_2 = draw_param_buffer.data()[draw_param_buffer.size() - 2];
             sprite_draw_param& draw_param_1 = draw_param_buffer.data()[draw_param_buffer.size() - 1];
 
-            if (draw_param_2.mode == draw_param_1.mode
+            if (draw_param_1.mode == GL_TRIANGLES
+                && draw_param_2.mode == draw_param_1.mode
                 && draw_param_2.blend == draw_param_1.blend
                 && draw_param_2.blend_src_rgb == draw_param_1.blend_src_rgb
                 && draw_param_2.blend_src_alpha == draw_param_1.blend_src_alpha
@@ -1117,18 +1118,11 @@ namespace spr {
                 && draw_param_2.combiner == draw_param_1.combiner
                 && draw_param_2.texture[0] == draw_param_1.texture[0]
                 && draw_param_2.texture[1] == draw_param_1.texture[1]
-                && draw_param_2.sampler == draw_param_1.sampler) {
-                if (draw_param_2.mode != GL_TRIANGLES
-                    && (draw_param_2.first + draw_param_2.count) == draw_param_1.first) {
-                    draw_param_2.count += draw_param_1.count;
-                    draw_param_buffer.pop_back();
-                }
-                else if (draw_param_2.mode == GL_TRIANGLES
-                    && draw_param_2.end + 1 == draw_param_1.start) {
-                    draw_param_2.end = draw_param_1.end;
-                    draw_param_2.count += draw_param_1.count;
-                    draw_param_buffer.pop_back();
-                }
+                && draw_param_2.sampler == draw_param_1.sampler
+                && draw_param_2.end + 1 == draw_param_1.start) {
+                draw_param_2.end = draw_param_1.end;
+                draw_param_2.count += draw_param_1.count;
+                draw_param_buffer.pop_back();
             }
         }
     }
