@@ -282,7 +282,7 @@ namespace rndr {
             disp_manager->draw(mdl::OBJ_TYPE_TRANSLUCENT);
 
             draw_state->shader_index = -1;
-            uniform->arr[U0A] = 0;
+            uniform->arr[U_DEPTH] = 0;
             draw_pass_shadow_filter(&litproj_shadow[0], &litproj_shadow[1], 0, 1.5f, 0.01f, true);
 
             if (draw_pass_shadow_litproj()) {
@@ -1156,7 +1156,7 @@ static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, i
     mat4_look_at(view_point, interest, &rctx->view_mat);
 
     draw_state->shader_index = SHADER_FT_SIL;
-    uniform->arr[U0A] = 0;
+    uniform->arr[U_DEPTH] = 0;
 }
 
 static void draw_pass_shadow_end_make_shadowmap(Shadow* shad, int32_t index, int32_t a3) {
@@ -1357,7 +1357,7 @@ static bool draw_pass_shadow_litproj_set() {
 
     if (draw_pass_shadow_litproj_set_mat(false)) {
         draw_state->shader_index = SHADER_FT_SIL;
-        uniform->arr[U0A] = 1;
+        uniform->arr[U_DEPTH] = 1;
         return true;
     }
     else {

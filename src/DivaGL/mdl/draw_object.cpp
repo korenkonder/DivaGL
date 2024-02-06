@@ -190,10 +190,10 @@ namespace mdl {
 
             rctx->obj_batch.set_transforms(mat4_identity, rctx->view_mat, rctx->proj_mat);
 
-            uniform->arr[U_BONE_MAT] = 1;
+            uniform->arr[U_SKINNING] = 1;
             gl_state_bind_vertex_array(vao);
             func(args);
-            uniform->arr[U_BONE_MAT] = 0;
+            uniform->arr[U_SKINNING] = 0;
         }
         else {
             mat4 _mat;
@@ -204,7 +204,7 @@ namespace mdl {
             else
                 _mat = *mat;
 
-            uniform->arr[U_BONE_MAT] = 0;
+            uniform->arr[U_SKINNING] = 0;
             gl_state_bind_vertex_array(vao);
             if (func != draw_sub_mesh_default || !args->instances_count) {
                 draw_object_model_mat_load(_mat);
@@ -212,7 +212,7 @@ namespace mdl {
             }
             else
                 draw_sub_mesh_default_instanced(args, &_mat);
-            uniform->arr[U_BONE_MAT] = 0;
+            uniform->arr[U_SKINNING] = 0;
         }
     }
 
@@ -1022,7 +1022,7 @@ static void draw_object_vertex_attrib_reset_default(const mdl::ObjSubMeshArgs* a
     obj_vertex_format vertex_format = mesh->vertex_format;
 
     if ((vertex_format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA)
-        uniform->arr[U_BONE_MAT] = 0;
+        uniform->arr[U_SKINNING] = 0;
 
     if (args->morph_vertex_buffer) {
         uniform->arr[U_MORPH] = 0;
@@ -1040,7 +1040,7 @@ static void draw_object_vertex_attrib_reset_reflect(const mdl::ObjSubMeshArgs* a
     obj_vertex_format vertex_format = mesh->vertex_format;
 
     if ((vertex_format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA)
-        uniform->arr[U_BONE_MAT] = 0;
+        uniform->arr[U_SKINNING] = 0;
 
     if (args->morph_vertex_buffer) {
         uniform->arr[U_MORPH] = 0;
@@ -1089,9 +1089,9 @@ static void draw_object_vertex_attrib_set_default(const mdl::ObjSubMeshArgs* arg
     }
 
     if (vertex_format & OBJ_VERTEX_BONE_DATA)
-        uniform->arr[U_BONE_MAT] = 1;
+        uniform->arr[U_SKINNING] = 1;
     else
-        uniform->arr[U_BONE_MAT] = 0;
+        uniform->arr[U_SKINNING] = 0;
 
     if (args->morph_vertex_buffer) {
         uniform->arr[U_MORPH] = 1;
@@ -1134,9 +1134,9 @@ static void draw_object_vertex_attrib_set_reflect(const mdl::ObjSubMeshArgs* arg
     }
 
     if (vertex_format & OBJ_VERTEX_BONE_DATA)
-        uniform->arr[U_BONE_MAT] = 1;
+        uniform->arr[U_SKINNING] = 1;
     else
-        uniform->arr[U_BONE_MAT] = 0;
+        uniform->arr[U_SKINNING] = 0;
 
     if (args->morph_vertex_buffer) {
         uniform->arr[U_MORPH] = 1;
