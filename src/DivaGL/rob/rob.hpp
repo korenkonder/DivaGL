@@ -683,14 +683,21 @@ enum rob_bone_index {
     ROB_BONE_MAX                     = 0xC1,
 };
 
+struct rob_chara_pv_data_item {
+    int32_t head;
+    int32_t face;
+    int32_t chest;
+    int32_t back;
+};
+
 #define ROB_CHARA_COUNT 6
 
-extern mat4* (FASTCALL* rob_chara_bone_data_get_mats_mat)(size_t rob_bone_data, size_t index);
+extern const mat4* (FASTCALL* rob_chara_bone_data_get_mats_mat)(size_t rob_bone_data, size_t index);
+extern const char* (FASTCALL* chara_index_get_auth_3d_name)(chara_index chara_index);
 extern void(FASTCALL* sub_1405163C0)(size_t rob_chr, int32_t index, mat4* mat);
 extern float_t(FASTCALL* rob_chara_get_max_face_depth)(size_t rob_chr);
-extern mat4* (FASTCALL* rob_chara_get_bone_data_mat)(size_t rob_chr, mot_bone_index index);
-extern mat4* (FASTCALL* sub_140516740)(size_t rob_chr);
-extern mat4* (FASTCALL* rob_chara_get_adjust_data_mat)(size_t rob_chr);
+extern const mat4* (FASTCALL* rob_chara_get_bone_data_mat)(size_t rob_chr, mot_bone_index index);
+extern const mat4* (FASTCALL* sub_140516740)(size_t rob_chr);
 extern bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr, int32_t chara_id);
 extern size_t(FASTCALL* get_rob_chara_smth)();
 extern size_t(FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id);
@@ -698,5 +705,7 @@ extern size_t(FASTCALL* rob_chara_array_get_bone_data)(size_t rob_chr_smth, int3
 extern bool (FASTCALL* rob_chara_pv_data_array_check_chara_id)(size_t rob_chr_smth, int32_t chara_id);
 
 extern const mat4* rob_chara_item_equip_mat;
+
+extern const mat4* rob_chara_get_adjust_data_mat(size_t rob_chr);
 
 extern void rob_patch();

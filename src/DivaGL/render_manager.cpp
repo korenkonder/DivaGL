@@ -1508,7 +1508,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
         size_t rob_bone_data = rob_chara_array_get_bone_data(rob_chara_smth, i);
         if (rob_chara_pv_data_array_check_chara_id(rob_chara_smth, i)
             && rob_chara_array_check_visibility(rob_chara_smth, i)) {
-            mat4* mat = rob_chara_bone_data_get_mats_mat(rob_bone_data, 0);
+            const mat4* mat = rob_chara_bone_data_get_mats_mat(rob_bone_data, 0);
             if (mat) {
                 mat4 temp;
                 mat4_transpose(mat, &temp);
