@@ -111,6 +111,8 @@ vec4* spr_color = (vec4*)0x00000001411ACC30;
 
 size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index)
     = (size_t(FASTCALL*)(int32_t index))0x000000014063FA90;
+bool (FASTCALL* sprite_manager_load_file)(int32_t set_id)
+    = (bool (FASTCALL*)(int32_t set_id))0x0000000140640FB0;
 
 spr::SpriteManager* sprite_manager = (spr::SpriteManager*)0x000000014CC611C0;
 

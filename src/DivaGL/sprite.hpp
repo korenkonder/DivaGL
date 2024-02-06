@@ -212,6 +212,7 @@ namespace spr {
 extern vec4* spr_color;
 
 extern size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index);
+extern bool (FASTCALL* sprite_manager_load_file)(int32_t set_id);
 
 extern void sprite_manager_init();
 extern void sprite_manager_draw(int32_t index, bool font, texture* tex);
