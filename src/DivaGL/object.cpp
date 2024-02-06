@@ -73,6 +73,8 @@ prj::vector<GLuint>* (FASTCALL* object_database_get_set_gentex)(int32_t set)
     = (prj::vector<GLuint> * (FASTCALL*)(int32_t set))0x000000014045A9E0;
 int32_t(FASTCALL* object_database_get_set_id)(int32_t set_index)
     = (int32_t(FASTCALL*)(int32_t set_index))0x000000014045AA10;
+int32_t(FASTCALL* object_database_get_object_set_id)(const char* name)
+    = (int32_t(FASTCALL*)(const char* name))0x000000014045AA60;
 int32_t(FASTCALL* object_database_load_set)(int32_t set)
     = (int32_t(FASTCALL*)(int32_t set))0x000000014045C6A0;
 bool (FASTCALL* object_database_load_obj_set_check_not_read)(int32_t set)
