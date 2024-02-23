@@ -22,7 +22,7 @@ struct ObjsetInfo {
     bool obj_loaded;
     p_file_handler tex_file_handler;
     bool tex_loaded;
-    shared_ptr_prj__stack_allocator alloc_handler;
+    prj::shared_ptr<void*> alloc_handler; // prj::stack_allocator
     obj_set* obj_set;
     prj::vector<std::pair<uint32_t, int32_t>> obj_id_data;
     bool field_50;

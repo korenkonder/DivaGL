@@ -75,9 +75,40 @@ namespace prj {
 
     template<typename T, typename U>
     using map = std::map<T, U, std::less<T>, Allocator<pair<T, U>>>;
-}
 
-struct shared_ptr_prj__stack_allocator {
-    void* ptr;
-    void* ref;
-};
+    template<typename T>
+    class ref_count {
+    private:
+        int32_t uses;
+        int32_t weaks;
+        T* ptr;
+        void(*delete_this_func)(ref_count* ref);
+        void(*destroy_func)(ref_count* ref, T* ptr);
+    };
+
+    template<class T>
+    class shared_ptr;
+
+    template<class T>
+    class ptr_base {
+    private:
+        T* ptr;
+        ref_count<T>* ref;
+
+        template<class U>
+        friend class ptr_base;
+    };
+
+    template<class T>
+    class shared_ptr : public ptr_base<T> {
+    public:
+    };
+
+    template<typename T, typename U>
+    struct sorted_vector {
+        vector<pair<T, U>> field_0;
+        size_t field_18;
+        vector<pair<T, U>> field_20;
+        bool field_38;
+    };
+}

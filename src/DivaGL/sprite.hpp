@@ -76,7 +76,7 @@ struct SprSet {
     int32_t load_count;
     void* file_handler;
     bool ready;
-    shared_ptr_prj__stack_allocator alloc_handler;
+    prj::shared_ptr<void*> alloc_handler; // prj::stack_allocator
     prj::string file;
 };
 
