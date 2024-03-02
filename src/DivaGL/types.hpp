@@ -24,8 +24,12 @@ namespace prj {
 
     static void* (*HeapCMallocAllocate)(HeapCMallocType type, size_t size, const char* name)
         = (void* (*)(HeapCMallocType, size_t, const char*))0x00000001403F2A00;
+    static void* (*HeapCMallocAllocateByType)(HeapCMallocType type, size_t size, const char* name)
+        = (void* (*)(HeapCMallocType, size_t, const char*))0x0000000140181C30;
     static void(*HeapCMallocFree)(HeapCMallocType type, void* data)
         = (void(*)(HeapCMallocType, void*))0x00000001403F2960;
+    static void(*HeapCMallocFreeByType)(HeapCMallocType type, void* data)
+        = (void(*)(HeapCMallocType, void*))0x0000000140182DB0;
 };
 
 static void* (*_operator_new)(size_t) = (void* (*)(size_t))0x000000014084530C;

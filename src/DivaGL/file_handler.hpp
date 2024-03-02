@@ -22,8 +22,22 @@ struct file_handler_callback_func {
     bool ready;
 };
 
+struct file_handler {
+    int32_t count;
+    struct Mtx_t* mtx;
+    bool not_ready;
+    bool reading;
+    prj::string farc_path;
+    prj::string file_path;
+    prj::HeapCMallocType heap_malloc_type;
+    bool cache;
+    file_handler_callback_func callback[2];
+    size_t size;
+    void* data;
+};
+
 struct p_file_handler {
-    struct file_handler* ptr;
+    file_handler* ptr;
 
     p_file_handler();
     ~p_file_handler();
