@@ -97,6 +97,7 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
 
     mat4 mat;
     mat4_rotate_y(s->rot_y, &mat);
+    mat4_transpose(&mat, &mat);
 
     if (s->stage_data->object_ground.not_null() && s->ground)
         disp_manager.entry_obj_by_object_info(&mat, s->stage_data->object_ground);
@@ -118,7 +119,7 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
 
     if (s->stage_data->object_sky.not_null() && s->sky) {
         mat4 t = s->mat;
-        mat4_mul(&t, &mat, &t);
+        mat4_mul(&mat, &t, &t);
         disp_manager.entry_obj_by_object_info(&t, s->stage_data->object_sky);
     }
 
@@ -162,6 +163,7 @@ HOOK(void, FASTCALL, stage__disp_shadow, 0x00000001406497C0, stage* s) {
 
     mat4 mat;
     mat4_rotate_y(s->rot_y, &mat);
+    mat4_transpose(&mat, &mat);
     if (s->stage_data->object_shadow.not_null())
         stage__disp_shadow_object(s->stage_data->object_shadow, &mat);
 }

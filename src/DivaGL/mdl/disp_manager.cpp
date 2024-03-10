@@ -2805,7 +2805,7 @@ namespace mdl {
     }
 
     HOOK(void, FASTCALL, DataTestObjectManager__Disp, 0x0000000140293E30, __int64 a1) {
-        if (*(int32_t*)(a1 + 0x88) == 3 || *(int32_t*)(a1 + 0x74) < 0
+        if (*(int32_t*)(a1 + 0x88) != 3 || *(int32_t*)(a1 + 0x74) < 0
             || *(int32_t*)(a1 + 0x74) >= *(int32_t*)(a1 + 0x70))
             return;
 
@@ -2814,6 +2814,7 @@ namespace mdl {
         disp_manager->set_obj_flags((mdl::ObjFlags)(*(int32_t*)(a1 + 0x84) | mdl::OBJ_40 | mdl::OBJ_20));
         mat4 mat;
         mat4_rotate_xyz(*(float_t*)(a1 + 0x78), *(float_t*)(a1 + 0x7C), *(float_t*)(a1 + 0x80), &mat);
+        mat4_transpose(&mat, &mat);
 
         vec3 pos = 0.0f;
         sub_1405E8A20(shadow_ptr_get(), 0, &pos);

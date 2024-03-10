@@ -655,7 +655,7 @@ static void sub_140512C20(rob_chara_item_equip* rob_itm_equip) {
         return;
 
     mat4_transpose(&mat, &mat);
-    mat4_mul(node->mat, &mat, &mat);
+    mat4_mul(&mat, node->mat, &mat);
     int32_t tex_pat_count = (int32_t)rob_itm_equip->texture_pattern.size();
     if (tex_pat_count)
         disp_manager->set_texture_pattern(tex_pat_count, rob_itm_equip->texture_pattern.data());
