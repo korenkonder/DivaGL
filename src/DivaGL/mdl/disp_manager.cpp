@@ -2880,7 +2880,7 @@ namespace mdl {
 
     HOOK(void, FASTCALL, sub_1404BCC60, 0x00000001404BCC60, vec3* pos, float_t width, float_t height) {
         mdl::EtcObj etc(ETC_OBJ_PLANE);
-        etc.color = *spr_color;
+        etc.color = spr_color;
         etc.data.plane.w = (int)width;
         etc.data.plane.h = (int)height;
 

@@ -107,7 +107,7 @@ namespace spr {
     static void draw_sprite_scale(spr::SprArgs* args);
 }
 
-vec4* spr_color = (vec4*)0x00000001411ACC30;
+vec4& spr_color = *(vec4*)0x00000001411ACC30;
 
 size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index)
     = (size_t(FASTCALL*)(int32_t index))0x000000014063FA90;
