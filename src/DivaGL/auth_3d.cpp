@@ -782,7 +782,7 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
     for (auth_3d_object_texture_transform& i : o->texture_transform) {
         if (tex_trans_count >= TEXTURE_TRANSFORM_COUNT || i.texture_id == -1
             || !texture_handler_get_texture(i.texture_id))
-            break;
+            continue;
 
         tex_trans[tex_trans_count].id = i.texture_id;
         tex_trans[tex_trans_count].mat = i.mat;
