@@ -125,14 +125,14 @@ public:
     size_t read_utf8_string_null_terminated_offset_length(int64_t offset);
     size_t read_utf16_string_null_terminated_offset_length(int64_t offset);
 
-    void write_string(std::string& str);
-    void write_string(std::string&& str);
-    void write_wstring(std::wstring& str);
-    void write_wstring(std::wstring&& str);
-    void write_string_null_terminated(std::string& str);
-    void write_string_null_terminated(std::string&& str);
-    void write_wstring_null_terminated(std::wstring& str);
-    void write_wstring_null_terminated(std::wstring&& str);
+    void write_string(const std::string& str);
+    void write_string(const std::string&& str);
+    void write_wstring(const std::wstring& str);
+    void write_wstring(const std::wstring&& str);
+    void write_string_null_terminated(const std::string& str);
+    void write_string_null_terminated(const std::string&& str);
+    void write_wstring_null_terminated(const std::wstring& str);
+    void write_wstring_null_terminated(const std::wstring&& str);
     void write_utf8_string(const char* str);
     void write_utf16_string(const wchar_t* str);
     void write_utf8_string_null_terminated(const char* str);

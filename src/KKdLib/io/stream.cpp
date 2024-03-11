@@ -62,13 +62,13 @@ void stream::write_uint8_t(uint8_t val) {
 }
 
 std::string stream::read_string(size_t length) {
-    std::string str = std::string(length, 0);
+    std::string str(length, 0);
     read(&str.front(), sizeof(char) * length);
     return str;
 }
 
 std::wstring stream::read_wstring(size_t length) {
-    std::wstring str = std::wstring(length, 0);
+    std::wstring str(length, 0);
     read(&str.front(), sizeof(wchar_t) * length);
     return str;
 }
@@ -613,38 +613,40 @@ void stream::write_double_t_reverse_endianness(double_t val, bool big_endian) {
     write(buf, sizeof(double_t));
 }
 
-void stream::write_string(std::string& str) {
+void stream::write_string(const std::string& str) {
     write(str.c_str(), str.size());
 }
 
-void stream::write_string(std::string&& str) {
+void stream::write_string(const std::string&& str) {
     write(str.c_str(), str.size());
 }
 
-void stream::write_wstring(std::wstring& str) {
+void stream::write_wstring(const std::wstring& str) {
     write(str.c_str(), sizeof(wchar_t) * str.size());
 }
 
-void stream::write_wstring(std::wstring&& str) {
+void stream::write_wstring(const std::wstring&& str) {
     write(str.c_str(), sizeof(wchar_t) * str.size());
 }
 
-void stream::write_string_null_terminated(std::string& str) {
+void stream::write_string_null_terminated(const std::string& str) {
     write(str.c_str(), str.size());
     write_uint8_t(0);
 }
 
-void stream::write_string_null_terminated(std::string&& str) {
-    write_string_null_terminated(str);
+void stream::write_string_null_terminated(const std::string&& str) {
+    write(str.c_str(), str.size());
+    write_uint8_t(0);
 }
 
-void stream::write_wstring_null_terminated(std::wstring& str) {
+void stream::write_wstring_null_terminated(const std::wstring& str) {
     write(str.c_str(), sizeof(wchar_t) * str.size());
     write_uint16_t(0);
 }
 
-void stream::write_wstring_null_terminated(std::wstring&& str) {
-    write_wstring_null_terminated(*(std::wstring*)&str);
+void stream::write_wstring_null_terminated(const std::wstring&& str) {
+    write(str.c_str(), sizeof(wchar_t) * str.size());
+    write_uint16_t(0);
 }
 
 void stream::write_utf8_string(const char* str) {

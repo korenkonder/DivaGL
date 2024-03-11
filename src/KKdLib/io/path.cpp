@@ -152,11 +152,14 @@ std::vector<std::string> path_get_directories(
             std::string temp_utf8 = utf16_to_utf8(temp);
 
             bool exclude = false;
-            for (size_t i = 0; i < exclude_count; i++)
-                if (!temp_utf8.compare(exclude_list[i])) {
+            for (size_t i = 0; i < exclude_count; i++) {
+                size_t exclude_path_len = utf8_length(exclude_list[i]);
+                size_t pos = temp_utf8.rfind(exclude_list[i], -1, exclude_path_len);
+                if (pos != -1 && pos == temp_utf8.size() - exclude_path_len) {
                     exclude = true;
                     break;
                 }
+            }
             temp.resize(temp.size() - len);
 
             if (exclude)
@@ -201,11 +204,14 @@ std::vector<std::wstring> path_get_directories(
             temp.append(fdata.cFileName, len);
 
             bool exclude = false;
-            for (size_t i = 0; i < exclude_count; i++)
-                if (!temp.compare(exclude_list[i])) {
+            for (size_t i = 0; i < exclude_count; i++) {
+                size_t exclude_path_len = utf16_length(exclude_list[i]);
+                size_t pos = temp.rfind(exclude_list[i], -1, exclude_path_len);
+                if (pos != -1 && pos == temp.size() - exclude_path_len) {
                     exclude = true;
                     break;
                 }
+            }
             temp.resize(temp.size() - len);
 
             if (exclude)
@@ -252,11 +258,14 @@ std::vector<std::string> path_get_directories_recursive(
             std::string temp_utf8 = utf16_to_utf8(temp);
 
             bool exclude = false;
-            for (size_t i = 0; i < exclude_count; i++)
-                if (!temp_utf8.compare(exclude_list[i])) {
+            for (size_t i = 0; i < exclude_count; i++) {
+                size_t exclude_path_len = utf8_length(exclude_list[i]);
+                size_t pos = temp_utf8.rfind(exclude_list[i], -1, exclude_path_len);
+                if (pos != -1 && pos == temp_utf8.size() - exclude_path_len) {
                     exclude = true;
                     break;
                 }
+            }
             temp.resize(temp.size() - len);
 
             if (exclude)
@@ -338,11 +347,14 @@ std::vector<std::wstring> path_get_directories_recursive(
             temp.append(fdata.cFileName, len);
 
             bool exclude = false;
-            for (size_t i = 0; i < exclude_count; i++)
-                if (!temp.compare(exclude_list[i])) {
+            for (size_t i = 0; i < exclude_count; i++) {
+                size_t exclude_path_len = utf16_length(exclude_list[i]);
+                size_t pos = temp.rfind(exclude_list[i], -1, exclude_path_len);
+                if (pos != -1 && pos == temp.size() - exclude_path_len) {
                     exclude = true;
                     break;
                 }
+            }
             temp.resize(temp.size() - len);
 
             if (exclude)
@@ -392,4 +404,25 @@ std::vector<std::wstring> path_get_directories_recursive(
         }
     }
     return directories;
+}
+
+void path_get_full_path(std::string& str) {
+    wchar_t buf[MAX_PATH * 2];
+    buf[0] = 0;
+    wchar_t* utf16_temp = utf8_to_utf16(str.c_str());
+    if (utf16_temp)
+        GetFullPathNameW(utf16_temp, MAX_PATH * 2, buf, 0);
+    free_def(utf16_temp);
+
+    char* utf0_temp = utf16_to_utf8(buf);
+    if (utf0_temp)
+        str.assign(utf0_temp);
+    free_def(utf0_temp);
+}
+
+void path_get_full_path(std::wstring& str) {
+    wchar_t buf[MAX_PATH * 2];
+    buf[0] = 0;
+    GetFullPathNameW(str.c_str(), MAX_PATH * 2, buf, 0);
+    str.assign(buf);
 }

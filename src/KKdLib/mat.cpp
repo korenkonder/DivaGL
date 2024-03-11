@@ -1195,15 +1195,14 @@ inline void mat4_invert_rotation_fast(const mat4* in_m1, mat4* out_m) {
 }
 
 inline void mat4_normalize(const mat4* in_m1, mat4* out_m) {
-    __m128 det;
-    det = _mm_set_ss(mat4_determinant(in_m1));
-    if (_mm_cvtss_f32(det) != 0.0f)
-        det = _mm_div_ss(_mm_set_ss(1.0f), det);
-    det = _mm_shuffle_ps(det, det, 0);
-    out_m->row0 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row0), det));
-    out_m->row1 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row1), det));
-    out_m->row2 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row2), det));
-    out_m->row3 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row3), det));
+    float_t det = mat4_determinant(in_m1);
+    if (det != 0.0f)
+        det = 1.0f / det;
+    __m128 _det = vec4::load_xmm(det);
+    out_m->row0 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row0), _det));
+    out_m->row1 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row1), _det));
+    out_m->row2 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row2), _det));
+    out_m->row3 = vec4::store_xmm(_mm_mul_ps(vec4::load_xmm(in_m1->row3), _det));
 }
 
 inline void mat4_normalize_rotation(const mat4* in_m1, mat4* out_m) {
@@ -1963,7 +1962,7 @@ inline void mat4_persp(float_t fov_y, float_t aspect, float_t z_near, float_t z_
     *out_m = mat4_null;
     out_m->row0.x = 1.0f / (aspect * tan_fov);
     out_m->row1.y = 1.0f / tan_fov;
-    out_m->row2.z = -(z_far + z_near) / (z_far - z_near);
+    out_m->row2.z = -((z_far + z_near) / (z_far - z_near));
     out_m->row2.w = -1.0f;
     out_m->row3.z = -((2.0f * z_far * z_near) / (z_far - z_near));
 }

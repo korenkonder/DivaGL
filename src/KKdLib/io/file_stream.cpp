@@ -101,7 +101,10 @@ size_t file_stream::write(const void* buf, size_t count) {
         int64_t act_count = 0;
         while (count > 0) {
             act_count += fwrite(this->buf, 1, min_def(count, sizeof(this->buf)), stream);
-            count -= sizeof(this->buf);
+            if (count > sizeof(this->buf))
+                count -= sizeof(this->buf);
+            else
+                break;
         }
         return act_count;
     }
@@ -115,7 +118,10 @@ size_t file_stream::write(const void* buf, size_t size, size_t count) {
         int64_t act_count = 0;
         while (count > 0) {
             act_count += fwrite(this->buf, 1, min_def(count, sizeof(this->buf) / size), stream);
-            count -= sizeof(this->buf) / size;
+            if (count > sizeof(this->buf) / size)
+                count -= sizeof(this->buf) / size;
+            else
+                break;
         }
         return act_count;
     }

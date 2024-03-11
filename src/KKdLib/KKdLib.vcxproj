@@ -230,7 +230,6 @@
     <ClInclude Include="io\stream.hpp" />
     <ClInclude Include="kf.hpp" />
     <ClInclude Include="mat.hpp" />
-    <ClInclude Include="msgpack.hpp" />
     <ClInclude Include="prj\algorithm.hpp" />
     <ClInclude Include="prj\math.hpp" />
     <ClInclude Include="prj\shared_ptr.hpp" />
@@ -269,7 +268,6 @@
     <ClCompile Include="io\stream.cpp" />
     <ClCompile Include="kf.cpp" />
     <ClCompile Include="mat.cpp" />
-    <ClCompile Include="msgpack.cpp" />
     <ClCompile Include="prj\stack_allocator.cpp" />
     <ClCompile Include="prj\time.cpp" />
     <ClCompile Include="quat.cpp" />

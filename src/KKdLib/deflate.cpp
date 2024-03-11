@@ -62,6 +62,9 @@ namespace deflate {
         memcpy((void*)(t + 0x0A), file_name, file_name_length + 1);
         memcpy((void*)(t + 0x0A + file_name_length + 1), (void*)(d + 0x0A), *dst_length - 0x0A);
         ((uint8_t*)t)[0x03] |= 0x08;
+        free(*dst);
+        *dst = temp;
+        *dst_length += file_name_length + 1;
         return result;
     }
 
