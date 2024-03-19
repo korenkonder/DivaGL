@@ -8,7 +8,10 @@
 #include "../KKdLib/default.hpp"
 #include <list>
 #include <map>
+#include <set>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 #pragma once
 
@@ -71,6 +74,8 @@ namespace prj {
 
     using string = std::basic_string<char, std::char_traits<char>, Allocator<char>>;
 
+    using wstring = std::basic_string<wchar_t, std::char_traits<wchar_t>, Allocator<wchar_t>>;
+
     template<typename T>
     using vector = std::vector<T, Allocator<T>>;
 
@@ -79,6 +84,15 @@ namespace prj {
 
     template<typename T, typename U>
     using map = std::map<T, U, std::less<T>, Allocator<pair<T, U>>>;
+
+    template<typename T>
+    using set = std::set<T, std::less<T>, Allocator<T>>;
+
+    template<typename T, typename U>
+    using unordered_map = std::unordered_map<T, U, std::hash<T>, std::equal_to<T>, Allocator<pair<T, U>>>;
+
+    template<typename T>
+    using unordered_set = std::unordered_set<T, std::hash<T>, std::equal_to<T>, Allocator<T>>;
 
     template<typename T>
     class ref_count {
