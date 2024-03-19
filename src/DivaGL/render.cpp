@@ -193,6 +193,10 @@ namespace rndr {
         for (int32_t i = 0; i < 8; i++)
             gl_state_bind_sampler(i, 0);
 
+        fbo_blit(rctx->screen_buffer.fbos[0], 0,
+            0, 0, rctx->screen_width, rctx->screen_height,
+            0, 0, rctx->screen_width, rctx->screen_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
         gl_state_bind_framebuffer(0);
     }
 
