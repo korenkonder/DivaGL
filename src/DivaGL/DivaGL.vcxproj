@@ -277,6 +277,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="object.cpp" />
     <ClCompile Include="print.cpp" />
     <ClCompile Include="pv_game.cpp" />
+    <ClCompile Include="print_work.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="render_context.cpp" />
     <ClCompile Include="render_manager.cpp" />
@@ -324,6 +325,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="object.hpp" />
     <ClInclude Include="print.hpp" />
     <ClInclude Include="pv_game.hpp" />
+    <ClInclude Include="print_work.hpp" />
     <ClInclude Include="render.hpp" />
     <ClInclude Include="render_context.hpp" />
     <ClInclude Include="render_manager.hpp" />
