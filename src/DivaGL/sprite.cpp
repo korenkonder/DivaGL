@@ -109,8 +109,12 @@ namespace spr {
 
 vec4& spr_color = *(vec4*)0x00000001411ACC30;
 
+void (FASTCALL* sprite_manager_unload_set)(int32_t set_id)
+    = (void (FASTCALL*)(int32_t set_id))0x000000014063F8D0;
 size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index)
     = (size_t(FASTCALL*)(int32_t index))0x000000014063FA90;
+void (FASTCALL* sprite_manager_read_file)(int32_t set_id, const prj::string mdata_dir)
+    = (void (FASTCALL*)(int32_t set_id, const prj::string mdata_dir))0x0000000140640E10;
 bool (FASTCALL* sprite_manager_load_file)(int32_t set_id)
     = (bool (FASTCALL*)(int32_t set_id))0x0000000140640FB0;
 
@@ -131,6 +135,8 @@ static const GLenum spr_blend_param[6][4] = {
 
 namespace spr {
     void(FASTCALL* put_rgb_cross)(mat4* mat) = (void(FASTCALL*)(mat4 * mat))0x00000001404BC8F0;
+    spr::SprArgs* (FASTCALL* put_sprite)(const spr::SprArgs* args)
+        = (spr::SprArgs * (FASTCALL*)(const spr::SprArgs * args))0x0000000140640740;
 
     SpriteManager::RenderData::RenderData() {
         glGenVertexArrays(1, &vao);
@@ -1185,6 +1191,13 @@ namespace spr {
             args = args->next;
         }
     }
+}
+
+int32_t sprite_database_get_spr_set_id_by_name(const prj::string& name) {
+    int32_t(FASTCALL * sprite_database_struct__get_spr_set_id_by_name)
+        (size_t _this, const prj::string & name)
+        = (int32_t(FASTCALL*)(size_t _this, const prj::string & name))0x00000001401121A0;
+    return sprite_database_struct__get_spr_set_id_by_name(0x000000014CC62290, name);
 }
 
 void sprite_manager_init() {

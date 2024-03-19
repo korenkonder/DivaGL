@@ -253,6 +253,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="auth_2d.cpp" />
     <ClCompile Include="Glitter\counter.cpp" />
     <ClCompile Include="Glitter\glitter.cpp" />
     <ClCompile Include="Glitter\particle.cpp" />
@@ -301,6 +302,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ResourceCompile Include="DivaGL.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="auth_2d.hpp" />
     <ClInclude Include="Glitter\glitter.hpp" />
     <ClInclude Include="auth_3d.hpp" />
     <ClInclude Include="camera.hpp" />
