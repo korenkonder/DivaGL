@@ -449,6 +449,7 @@ struct auth_3d {
     object_info object_info;
     mat4* bone_mats;
     bool shadow;
+    bool chara_item;
     chara_index src_chara;
     chara_index dst_chara;
     int32_t pos;
@@ -834,6 +835,14 @@ void auth_3d_id::set_chara_id(int32_t value) {
     }
 }
 
+void auth_3d_id::set_chara_item(bool value) {
+    if (id >= 0 && ((id & 0x7FFF) < AUTH_3D_DATA_COUNT)) {
+        auth_3d* auth = &auth_3d_data->data[id & 0x7FFF];
+        if (auth->id == id)
+            auth->chara_item = value;
+    }
+}
+
 void auth_3d_id::set_enable(bool value) {
     if (id >= 0 && ((id & 0x7FFF) < AUTH_3D_DATA_COUNT)) {
         auth_3d* auth = &auth_3d_data->data[id & 0x7FFF];
@@ -1092,7 +1101,10 @@ HOOK(void, FASTCALL, auth_3d_object_hrc_disp, 0x00000001401D04A0, auth_3d_object
         size_t rob_chara_smth = get_rob_chara_smth();
         if (rob_chara_pv_data_array_check_chara_id(rob_chara_smth, auth->chara_id)) {
             size_t rob_chr = rob_chara_array_get(rob_chara_smth, auth->chara_id);
-            mat4_mul(rob_chara_get_adjust_data_mat(rob_chr), sub_140516740(rob_chr), &mat);
+            mat4_mul(auth->chara_item
+                ? rob_chara_get_item_adjust_data_mat(rob_chr)
+                : rob_chara_get_adjust_data_mat(rob_chr),
+                sub_140516740(rob_chr), &mat);
             if (auth->chara_id)
                 disp_manager.set_shadow_type(SHADOW_STAGE);
         }
@@ -1157,7 +1169,10 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
         if (rob_chara_pv_data_array_check_chara_id(rob_chara_smth, auth->chara_id)) {
             size_t rob_chr = rob_chara_array_get(rob_chara_smth, auth->chara_id);
             mat4 m;
-            mat4_mul(rob_chara_get_adjust_data_mat(rob_chr), sub_140516740(rob_chr), &m);
+            mat4_mul(auth->chara_item
+                ? rob_chara_get_item_adjust_data_mat(rob_chr)
+                : rob_chara_get_adjust_data_mat(rob_chr),
+                sub_140516740(rob_chr), &m);
             mat4_mul(&mat, &m, &mat);
             disp_manager.set_shadow_type(auth->chara_id ? SHADOW_STAGE : SHADOW_CHARA);
         }
@@ -1313,6 +1328,7 @@ void auth_3d_patch() {
     WRITE_MEMORY_STRING(0x00000001401A72FF, "\x4C\x89\x40\x38", 0x04);
     WRITE_MEMORY_STRING(0x00000001401B316A, "\x48\x8B\x43\x68\x48\x89"
         "\x47\x68\x48\x8B\xC7\x48\x8B\x5C\x24\x48\x48\x83\xC4\x30\x5F\xC3", 0x16);
+    WRITE_MEMORY_STRING(0x00000001401D7A78, "\x44\x89\xBF\x98\x00\x00\x00", 0x07);
 
     INSTALL_HOOK(auth_3d_curve_array_free);
     INSTALL_HOOK(auth_3d_m_object_hrc_disp);

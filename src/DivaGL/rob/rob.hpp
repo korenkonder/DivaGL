@@ -707,5 +707,6 @@ extern bool (FASTCALL* rob_chara_pv_data_array_check_chara_id)(size_t rob_chr_sm
 extern const mat4* rob_chara_item_equip_mat;
 
 extern const mat4* rob_chara_get_adjust_data_mat(size_t rob_chr);
+extern const mat4* rob_chara_get_item_adjust_data_mat(size_t rob_chr);
 
 extern void rob_patch();
