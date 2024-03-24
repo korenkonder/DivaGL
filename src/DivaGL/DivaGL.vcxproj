@@ -290,8 +290,11 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="print.cpp" />
-    <ClCompile Include="pv_game.cpp" />
     <ClCompile Include="print_work.cpp" />
+    <ClCompile Include="pv_game\dsc.cpp" />
+    <ClCompile Include="pv_game\pvpp.cpp" />
+    <ClCompile Include="pv_game\pvsr.cpp" />
+    <ClCompile Include="pv_game\pv_game.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="render_context.cpp" />
     <ClCompile Include="render_manager.cpp" />
@@ -338,8 +341,11 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="object.hpp" />
     <ClInclude Include="print.hpp" />
-    <ClInclude Include="pv_game.hpp" />
     <ClInclude Include="print_work.hpp" />
+    <ClInclude Include="pv_game\dsc.hpp" />
+    <ClInclude Include="pv_game\pvpp.hpp" />
+    <ClInclude Include="pv_game\pvsr.hpp" />
+    <ClInclude Include="pv_game\pv_game.hpp" />
     <ClInclude Include="render.hpp" />
     <ClInclude Include="render_context.hpp" />
     <ClInclude Include="render_manager.hpp" />
