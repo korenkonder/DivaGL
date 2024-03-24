@@ -83,6 +83,13 @@ void FASTCALL divagl_main() {
     glut_handle = (size_t)GetModuleHandleW(L"glut32.dll");
     opengl32_handle = (size_t)GetModuleHandleW(L"opengl32.dll");
 
+    if (memcmp((void*)(glut_handle + 0x0004CA68),
+        "D:\\F\\DIVA\\DIVAAC\\package\\glut-3.7.6\\vc11\\lib\\x64\\Release\\glut32.pdb", 0x43)) {
+        MessageBoxA(0, "Unsupported glut32.dll.\r\nPlease use original glut32.dll.", 0, MB_OK);
+        ExitProcess(0);
+        return;
+    }
+
 #if defined(DINPUT8_DLL)
     load_original_dll();
     LoadLibraryW(L"plugins\\DivaSound.dva");
