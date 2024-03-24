@@ -724,6 +724,7 @@ namespace rndr {
         }
 
         Glitter::glt_particle_manager->DispScenes(Glitter::DISP_OPAQUE);
+        Glitter::glt_particle_manager_x->DispScenes(Glitter::DISP_OPAQUE);
 
         gl_state_enable_depth_test();
         gl_state_set_depth_mask(GL_TRUE);
@@ -756,6 +757,7 @@ namespace rndr {
 
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
         Glitter::glt_particle_manager->DispScenes(Glitter::DISP_ALPHA);
+        Glitter::glt_particle_manager_x->DispScenes(Glitter::DISP_ALPHA);
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         /*if (npr_param == 1) {
@@ -776,11 +778,9 @@ namespace rndr {
             gl_state_disable_blend();
         }
 
-#if (0)
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE); // X
-        Glitter::glt_particle_manager->DispScenes(Glitter::DISP_TYPE_2);
+        Glitter::glt_particle_manager_x->DispScenes(Glitter::DISP_TYPE_2);
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-#endif
 
         gl_state_set_depth_mask(GL_TRUE);
         draw_pass_3d_translucent(
@@ -794,6 +794,7 @@ namespace rndr {
 
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
         Glitter::glt_particle_manager->DispScenes(Glitter::DISP_NORMAL);
+        Glitter::glt_particle_manager_x->DispScenes(Glitter::DISP_NORMAL);
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         gl_state_enable_depth_test();
@@ -806,8 +807,7 @@ namespace rndr {
             mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1,
             mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1);
 
-#if (0)
-        if (Glitter::glt_particle_manager->CheckHasLocalEffect()) { // X
+        if (Glitter::glt_particle_manager_x->CheckHasLocalEffect()) { // X
             float_t fov = camera_data->fov;
             camera_data->fov = 32.2673416137695f;
             draw_pass_set_camera();
@@ -829,12 +829,11 @@ namespace rndr {
                 mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL);
 
             gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-            Glitter::glt_particle_manager->DispScenes(Glitter::DISP_LOCAL);
+            Glitter::glt_particle_manager_x->DispScenes(Glitter::DISP_LOCAL);
             gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
             camera_data->fov = fov;
             draw_pass_set_camera();
         }
-#endif
 
         gl_state_active_bind_texture_2d(14, 0);
         gl_state_active_bind_texture_2d(15, 0);

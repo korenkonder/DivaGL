@@ -254,10 +254,24 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="auth_2d.cpp" />
+    <ClCompile Include="Glitter\animation.cpp" />
     <ClCompile Include="Glitter\counter.cpp" />
+    <ClCompile Include="Glitter\curve.cpp" />
+    <ClCompile Include="Glitter\effect.cpp" />
+    <ClCompile Include="Glitter\effect_group.cpp" />
+    <ClCompile Include="Glitter\effect_inst.cpp" />
+    <ClCompile Include="Glitter\emitter.cpp" />
+    <ClCompile Include="Glitter\emitter_inst.cpp" />
+    <ClCompile Include="Glitter\file_reader.cpp" />
     <ClCompile Include="Glitter\glitter.cpp" />
+    <ClCompile Include="Glitter\item_base.cpp" />
+    <ClCompile Include="Glitter\locus_history.cpp" />
+    <ClCompile Include="Glitter\node.cpp" />
     <ClCompile Include="Glitter\particle.cpp" />
+    <ClCompile Include="Glitter\particle_inst.cpp" />
     <ClCompile Include="Glitter\particle_manager.cpp" />
+    <ClCompile Include="Glitter\random.cpp" />
+    <ClCompile Include="Glitter\render_element.cpp" />
     <ClCompile Include="Glitter\render_group.cpp" />
     <ClCompile Include="Glitter\render_scene.cpp" />
     <ClCompile Include="Glitter\scene.cpp" />

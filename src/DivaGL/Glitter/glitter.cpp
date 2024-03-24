@@ -9,6 +9,8 @@
 #include <Helpers.h>
 
 namespace Glitter {
+    const float_t min_emission = 0.01f;
+
     void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec1, const vec3* vec2) {
         *axis = vec3::cross(*vec1, *vec2);
         *angle = vec3::length(*axis);
@@ -125,5 +127,7 @@ namespace Glitter {
 
         // GltParticleManager
         WRITE_MEMORY(0x00000001409EB880 + 0x20, uint64_t, (uint64_t)GltParticleManager::Disp);
+
+        glt_particle_manager_x = new (_operator_new(sizeof(GltParticleManagerX))) GltParticleManagerX;
     }
 }
