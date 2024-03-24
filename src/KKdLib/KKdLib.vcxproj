@@ -240,7 +240,6 @@
     <ClInclude Include="quat.hpp" />
     <ClInclude Include="str_utils.hpp" />
     <ClInclude Include="time.hpp" />
-    <ClInclude Include="timer.hpp" />
     <ClInclude Include="txp.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="vec.hpp" />
@@ -273,7 +272,6 @@
     <ClCompile Include="quat.cpp" />
     <ClCompile Include="str_utils.cpp" />
     <ClCompile Include="time.cpp" />
-    <ClCompile Include="timer.cpp" />
     <ClCompile Include="txp.cpp" />
     <ClCompile Include="vec.cpp" />
   </ItemGroup>

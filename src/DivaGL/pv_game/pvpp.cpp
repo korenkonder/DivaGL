@@ -10,13 +10,6 @@ const pvpp* pvpp::read(const void* data, size_t size) {
         return 0;
     }
 
-    sizeof(pvpp_auth_3d);
-    sizeof(pvpp_glitter);
-    sizeof(pvpp_chara);
-    sizeof(pvpp_effect);
-    sizeof(pvpp_chara_effect);
-    sizeof(pvpp_chara_effect_auth_3d);
-
     size_t d = (size_t)data;
     pvpp* pp = (pvpp*)data;
     if (pp->signature != reverse_endianness_uint32_t('pvpp'))
