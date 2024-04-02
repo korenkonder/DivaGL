@@ -85,7 +85,9 @@
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"</Command>
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
+del "$(SolutionDir)bin\$(TargetName).exp"
+del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -126,7 +128,9 @@ copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"</Command>
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
+del "$(SolutionDir)bin\$(TargetName).exp"
+del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
