@@ -672,7 +672,7 @@ namespace renderer {
         gl_state_bind_vertex_array(vao);
         render_tiles(depth_texture, true);
         downsample(color_texture, depth_texture, true);
-        main_filter(true);
+        apply_main_filter(true);
         upsample(rt, color_texture, depth_texture, true);
 
         gl_state_use_program(0);
@@ -697,7 +697,7 @@ namespace renderer {
         gl_state_bind_vertex_array(vao);
         render_tiles(depth_texture, false);
         downsample(color_texture, depth_texture, false);
-        main_filter(false);
+        apply_main_filter(false);
         upsample(rt, color_texture, depth_texture, false);
 
         gl_state_use_program(0);
@@ -745,8 +745,8 @@ namespace renderer {
         gl_state_end_event();
     }
 
-    void DOF3::main_filter(bool f2) {
-        gl_state_begin_event("renderer::DOF3::main_filter");
+    void DOF3::apply_main_filter(bool f2) {
+        gl_state_begin_event("renderer::DOF3::apply_main_filter");
         fbo[3].bind_buffer();
         glViewportDLL(0, 0, fbo[3].width, fbo[3].height);
         program[f2 ? 7 : 3].use_program();

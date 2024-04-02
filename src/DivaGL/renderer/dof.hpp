@@ -76,7 +76,7 @@ namespace renderer {
 
         void render_tiles(GLuint depth_texture, bool f2);
         void downsample(GLuint color_texture, GLuint depth_texture, bool f2);
-        void main_filter(bool f2);
+        void apply_main_filter(bool f2);
         void upsample(RenderTexture* rt, GLuint color_texture, GLuint depth_texture, bool f2);
 
         void init_textures(int32_t width, int32_t height);
