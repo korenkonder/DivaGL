@@ -9,6 +9,7 @@
 #include "../gl_uniform_buffer.hpp"
 #include "../render_texture.hpp"
 #include "fbo.hpp"
+#include "gl_program.hpp"
 
 enum dof_debug_flags {
     DOF_DEBUG_USE_UI_PARAMS   = 0x01,
@@ -51,14 +52,21 @@ namespace renderer {
         FBO fbo[4];
         GLuint samplers[2];
         GLuint vao;
-        GLuint program[9];
+        GLProgram program[9];
         GLUniformBuffer common_ubo;
         GLUniformBuffer texcoords_ubo;
+
+        DOF3(int32_t width, int32_t height);
+        ~DOF3();
 
         void apply(RenderTexture* rt);
         void resize(int32_t width, int32_t height);
 
     private:
+        void free();
+        void init(int32_t width, int32_t height);
+        void load_shaders();
+
         void apply_f2(RenderTexture* rt, GLuint color_texture,
             GLuint depth_texture, float_t min_distance, float_t max_distance, float_t fov,
             float_t focus, float_t focus_range, float_t fuzzing_range, float_t ratio);
@@ -71,8 +79,11 @@ namespace renderer {
         void main_filter(bool f2);
         void upsample(RenderTexture* rt, GLuint color_texture, GLuint depth_texture, bool f2);
 
+        void init_textures(int32_t width, int32_t height);
         void update_data(float_t min_dist, float_t max_dist, float_t fov, float_t dist, float_t focal_length,
             float_t f_number, float_t focus_range, float_t fuzzing_range, float_t ratio);
+
+        static void calculate_texcoords(vec2* data, float_t size);
     };
 
     static_assert(sizeof(renderer::DOF3) == 0xD8, "\"renderer::DOF3\" struct should have a size of 0xD8");

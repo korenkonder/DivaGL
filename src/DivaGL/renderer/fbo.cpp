@@ -4,9 +4,17 @@
 */
 
 #include "fbo.hpp"
-#include "../gl_state.hpp"
+#include "../types.hpp"
 
 namespace renderer {
+    FBO::FBO() : flags(), width(), height(), buffer(), count(), textures() {
+
+    }
+
+    FBO::~FBO() {
+        free();
+    }
+
 #pragma warning(push)
 #pragma warning(disable: 6385)
 #pragma warning(disable: 6386)
@@ -25,7 +33,7 @@ namespace renderer {
             this->count++;
         }
 
-        textures = new GLuint[this->count];
+        textures = new (_operator_new(sizeof(GLuint) * this->count)) GLuint[this->count];
         for (int32_t i = 0; i < count; i++)
             textures[i] = color_textures[i];
 
@@ -56,7 +64,7 @@ namespace renderer {
         }
 
         if (textures) {
-            delete[] textures;
+            _operator_delete(textures);
             textures = 0;
         }
     }

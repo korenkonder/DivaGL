@@ -763,23 +763,13 @@ namespace rndr {
 
         field_3E8.Init(512, 256, 0, GL_RGBA8, GL_ZERO);
 
-        renderer::DOF3* (FASTCALL * renderer__DOF3__DOF3)(renderer::DOF3 * dof, int32_t width, int32_t height)
-            = (renderer::DOF3 * (FASTCALL*)(renderer::DOF3 * dof, int32_t width, int32_t height))0x00000001404A81F0;
-        renderer::DOF3* dof = new renderer::DOF3;
-        this->dof = renderer__DOF3__DOF3(dof, render_post_width[0], render_post_height[0]);
+        dof = new renderer::DOF3(render_post_width[0], render_post_height[0]);
 
         for (int32_t i = 0; i < 1; i++)
             transparency_tex[i] = texture_load_tex_2d(texture_id(0x25, texture_counter++),
                 GL_RGBA16F, render_post_width[0], render_post_height[0], 0, 0, 0);
 
-        renderer::Transparency* (FASTCALL * renderer__Transparency__Transparency)(
-            renderer::Transparency * transparency, GLuint color_texture,
-            GLuint depth_texture, int32_t width, int32_t height)
-            = (renderer::Transparency * (FASTCALL*)(renderer::Transparency * transparency,
-                GLuint color_texture, GLuint depth_texture, int32_t width, int32_t height))0x00000001404A88F0;
-        renderer::Transparency* transparency = new renderer::Transparency;
-        memset(transparency, 0, sizeof(*transparency));
-        this->transparency = renderer__Transparency__Transparency(transparency, transparency_tex[0]->tex,
+        transparency = new renderer::Transparency(transparency_tex[0]->tex,
             rend_texture[0].GetDepthTex(), render_post_width[0], render_post_height[0]);
     }
 
