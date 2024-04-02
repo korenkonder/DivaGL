@@ -85,8 +85,9 @@ void FASTCALL divagl_main() {
 
     if (memcmp((void*)(glut_handle + 0x0004CA68),
         "D:\\F\\DIVA\\DIVAAC\\package\\glut-3.7.6\\vc11\\lib\\x64\\Release\\glut32.pdb", 0x43)) {
+        printf_divagl("Error! Unsupported glut32.dll.");
+        printf_divagl("Please use original glut32.dll.");
         MessageBoxA(0, "Unsupported glut32.dll.\r\nPlease use original glut32.dll.", 0, MB_OK);
-        ExitProcess(0);
         return;
     }
 
