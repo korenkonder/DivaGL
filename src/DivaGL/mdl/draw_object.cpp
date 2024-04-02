@@ -60,11 +60,11 @@ namespace mdl {
             shaders_ft.draw_elements(mesh_draw_mode[primitive_type],
                 count, mesh_indices_type[index_format], (void*)indices);
 
-        draw_state->stats.draw_count += count;
+        draw_state.stats.draw_count += count;
         if (primitive_type == OBJ_PRIMITIVE_TRIANGLES)
-            draw_state->stats.draw_triangle_count += count / 3;
+            draw_state.stats.draw_triangle_count += count / 3;
         else if (primitive_type == OBJ_PRIMITIVE_TRIANGLE_STRIP)
-            draw_state->stats.draw_triangle_count += count - 2;
+            draw_state.stats.draw_triangle_count += count - 2;
     }
 
     void draw_etc_obj(const mdl::EtcObj* etc, const mat4* mat) {
@@ -250,7 +250,7 @@ namespace mdl {
             rctx->obj_batch.g_offset_color = 0.0f;
         }
 
-        draw_state->stats.object_draw_count++;
+        draw_state.stats.object_draw_count++;
     }
 
     void draw_sub_mesh_default_instanced(
@@ -289,7 +289,7 @@ namespace mdl {
             rctx->obj_batch.g_offset_color = 0.0f;
         }
 
-        draw_state->stats.object_draw_count++;
+        draw_state.stats.object_draw_count++;
     }
 
     void draw_sub_mesh_sss(const ObjSubMeshArgs* args) {
@@ -357,7 +357,7 @@ namespace mdl {
         draw_object_vertex_attrib_reset_reflect(args);
         uniform_value_reset();
 
-        draw_state->stats.object_reflect_draw_count++;
+        draw_state.stats.object_reflect_draw_count++;
     }
 
     void draw_sub_mesh_reflect_reflect_map(const ObjSubMeshArgs* args) {
@@ -377,7 +377,7 @@ namespace mdl {
         draw_object_material_reset_reflect();
         draw_object_vertex_attrib_reset_reflect(args);
 
-        draw_state->stats.object_reflect_draw_count++;
+        draw_state.stats.object_reflect_draw_count++;
     }
 
     void draw_sub_mesh_shadow(const ObjSubMeshArgs* args) {
@@ -399,13 +399,13 @@ namespace mdl {
     void draw_sub_mesh_translucent(const ObjSubMeshArgs* args) {
         const obj_material_data* material = args->material;
         const prj::vector<GLuint>* textures = args->textures;
-        if (draw_state->shader_index != -1) {
+        if (draw_state.shader_index != -1) {
             rctx->obj_batch.g_material_state_emission = args->emission;
             draw_object_material_set_uniform(material, false);
             if (material->material.attrib.m.alpha_texture)
                 uniform->arr[U_TEXTURE_COUNT] = 0;
             rctx->obj_batch.g_texture_blend = { (float_t)uniform->arr[U_TEXTURE_BLEND], 0.0f, 0.0f, 0.0f };
-            shaders_ft.set(draw_state->shader_index);
+            shaders_ft.set(draw_state.shader_index);
         }
 
         draw_object_vertex_attrib_set_default(args);
@@ -491,10 +491,10 @@ namespace mdl {
         gl_state_enable_cull_face();
         draw_object_vertex_attrib_reset_default(args);
 
-        if (draw_state->shader_index != -1)
+        if (draw_state.shader_index != -1)
             uniform_value_reset();
 
-        draw_state->stats.object_translucent_draw_count++;
+        draw_state.stats.object_translucent_draw_count++;
     }
 }
 
@@ -565,7 +565,7 @@ static bool draw_object_blend_set(
         chara_color->get_specular(specular);
         if (specular.w >= 4.0f && chara_color->get_type() == LIGHT_PARALLEL
             && (src_blend_factor != GL_ONE || dst_blend_factor)) {
-            int32_t shader_index = draw_state->shader_index;
+            int32_t shader_index = draw_state.shader_index;
             if (shader_index == -1) {
                 shader_index = material->material.shader.index;
                 if (shader_index == SHADER_FT_BLINN) {
@@ -618,7 +618,7 @@ static void draw_object_chara_color_fog_set(const mdl::ObjSubMeshArgs* args, boo
             uniform->arr[U_FOG_HEIGHT] = 2 + attrib.fog_height;
         else
             uniform->arr[U_FOG_HEIGHT] = 1;
-        uniform->arr[U_FOG] = draw_state->fog_height ? 2 : 1;
+        uniform->arr[U_FOG] = draw_state.fog_height ? 2 : 1;
     }
 }
 
@@ -645,14 +645,14 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
         material->material.shader_info.get_lighting_type();
     bool disable_fog = draw_object_blend_set(args, lighting_type);
     draw_object_material_set_uniform(material, false);
-    if (!draw_state->light)
+    if (!draw_state.light)
         uniform->arr[U_LIGHT_0] = 0;
     else if (args->self_shadow)
         uniform->arr[U_LIGHT_0] = 1;
     else
         uniform->arr[U_LIGHT_0] = args->sub_mesh->attrib.m.recieve_shadow ? 1 : 0;
     uniform->arr[U_SHADOW] = 0;
-    uniform->arr[U_SELF_SHADOW] = draw_state->self_shadow ? 1 : 0;
+    uniform->arr[U_SELF_SHADOW] = draw_state.self_shadow ? 1 : 0;
 
     const obj_material_texture_data* texdata = material->material.texdata;
     uniform->arr[U_SHADOW] = args->shadow > SHADOW_CHARA;
@@ -785,8 +785,8 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
 
     if (!use_shader)
         shaders_ft.set(SHADER_FT_SIMPLE);
-    else if (draw_state->shader_index != -1)
-        shaders_ft.set(draw_state->shader_index);
+    else if (draw_state.shader_index != -1)
+        shaders_ft.set(draw_state.shader_index);
     else if (material->material.shader.index != -1) {
         if (material->material.shader.index != SHADER_FT_BLINN)
             shaders_ft.set(material->material.shader.index);
@@ -815,7 +815,7 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
         if (fresnel > 9.0f)
             fresnel = 9.0f;
         else if (fresnel == 0.0f)
-            fresnel = draw_state->fresnel;
+            fresnel = draw_state.fresnel;
         fresnel = (fresnel - 1.0f) * 0.12f * 0.82f;
 
         rctx->obj_batch.g_fresnel_coefficients = { fresnel, 0.18f, line_light, 0.0f };
@@ -857,15 +857,15 @@ static void draw_object_material_set_parameter(const obj_material_data* mat_data
     float_t reflect_uv_scale;
     float_t refract_uv_scale;
     float_t inv_bump_depth;
-    if (draw_state->use_global_material) {
-        bump_depth = draw_state->bump_depth;
-        intensity = draw_state->intensity;
-        reflect_uv_scale = draw_state->reflect_uv_scale;
-        refract_uv_scale = draw_state->refract_uv_scale;
-        inv_bump_depth = (1.0f - draw_state->bump_depth) * 64.0f + 1.0f;
+    if (draw_state.use_global_material) {
+        bump_depth = draw_state.bump_depth;
+        intensity = draw_state.intensity;
+        reflect_uv_scale = draw_state.reflect_uv_scale;
+        refract_uv_scale = draw_state.refract_uv_scale;
+        inv_bump_depth = (1.0f - draw_state.bump_depth) * 64.0f + 1.0f;
 
         vec4 specular = mat_data->material.color.specular;
-        specular.w = draw_state->reflectivity;
+        specular.w = draw_state.reflectivity;
         rctx->obj_batch.g_material_state_specular = specular;
     }
     else {
@@ -951,7 +951,7 @@ static void draw_object_material_set_reflect(const mdl::ObjSubMeshArgs* args) {
 
     draw_object_material_set_uniform(material, true);
     rctx->obj_batch.g_texture_blend = { (float_t)uniform->arr[U_TEXTURE_BLEND], 0.0f, 0.0f, 0.0f };
-    shaders_ft.set(draw_state->shader_index);
+    shaders_ft.set(draw_state.shader_index);
     rctx->obj_batch.g_material_state_ambient = ambient;
     rctx->obj_batch.g_material_state_diffuse = diffuse;
     rctx->obj_batch.g_material_state_emission = emission;

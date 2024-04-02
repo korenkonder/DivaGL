@@ -6,6 +6,8 @@
 #include "render_context.hpp"
 #include "render_manager.hpp"
 
+draw_state_struct& draw_state = *(draw_state_struct*)0x00000001411A32B0;
+
 void draw_state_stats::reset() {
     object_draw_count = 0;
     object_translucent_draw_count = 0;
@@ -16,8 +18,6 @@ void draw_state_stats::reset() {
     draw_triangle_count = 0;
     field_1C = 0;
 }
-
-draw_state_struct* draw_state = (draw_state_struct*)0x00000001411A32B0;
 
 render_context* rctx;
 

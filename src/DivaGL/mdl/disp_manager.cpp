@@ -1612,12 +1612,12 @@ namespace mdl {
         case OBJ_TYPE_TYPE_6:
             func = draw_sub_mesh_translucent;
             gl_state_set_color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-            draw_state->shader_index = SHADER_FT_SIL;
+            draw_state.shader_index = SHADER_FT_SIL;
             break;
         case OBJ_TYPE_TYPE_7:
             func = draw_sub_mesh_translucent;
             gl_state_set_color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-            draw_state->shader_index = SHADER_FT_SIL;
+            draw_state.shader_index = SHADER_FT_SIL;
             alpha_test = 1;
             min_alpha = 0.0f;
             alpha_threshold = 0.99999994f;
@@ -1704,7 +1704,7 @@ namespace mdl {
             break;
         case OBJ_TYPE_TYPE_6:
         case OBJ_TYPE_TYPE_7:
-            draw_state->shader_index = -1;
+            draw_state.shader_index = -1;
             gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
             break;
         case OBJ_TYPE_REFLECT_CHARA_OPAQUE:

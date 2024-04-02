@@ -1394,11 +1394,11 @@ void effect_patch() {
 }
 
 void EffectFogRing::draw() {
-    draw_state->set_fog_height(false);
+    draw_state.set_fog_height(false);
     if (!enable || !display)
         return;
 
-    draw_state->set_fog_height(true);
+    draw_state.set_fog_height(true);
     RenderTexture& rt = render_manager->get_render_texture(8);
     rt.Bind();
     glViewportDLL(0, 0,

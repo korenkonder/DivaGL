@@ -322,7 +322,7 @@ struct render_context {
     void init();
 };
 
-extern draw_state_struct* draw_state;
+extern draw_state_struct& draw_state;
 
 extern render_context* rctx;
 
