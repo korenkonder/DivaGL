@@ -44,6 +44,9 @@ static void draw_pass_3d_translucent_has_objects(bool* arr, mdl::ObjType type);
 static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     blur_filter_mode filter, const vec2 res_scale, const vec4 scale, const vec4 offset);
 
+static void render_manager_free_render_textures();
+static void render_manager_init_render_textures(int32_t multisample);
+
 extern render_context* rctx;
 
 RenderTexture* litproj_shadow = (RenderTexture*)0x0000000141194DA0;
@@ -51,6 +54,26 @@ RenderTexture* litproj_texture = (RenderTexture*)0x0000000141194E00;
 rndr::RenderManager* render_manager = (rndr::RenderManager*)0x00000001411AD320;
 
 namespace rndr {
+    struct RenderTextureData {
+        GLenum type;
+        int32_t width;
+        int32_t height;
+        int32_t max_level;
+        GLenum color_format;
+        GLenum depth_format;
+    };
+
+    static const RenderTextureData render_manager_render_texture_data_array[] = {
+        { GL_TEXTURE_2D, 0x200, 0x100, 0, GL_RGBA8  , GL_DEPTH_COMPONENT24 },
+        { GL_TEXTURE_2D, 0x200, 0x100, 0, GL_RGBA16F, GL_DEPTH_COMPONENT24 },
+        { GL_TEXTURE_2D, 0x400, 0x400, 0, GL_RGBA8  , GL_ZERO },
+        { GL_TEXTURE_2D, 0x400, 0x400, 0, GL_RGBA8  , GL_ZERO },
+        { GL_TEXTURE_2D, 0x400, 0x400, 0, GL_RGBA8  , GL_ZERO },
+        { GL_TEXTURE_2D, 0x100, 0x100, 0, GL_RGBA8  , GL_ZERO },
+        { GL_TEXTURE_2D, 0x100, 0x100, 0, GL_RGBA32F, GL_ZERO },
+        { GL_TEXTURE_2D, 0x100, 0x100, 0, GL_RGBA8  , GL_ZERO },
+    };
+
     static const int32_t render_manager_render_texture_index_array[][3] = {
         { 1, 1, 1 },
         { 0, 0, 0 },
@@ -79,6 +102,65 @@ namespace rndr {
 
     RenderTexture& RenderManager::get_render_texture(int32_t index) {
         return render_textures[render_manager_render_texture_index_array[index][tex_index[index]]];
+    }
+
+    void RenderManager::reset() {
+        for (int32_t i = 0; i < RND_PASSID_NUM; i++) {
+            pass_sw[i] = true;
+            cpu_time[i] = 0.0;
+            gpu_time[i] = 0.0;
+        }
+
+        set_pass_sw(RND_PASSID_2, 0);
+        set_pass_sw(RND_PASSID_REFLECT, 0);
+        set_pass_sw(RND_PASSID_REFRACT, 0);
+        set_pass_sw(RND_PASSID_PRE_PROCESS, 0);
+        set_pass_sw(RND_PASSID_SHOW_VECTOR, 0);
+
+        shadow_ptr = 0;
+        sync_gpu = false;
+        time.get_timestamp();
+
+        shadow = true;
+        opaque_z_sort = true;
+        alpha_z_sort = true;
+        field_11F = false;
+        field_120 = false;
+
+        reflect_blur_num = 1;
+        reflect_blur_filter = BLUR_FILTER_4;
+        show_ref_map = false;
+
+        reflect_type = STAGE_DATA_REFLECT_DISABLE;
+        check_state = false;
+        show_vector_flags = 0;
+        show_vector_length = 0.05f;
+        show_vector_z_offset = 0.0f;
+        show_stage_shadow = false;
+        effect_texture = 0;
+
+        reflect = false;
+        refract = false;
+        npr_param = 0;
+        field_31C = false;
+        field_31D = false;
+        field_31E = false;
+        field_31F = false;
+        field_320 = false;
+
+        for (bool& i : draw_pass_3d)
+            i = true;
+
+        field_11E = false;
+        clear = false;
+
+        width = 0;
+        height = 0;
+        multisample_framebuffer = 0;
+        multisample_renderbuffer = 0;
+        multisample = true;
+
+        npr = false;
     }
 
     void RenderManager::resize(int32_t width, int32_t height) {
@@ -1093,6 +1175,15 @@ HOOK(void, FASTCALL, render_manager_init_render_textures, 0x0000000140502560, in
     gl_state_bind_framebuffer(0);
 }
 
+HOOK(void, FASTCALL, render_manager_free_data, 0x0000000140502770) {
+    render_manager_free_render_textures();
+    render_manager->render->free();
+
+    shadow_ptr_free();
+
+    sss_data_get()->free();
+}
+
 HOOK(void, FASTCALL, render_manager_free_render_textures, 0x00000001405027A0) {
     rndr::RenderManager& render_manager = *::render_manager;
 
@@ -1110,9 +1201,40 @@ HOOK(void, FASTCALL, render_manager_free_render_textures, 0x00000001405027A0) {
         i.Free();
 }
 
+HOOK(void, FASTCALL, render_manager_init_data, 0x0000000140502A10, int32_t ssaa, int32_t hd_res, int32_t ss_alpha_mask, bool npr) {
+    rndr::RenderManager& render_manager = *::render_manager;
+
+    render_manager.reset();
+    render_manager.npr = npr;
+    render_texture_counter_reset();
+
+    resolution_struct* res_wind = res_window_get();
+    resolution_struct* res_wind_int = res_window_internal_get();
+    render_manager.render = render_get();
+    render_manager.render->init_render_buffers(res_wind_int->width, res_wind_int->height, ssaa, hd_res, ss_alpha_mask);
+    render_manager.render->set_screen_res(res_wind_int->x_offset,
+        res_wind_int->y_offset, res_wind_int->width, res_wind_int->height);
+    render_manager.width = res_wind->width;
+    render_manager.height = res_wind->height;
+    render_manager_init_render_textures(1);
+    render_manager.render->init_tone_map_buffers();
+
+    shadow_ptr_init();
+    render_manager.shadow_ptr = shadow_ptr_get();
+    render_manager.shadow_ptr->init();
+
+    sss_data_get()->init();
+
+    void(FASTCALL * sub_1403B6CC0)() = (void(FASTCALL*)())0x00000001403B6CC0;
+    sub_1403B6CC0();
+
+    glGetErrorDLL();
+}
+
 void render_manager_patch() {
     INSTALL_HOOK(render_manager_init_render_textures);
     INSTALL_HOOK(render_manager_free_render_textures);
+    INSTALL_HOOK(render_manager_init_data);
 }
 
 static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, int32_t a3) {
@@ -1789,4 +1911,62 @@ static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     gl_state_active_bind_texture_2d(0, src->GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, (GLint)(filter * 4LL), 4);
+}
+
+static void render_manager_free_render_textures() {
+    rndr::RenderManager& render_manager = *::render_manager;
+
+    if (render_manager.multisample_renderbuffer) {
+        glDeleteRenderbuffers(1, &render_manager.multisample_renderbuffer);
+        render_manager.multisample_renderbuffer = 0;
+    }
+
+    if (render_manager.multisample_framebuffer) {
+        glDeleteFramebuffers(1, &render_manager.multisample_framebuffer);
+        render_manager.multisample_framebuffer = 0;
+    }
+
+    for (RenderTexture& i : render_manager.render_textures)
+        i.Free();
+}
+
+static void render_manager_init_render_textures(int32_t multisample) {
+    rndr::RenderManager& render_manager = *::render_manager;
+
+    if (multisample) {
+        glGenFramebuffers(1, &render_manager.multisample_framebuffer);
+        glGenRenderbuffers(1, &render_manager.multisample_renderbuffer);
+
+        gl_state_bind_framebuffer(render_manager.multisample_framebuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, render_manager.multisample_renderbuffer);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8,
+            GL_RGBA8, render_manager.width, render_manager.height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GL_RENDERBUFFER, render_manager.multisample_renderbuffer);
+        glDrawBufferDLL(GL_COLOR_ATTACHMENT0);
+        glDrawBufferDLL(GL_COLOR_ATTACHMENT0);
+        gl_state_bind_framebuffer(0);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+        if (glGetErrorDLL()) {
+            glDeleteRenderbuffers(1, &render_manager.multisample_renderbuffer);
+            render_manager.multisample_renderbuffer = 0;
+            glDeleteFramebuffers(1, &render_manager.multisample_framebuffer);
+            render_manager.multisample_framebuffer = 0;
+        }
+    }
+
+    for (int32_t i = 0; i < 9; i++) {
+        const rndr::RenderTextureData* tex_data = &rndr::render_manager_render_texture_data_array[i];
+        if (tex_data->type != GL_TEXTURE_2D)
+            continue;
+
+        RenderTexture& rt = render_manager.render_textures[i];
+        rt.Init(tex_data->width, tex_data->height, tex_data->max_level,
+            tex_data->color_format, tex_data->depth_format);
+        rt.Bind();
+        glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearDLL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+    gl_state_bind_framebuffer(0);
 }

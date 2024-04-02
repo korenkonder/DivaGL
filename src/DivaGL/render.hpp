@@ -191,6 +191,7 @@ namespace rndr {
         int32_t render_texture_set(texture* render_texture, bool task_photo);
         void render_texture_free(texture* render_texture, bool task_photo);
         void resize(int32_t width, int32_t height);
+        void set_screen_res(int32_t x_offset, int32_t y_offset, int32_t width, int32_t height);
         void take_ss(texture* tex, bool vertical, float_t horizontal_offset);
         void transparency_combine(float_t alpha);
         void transparency_copy();

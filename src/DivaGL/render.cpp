@@ -1014,6 +1014,16 @@ namespace rndr {
         }
     }
 
+    void Render::set_screen_res(int32_t x_offset, int32_t y_offset, int32_t width, int32_t height) {
+        screen_x_offset = x_offset;
+        screen_y_offset = y_offset;
+        screen_width = min_def(width, this->width);
+        screen_height = min_def(height, this->height);
+
+        update_res(false, -1);
+        update = 1;
+    }
+
     void Render::take_ss(texture* tex, bool vertical, float_t horizontal_offset) {
         int32_t index = render_texture_set(tex, true);
         if (index < 0)

@@ -39,6 +39,8 @@ struct sss_data {
     RenderTexture textures[4];
     vec4 param;
 
+    void free();
+    void init();
     void set_texture(int32_t);
 };
 

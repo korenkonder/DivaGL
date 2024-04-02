@@ -57,11 +57,19 @@ struct Shadow {
     bool blur_filter_enable[2];
     bool separate;
 
+    void ctrl();
+    void free();
     float_t get_shadow_range();
+    int32_t init();
+    void reset();
 };
 
 static_assert(sizeof(Shadow) == 0x2F8, "\"Shadow\" struct should have a size of 0x2F8");
 
 extern void(FASTCALL* sub_1405E8A20)(Shadow* shad, int32_t index, vec3* pos);
+extern void(FASTCALL* shadow_ptr_free)();
+extern void(FASTCALL* shadow_ptr_init)();
 
 extern Shadow* shadow_ptr_get();
+
+extern void shadow_patch();
