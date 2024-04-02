@@ -499,7 +499,7 @@ void render_context::init() {
             src.depth_texture ? src.depth_texture->internal_format : GL_ZERO);
     };
 
-    RenderTexture& render_buffer = render->rend_texture[0];
+    RenderTexture& render_buffer = render_get()->rend_texture[0];
     RenderTexture& reflect_buffer = render_manager->get_render_texture(1);
     RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
     init_copy_buffer(reflect_buffer, this->reflect_buffer);

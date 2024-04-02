@@ -213,4 +213,4 @@ namespace rndr {
     static_assert(sizeof(rndr::Render) == 0x1510, "\"rndr::Render\" struct should have a size of 0x1510");
 }
 
-extern rndr::Render* render;
+extern rndr::Render* (FASTCALL* render_get)();

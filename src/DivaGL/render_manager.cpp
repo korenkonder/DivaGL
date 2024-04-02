@@ -584,7 +584,7 @@ namespace rndr {
     }
 
     void RenderManager::pass_clear() {
-        void(FASTCALL * clear_color_set_gl)() = (void(FASTCALL*)())0x00000001405022A0;
+        static void(FASTCALL * clear_color_set_gl)() = (void(FASTCALL*)())0x00000001405022A0;
 
         gl_state_begin_event("pass_clear");
         if (clear) {
@@ -1447,7 +1447,7 @@ static void draw_pass_sss_contour(rndr::Render* rend) {
 
     shaders_ft.set(SHADER_FT_CONTOUR);
     rctx->contour_coef_ubo.Bind(2);
-    render->draw_quad(
+    render_get()->draw_quad(
         rend->render_post_width[0], rend->render_post_height[0],
         rend->render_post_width_scale, rend->render_post_height_scale,
         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -1536,12 +1536,12 @@ static void draw_pass_sss_filter(sss_data* sss) {
     if (sss->npr_contour) {
         sss->textures[0].Bind();
         glViewportDLL(0, 0, 640, 360);
-        rndr::Render* rend = render;
+        rndr::Render* rend = render_get();
         uniform->arr[U_REDUCE] = 0;
         shaders_ft.set(SHADER_FT_REDUCE);
         gl_state_bind_texture_2d(rend->rend_texture[0].GetColorTex());
         gl_state_bind_sampler(0, rctx->render_samplers[1]);
-        render->draw_quad(640, 360, 1.0f, 1.0f,
+        render_get()->draw_quad(640, 360, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
     }
     sss->textures[2].Bind();
@@ -1550,7 +1550,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
     shaders_ft.set(SHADER_FT_SSS_FILT);
     gl_state_bind_texture_2d(sss->textures[0].GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
-    render->draw_quad(640, 360, 1.0f, 1.0f,
+    render_get()->draw_quad(640, 360, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
 
     sss_filter_gaussian_coef_shader_data shader_data = {};
@@ -1570,7 +1570,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
     gl_state_bind_texture_2d(sss->textures[2].GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
     rctx->sss_filter_gaussian_coef_ubo.Bind(1);
-    render->draw_quad(320, 180, 1.0f, 1.0f,
+    render_get()->draw_quad(320, 180, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f, 0.96f, 1.0f, 0.0f);
     gl_state_bind_texture_2d(0);
 }
@@ -1704,7 +1704,7 @@ static void draw_pass_3d_translucent(bool opaque_enable,
         && disp_manager->get_obj_count(translucent) < 1)
         return;
 
-    rndr::Render* rend = render;
+    rndr::Render* rend = render_get();
 
     int32_t alpha_array[256];
     int32_t count = draw_pass_3d_translucent_count_layers(

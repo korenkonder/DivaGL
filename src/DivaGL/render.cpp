@@ -15,7 +15,7 @@ extern bool task_stage_is_modern;
 
 extern render_context* rctx;
 
-rndr::Render* render = (rndr::Render*)0x00000001411AB670;
+rndr::Render* (FASTCALL* render_get)() = (rndr::Render * (FASTCALL*)())0x00000001404AE8A0;
 
 #define MLAA_MAX_EDGE_DETECTION_LEN (3)
 #define MLAA_GRID_SIDE_LEN (2 * MLAA_MAX_EDGE_DETECTION_LEN + 1)

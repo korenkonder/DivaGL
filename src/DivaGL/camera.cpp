@@ -60,7 +60,7 @@ HOOK(void, FASTCALL, camera_data_update_projection, 0x00000001401F8E90) {
     mat4_mul(&spr_3d_view, &spr_3d_proj, &spr_3d_proj);
     mat4_transpose(&spr_3d_proj, &camera_data->view_projection_aet_3d);
 
-    render->calc_projection_matrix(&camera_data->projection, camera_data->fov,
+    render_get()->calc_projection_matrix(&camera_data->projection, camera_data->fov,
         (float_t)camera_data->aspect, camera_data->min_distance, camera_data->max_distance,
         camera_data->projection_scale.x, camera_data->projection_scale.y,
         camera_data->projection_scale.z, camera_data->projection_scale.w);

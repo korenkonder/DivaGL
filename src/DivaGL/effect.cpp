@@ -699,8 +699,8 @@ void snow_particle_draw() {
 
     mat4_transpose(&rctx->view_mat, &temp);
     snow_scene.g_view_world_row2 = temp.row2;
-    snow_scene.g_size_in_projection.x = 1.0f / (float_t)render->render_width[0];
-    snow_scene.g_size_in_projection.y = 1.0f / (float_t)render->render_height[0];
+    snow_scene.g_size_in_projection.x = 1.0f / (float_t)render_get()->render_width[0];
+    snow_scene.g_size_in_projection.y = 1.0f / (float_t)render_get()->render_height[0];
     snow_scene.g_size_in_projection.z = snow_particle_size_min;
     snow_scene.g_size_in_projection.w = snow_particle_size_max;
     snow_scene.g_state_point_attenuation = { 0.0f, 0.0f, point_attenuation, 0.0f };
@@ -718,7 +718,7 @@ void snow_particle_draw() {
     snow_particle_batch_ubo.WriteMemory(snow_batch);
 
     gl_state_active_bind_texture_2d(0, tex->tex);
-    gl_state_active_bind_texture_2d(1, render->rend_texture[0].GetDepthTex());
+    gl_state_active_bind_texture_2d(1, render_get()->rend_texture[0].GetDepthTex());
     gl_state_bind_vertex_array(rctx->common_vao);
 
     uniform->arr[U_SNOW_PARTICLE] = 0;
@@ -1205,7 +1205,7 @@ HOOK(void, FASTCALL, snow_particle_init, 0x000000014035DD30, bool change_stage) 
     snow_particle_fallen_count = 0;
     snow_particle_fallen_index = 0;
 
-    int32_t render_height = render->render_height[0];
+    int32_t render_height = render_get()->render_height[0];
     float_t snow_particle_size = (float_t)render_height * (float_t)(1.0 / 720.0);
     snow_particle_size_min = snow_particle_size;
     snow_particle_size_mid = snow_particle_size * 31.0f;
