@@ -223,6 +223,7 @@
     <ClInclude Include="farc.hpp" />
     <ClInclude Include="half_t.hpp" />
     <ClInclude Include="hash.hpp" />
+    <ClInclude Include="image.hpp" />
     <ClInclude Include="interpolation.hpp" />
     <ClInclude Include="io\file_stream.hpp" />
     <ClInclude Include="io\memory_stream.hpp" />
@@ -260,6 +261,7 @@
     <ClCompile Include="farc.cpp" />
     <ClCompile Include="half_t.cpp" />
     <ClCompile Include="hash.cpp" />
+    <ClCompile Include="image.cpp" />
     <ClCompile Include="interpolation.cpp" />
     <ClCompile Include="io\file_stream.cpp" />
     <ClCompile Include="io\memory_stream.cpp" />

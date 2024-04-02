@@ -7,6 +7,7 @@
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/txp.hpp"
 #include "gl_state.hpp"
+#include "types.hpp"
 #include <Helpers.h>
 
 texture* (FASTCALL* texture_init)(texture_id id)
@@ -44,6 +45,46 @@ uint32_t texture::get_width_align_mip_level(uint8_t mip_level) {
         return max_def((uint32_t)width >> mip_level, 4u);
     else
         return max_def((uint32_t)width >> mip_level, 1u);
+}
+
+void texture_apply_color_tone(texture* chg_tex, texture* org_tex, color_tone* col_tone) {
+    for (int32_t i = 0; i <= org_tex->max_mipmap_level; i++) {
+        int32_t size = texture_get_size_mip_level(org_tex, i);
+        void* data = prj::HeapCMallocAllocate(prj::HeapCMallocTemp, size, "imgf_color_tone_cpu()");
+        if (!data)
+            break;
+
+        int32_t width_align = org_tex->get_width_align_mip_level(i);
+        int32_t height_align = org_tex->get_height_align_mip_level(i);
+        if (org_tex->flags & TEXTURE_BLOCK_COMPRESSION) {
+            texture_bind(org_tex->target, org_tex->tex);
+            glGetCompressedTexImage(org_tex->target, i, data);
+            if (org_tex->internal_format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+                dxt1_image_apply_color_tone(width_align, height_align, size, (dxt1_block*)data, col_tone);
+            else
+                dxt5_image_apply_color_tone(width_align, height_align, size, (dxt5_block*)data, col_tone);
+
+            texture_bind(chg_tex->target, chg_tex->tex);
+            uint32_t width = texture_get_width_mip_level(org_tex, i);
+            uint32_t height = texture_get_width_mip_level(org_tex, i);
+            glCompressedTexSubImage2D(chg_tex->target, i, 0, 0, width, height,
+                chg_tex->internal_format, size, data);
+        }
+        else if (org_tex->internal_format == GL_RGB5) {
+            texture_bind(org_tex->target, org_tex->tex);
+            glGetTexImageDLL(org_tex->target, i, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, data);
+            rgb565_image_apply_color_tone(width_align, height_align, size, (rgb565*)data, col_tone);
+
+            texture_bind(chg_tex->target, chg_tex->tex);
+            uint32_t width = texture_get_width_mip_level(org_tex, i);
+            uint32_t height = texture_get_width_mip_level(org_tex, i);
+            glTexSubImage2DDLL(chg_tex->target, i, 0, 0, width, height,
+                GL_RGB, GL_UNSIGNED_SHORT_5_6_5, data);
+        }
+        gl_state_get_error();
+        prj::HeapCMallocFree(prj::HeapCMallocTemp, data);
+    }
+    texture_bind(org_tex->target, 0);
 }
 
 texture* texture_copy(texture_id id, texture* org_tex) {
@@ -284,20 +325,6 @@ void texture_params_restore(texture_param* tex_0_param,
         gl_state_active_bind_texture_2d(i, 0);
 }
 
-HOOK(texture*, FASTCALL, texture_load_tex_cube_map, 0x000000014069B860,
-    texture_id id, GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr) {
-    return texture_load_tex(id, GL_TEXTURE_CUBE_MAP, internal_format,
-        width, height, max_mipmap_level, data_ptr, false);
-}
-
-HOOK(texture*, FASTCALL, texture_load_tex_2d, 0x000000014069B8E0, 
-    texture_id id, GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy) {
-    return texture_load_tex(id, GL_TEXTURE_2D, internal_format,
-        width, height, max_mipmap_level, data_ptr, use_high_anisotropy);
-}
-
 bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids) {
     if (!t || !texs || !ids)
         return false;
@@ -324,7 +351,27 @@ bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids) {
     return true;
 }
 
+HOOK(void, FASTCALL, texture_apply_color_tone, 0x00000001403B5DF0,
+    texture* chg_tex, texture* org_tex, color_tone* col_tone) {
+    texture_apply_color_tone(chg_tex, org_tex, col_tone);
+}
+
+HOOK(texture*, FASTCALL, texture_load_tex_cube_map, 0x000000014069B860,
+    texture_id id, GLenum internal_format, int32_t width, int32_t height,
+    int32_t max_mipmap_level, void** data_ptr) {
+    return texture_load_tex(id, GL_TEXTURE_CUBE_MAP, internal_format,
+        width, height, max_mipmap_level, data_ptr, false);
+}
+
+HOOK(texture*, FASTCALL, texture_load_tex_2d, 0x000000014069B8E0, 
+    texture_id id, GLenum internal_format, int32_t width, int32_t height,
+    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy) {
+    return texture_load_tex(id, GL_TEXTURE_2D, internal_format,
+        width, height, max_mipmap_level, data_ptr, use_high_anisotropy);
+}
+
 void texture_patch() {
+    INSTALL_HOOK(texture_apply_color_tone);
     INSTALL_HOOK(texture_load_tex_cube_map);
     INSTALL_HOOK(texture_load_tex_2d);
 }

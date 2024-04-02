@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../KKdLib/default.hpp"
+#include "../KKdLib/image.hpp"
 #include "../KKdLib/txp.hpp"
 #include "wrap.hpp"
 
@@ -84,6 +85,8 @@ extern void(FASTCALL* texture_free)(texture* tex);
 extern int32_t(FASTCALL* texture_info_get_id)(const char* name);
 extern texture* (FASTCALL* texture_handler_get_texture)(uint32_t id);
 
+extern void texture_apply_color_tone(texture* chg_tex,
+    texture* org_tex, const color_tone* col_tone);
 extern texture* texture_copy(texture_id id, texture* org_tex);
 extern texture* texture_load_tex_2d(texture_id id, GLenum internal_format, int32_t width, int32_t height,
     int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy);
