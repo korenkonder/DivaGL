@@ -207,6 +207,7 @@ namespace rndr {
         void copy_to_frame_texture(GLuint pre_pp_tex, int32_t wight, int32_t height, GLuint post_pp_tex);
         void draw_lens_ghost();
         void downsample();
+        void generate_mlaa_area_texture();
         void get_blur();
         void update_tone_map_lut();
     };

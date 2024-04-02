@@ -24,7 +24,6 @@ rndr::Render* (FASTCALL* render_get)() = (rndr::Render * (FASTCALL*)())0x0000000
 #define TONE_MAP_SAT_GAMMA_SAMPLES 32
 
 namespace rndr {
-    static void generate_mlaa_area_texture(Render* rend);
     static void calculate_mlaa_area_texture_data(uint8_t* data, int32_t cross1, int32_t cross2);
     static void calculate_mlaa_area_texture_data_inner(float_t* val_left,
         float_t* val_right, int32_t cross1, int32_t cross2, int32_t dleft, int32_t dright);
@@ -812,7 +811,7 @@ namespace rndr {
         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
         gl_state_bind_texture_2d(0);
 
-        generate_mlaa_area_texture(this);
+        generate_mlaa_area_texture();
 
         glGenQueries(3, lens_shaft_query);
         glGenQueries(3, lens_flare_query);
@@ -1664,6 +1663,23 @@ namespace rndr {
         gl_state_set_blend_func(GL_ONE, GL_ZERO);
     }
 
+    void Render::generate_mlaa_area_texture() {
+        uint8_t* data = force_malloc<uint8_t>(MLAA_SIDE_LEN * MLAA_SIDE_LEN * 2);
+        if (!data)
+            return;
+
+        for (int32_t cross2 = 0; cross2 < 5; cross2++)
+            for (int32_t cross1 = 0; cross1 < 5; cross1++)
+                calculate_mlaa_area_texture_data(data, cross1, cross2);
+
+        glGenTextures(1, &mlaa_area_texture);
+        gl_state_bind_texture_2d(mlaa_area_texture);
+        glPixelStoreiDLL(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2DDLL(GL_TEXTURE_2D, 0, GL_RG8, MLAA_SIDE_LEN, MLAA_SIDE_LEN, 0, GL_RG, GL_UNSIGNED_BYTE, data);
+        gl_state_bind_texture_2d(0);
+        free_def(data);
+    }
+
     void Render::get_blur() {
         uniform->arr[U_ALPHA_MASK] = 0;
         uniform->arr[U_GAUSS] = 0;
@@ -1758,23 +1774,6 @@ namespace rndr {
             glTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0,
                 16 * TONE_MAP_SAT_GAMMA_SAMPLES, 1, GL_RG, GL_FLOAT, tex_data);
         }
-    }
-
-    static void generate_mlaa_area_texture(Render* rend) {
-        uint8_t* data = (uint8_t*)malloc(MLAA_SIDE_LEN * MLAA_SIDE_LEN * 2);
-        if (!data)
-            return;
-
-        for (int32_t cross2 = 0; cross2 < 5; cross2++)
-            for (int32_t cross1 = 0; cross1 < 5; cross1++)
-                calculate_mlaa_area_texture_data(data, cross1, cross2);
-
-        glGenTextures(1, &rend->mlaa_area_texture);
-        gl_state_bind_texture_2d(rend->mlaa_area_texture);
-        glPixelStoreiDLL(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2DDLL(GL_TEXTURE_2D, 0, GL_RG8, MLAA_SIDE_LEN, MLAA_SIDE_LEN, 0, GL_RG, GL_UNSIGNED_BYTE, data);
-        gl_state_bind_texture_2d(0);
-        free(data);
     }
 
     static void calculate_mlaa_area_texture_data(uint8_t* data, int32_t cross1, int32_t cross2) {
