@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="DebugDLL|x64">
-      <Configuration>DebugDLL</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseDLL|x64">
-      <Configuration>ReleaseDLL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
@@ -31,19 +23,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
@@ -56,13 +36,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -73,26 +47,12 @@
     <IntDir>$(SolutionDir)obj\debug\DivaGL\</IntDir>
     <TargetExt>.dva</TargetExt>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <TargetName>dinput8</TargetName>
-    <OutDir>$(SolutionDir)bin\</OutDir>
-    <IntDir>$(SolutionDir)obj\debug\DivaGL\</IntDir>
-    <TargetExt>.dll</TargetExt>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>DivaGL</TargetName>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)obj\release\DivaGL\</IntDir>
     <TargetExt>.dva</TargetExt>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <TargetName>dinput8</TargetName>
-    <OutDir>$(SolutionDir)bin\</OutDir>
-    <IntDir>$(SolutionDir)obj\release\DivaGL\</IntDir>
-    <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -125,45 +85,7 @@
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
-del "$(SolutionDir)bin\$(TargetName).exp"
-del "$(SolutionDir)bin\$(TargetName).lib"</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;DINPUT8_DLL;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
-      <ConformanceMode>true</ConformanceMode>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <OmitFramePointers>false</OmitFramePointers>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <CallingConvention>FastCall</CallingConvention>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
-      <UseFullPaths>false</UseFullPaths>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Link>
-      <TargetMachine>MachineX64</TargetMachine>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\debugopt\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-    </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dll" "N:\DUMP\$(TargetName).dll"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\$(TargetName).pdb"
-del "$(SolutionDir)bin\$(TargetName).exp"
-del "$(SolutionDir)bin\$(TargetName).lib"</Command>
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -204,52 +126,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
-del "$(SolutionDir)bin\$(TargetName).exp"
-del "$(SolutionDir)bin\$(TargetName).lib"</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>WIN32;DINPUT8_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
-      <ConformanceMode>true</ConformanceMode>
-      <OmitFramePointers>false</OmitFramePointers>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <CallingConvention>FastCall</CallingConvention>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <FunctionLevelLinking>
-      </FunctionLevelLinking>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
-      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
-      <RuntimeTypeInfo>
-      </RuntimeTypeInfo>
-      <UseFullPaths>false</UseFullPaths>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Link>
-      <TargetMachine>MachineX64</TargetMachine>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\release\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-    </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dll" "N:\DUMP\$(TargetName).dll"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\$(TargetName).pdb"
-del "$(SolutionDir)bin\$(TargetName).exp"
-del "$(SolutionDir)bin\$(TargetName).lib"</Command>
+copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

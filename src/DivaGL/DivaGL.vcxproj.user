@@ -6,19 +6,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>--launch -w</LocalDebuggerCommandArguments>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
-    <LocalDebuggerCommand>N:\DUMP\diva.exe</LocalDebuggerCommand>
-    <LocalDebuggerWorkingDirectory>N:\DUMP</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--launch -w</LocalDebuggerCommandArguments>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommand>N:\DUMP\diva.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>--launch -w</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>N:\DUMP</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
     <LocalDebuggerCommand>N:\DUMP\diva.exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>--launch -w</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>N:\DUMP</LocalDebuggerWorkingDirectory>
