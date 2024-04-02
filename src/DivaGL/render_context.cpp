@@ -8,6 +8,10 @@
 
 draw_state_struct& draw_state = *(draw_state_struct*)0x00000001411A32B0;
 
+sss_data& _sss_data = *(sss_data*)0x000000014CC924E0;
+
+render_context* rctx;
+
 void draw_state_stats::reset() {
     object_draw_count = 0;
     object_translucent_draw_count = 0;
@@ -19,10 +23,10 @@ void draw_state_stats::reset() {
     field_1C = 0;
 }
 
-render_context* rctx;
-
-sss_data* (FASTCALL* sss_data_get)()
-    = (sss_data * (FASTCALL*)())0x0000000140641B70;
+void sss_data::set_texture(int32_t texture_index) {
+    gl_state_active_bind_texture_2d(16, textures[texture_index].GetColorTex());
+    gl_state_active_texture(0);
+}
 
 void draw_state_struct::set_fog_height(bool value) {
     fog_height = value;
@@ -507,6 +511,10 @@ void render_context::init() {
     init_copy_buffer(shadow_buffer, this->shadow_buffer);
 
     screen_buffer.Init(screen_width, screen_height, 0, GL_RGBA8, 0);
+}
+
+sss_data* sss_data_get() {
+    return &_sss_data;
 }
 
 void fbo_blit(GLuint src_fbo, GLuint dst_fbo,

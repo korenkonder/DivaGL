@@ -33,11 +33,13 @@ struct draw_state_stats {
 };
 
 struct sss_data {
-    bool init;
+    bool init_data;
     bool enable;
     bool npr_contour;
     RenderTexture textures[4];
     vec4 param;
+
+    void set_texture(int32_t);
 };
 
 struct draw_state_struct {
@@ -326,7 +328,7 @@ extern draw_state_struct& draw_state;
 
 extern render_context* rctx;
 
-extern sss_data* (FASTCALL* sss_data_get)();
+extern sss_data* sss_data_get();
 
 void fbo_blit(GLuint src_fbo, GLuint dst_fbo,
     GLint src_x, GLint src_y, GLint src_width, GLint src_height,

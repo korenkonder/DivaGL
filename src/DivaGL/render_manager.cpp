@@ -358,7 +358,7 @@ namespace rndr {
 
     void RenderManager::pass_ss_sss() {
         ::sss_data* sss = sss_data_get();
-        if (!sss->init || !sss->enable)
+        if (!sss->init_data || !sss->enable)
             return;
 
         gl_state_begin_event("pass_ss_sss");
@@ -695,8 +695,7 @@ namespace rndr {
             uniform->arr[U_WATER_REFLECT] = 0;
         }
 
-        gl_state_active_bind_texture_2d(16, sss_data_get()->textures[1].GetColorTex());
-        gl_state_active_texture(0);
+        sss_data_get()->set_texture(1);
 
         gl_state_bind_sampler(14, rctx->render_samplers[0]);
         gl_state_bind_sampler(15, rctx->render_samplers[0]);
