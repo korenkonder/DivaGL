@@ -441,9 +441,9 @@ GLsizeiptr obj_mesh_vertex_buffer_aft::get_size() {
         GLint buffer;
         GLint size;
         glGetIntegervDLL(GL_ARRAY_BUFFER_BINDING, &buffer);
-        gl_state_bind_element_array_buffer(buffers[0]);
+        gl_state_bind_array_buffer(buffers[0]);
         glGetBufferParameteriv(target, GL_BUFFER_SIZE, &size);
-        gl_state_bind_element_array_buffer(buffer);
+        gl_state_bind_array_buffer(buffer);
         return size;
     }
     return 0;
