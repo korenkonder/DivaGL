@@ -1201,7 +1201,7 @@ HOOK(void, FASTCALL, render_manager_free_render_textures, 0x00000001405027A0) {
         i.Free();
 }
 
-HOOK(void, FASTCALL, render_manager_init_data, 0x0000000140502A10, int32_t ssaa, int32_t hd_res, int32_t ss_alpha_mask, bool npr) {
+HOOK(void, FASTCALL, render_manager_init_data, 0x0000000140502A2A, int32_t ssaa, int32_t hd_res, int32_t ss_alpha_mask, bool npr) {
     rndr::RenderManager& render_manager = *::render_manager;
 
     render_manager.reset();
@@ -1232,6 +1232,9 @@ HOOK(void, FASTCALL, render_manager_init_data, 0x0000000140502A10, int32_t ssaa,
 }
 
 void render_manager_patch() {
+    WRITE_NOP_6(0x0000000140502A24);
+    WRITE_MEMORY(0x0000000140502A3C, uint8_t, 0xC3);
+
     INSTALL_HOOK(render_manager_init_render_textures);
     INSTALL_HOOK(render_manager_free_render_textures);
     INSTALL_HOOK(render_manager_init_data);
