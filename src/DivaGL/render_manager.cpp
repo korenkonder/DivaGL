@@ -248,10 +248,6 @@ namespace rndr {
         gl_state_bind_framebuffer(0);
         glClearBufferfv(GL_COLOR, 0, (float_t*)&color_clear);
 
-        static const int32_t ibl_texture_index[] = {
-            9, 10, 11, 12, 13
-        };
-
         rctx->obj_scene.g_framebuffer_size = {
             1.0f / (float_t)render->render_width[0],
             1.0f / (float_t)render->render_height[0],

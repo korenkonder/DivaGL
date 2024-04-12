@@ -186,6 +186,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="renderer\transparency.cpp" />
     <ClCompile Include="resolution_mode.cpp" />
     <ClCompile Include="rob\rob.cpp" />
+    <ClCompile Include="screen_shot.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="shader_ft.cpp" />
     <ClCompile Include="shadow.cpp" />
@@ -239,6 +240,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="resolution_mode.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rob\rob.hpp" />
+    <ClInclude Include="screen_shot.hpp" />
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="shader_ft.hpp" />
     <ClInclude Include="shadow.hpp" />
