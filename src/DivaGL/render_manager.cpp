@@ -12,6 +12,7 @@
 #include "rob/rob.hpp"
 #include "effect.hpp"
 #include "gl_state.hpp"
+#include "light_param.hpp"
 #include "render.hpp"
 #include "render_context.hpp"
 #include "render_texture.hpp"
@@ -242,6 +243,8 @@ namespace rndr {
     void RenderManager::render_all() {
         if (!rctx)
             return;
+
+        light_param_data_storage_data_set_ibl();
 
         static const vec4 color_clear = 0.0f;
 

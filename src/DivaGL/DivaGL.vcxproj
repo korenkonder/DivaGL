@@ -165,6 +165,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="frame_rate_control.cpp" />
     <ClCompile Include="gl_state.cpp" />
     <ClCompile Include="hook.cpp" />
+    <ClCompile Include="light_param.cpp" />
     <ClCompile Include="light_param\fog.cpp" />
     <ClCompile Include="light_param\light.cpp" />
     <ClCompile Include="mdl\disp_manager.cpp" />
@@ -218,6 +219,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="gl_state.hpp" />
     <ClInclude Include="gl_uniform_buffer.hpp" />
     <ClInclude Include="hook.hpp" />
+    <ClInclude Include="light_param.hpp" />
     <ClInclude Include="light_param\fog.hpp" />
     <ClInclude Include="light_param\light.hpp" />
     <ClInclude Include="mdl\disp_manager.hpp" />

@@ -11,6 +11,7 @@
 #include "auth_3d.hpp"
 #include "camera.hpp"
 #include "effect.hpp"
+#include "light_param.hpp"
 #include "object.hpp"
 #include "print.hpp"
 #include "resource.h"
@@ -52,6 +53,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     camera_patch();
     mdl::disp_manager_patch();
     effect_patch();
+    light_param_patch();
     object_patch();
     render_manager_patch();
     rob_patch();

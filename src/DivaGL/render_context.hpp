@@ -32,6 +32,8 @@ struct draw_state_stats {
     void reset();
 };
 
+static_assert(sizeof(draw_state_stats) == 0x20, "\"draw_state_stats\" struct should have a size of 0x20");
+
 struct sss_data {
     bool init_data;
     bool enable;
@@ -43,6 +45,8 @@ struct sss_data {
     void init();
     void set_texture(int32_t);
 };
+
+static_assert(sizeof(sss_data) == 0xD8, "\"sss_data\" struct should have a size of 0xD8");
 
 struct draw_state_struct {
     draw_state_stats stats;
@@ -71,6 +75,8 @@ struct draw_state_struct {
 
     void set_fog_height(bool value);
 };
+
+static_assert(sizeof(draw_state_struct) == 0x88, "\"draw_state_struct\" struct should have a size of 0x88");
 
 struct camera_blur_shader_data {
     vec4 g_transform[4];
