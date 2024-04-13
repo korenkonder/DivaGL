@@ -26,11 +26,11 @@ struct RenderTexture {
         int32_t max_level = 0, GLuint depth_texture = 0, bool stencil = false);
 
     inline GLuint GetColorTex() {
-        return color_texture->tex;
+        return color_texture->glid;
     };
 
     inline GLuint GetDepthTex() {
-        return depth_texture->tex;
+        return depth_texture->glid;
     };
 
     inline int32_t GetHeight() {

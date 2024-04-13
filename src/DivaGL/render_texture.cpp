@@ -26,12 +26,12 @@ int32_t RenderTexture::Bind(int32_t index) {
 
 void RenderTexture::Free() {
     if (depth_texture) {
-        texture_free(depth_texture);
+        texture_release(depth_texture);
         depth_texture = 0;
     }
 
     if (color_texture) {
-        texture_free(color_texture);
+        texture_release(color_texture);
         color_texture = 0;
     }
 

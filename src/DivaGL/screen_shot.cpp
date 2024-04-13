@@ -45,7 +45,7 @@ HOOK(bool, FASTCALL, sub_1401898E0, 0x00000001401898E0, __int64 a1, texture* tex
         void* field_10;
     };
 
-    if (!tex || !tex->width || !tex->height || !tex->tex)
+    if (!tex || !tex->width || !tex->height || !tex->glid)
         return false;
 
     static struc_21* (FASTCALL* sub_140188010)(struc_21*, int32_t width, int32_t height, int32_t pix_fmt)
@@ -62,7 +62,7 @@ HOOK(bool, FASTCALL, sub_1401898E0, 0x00000001401898E0, __int64 a1, texture* tex
     struc_21 v9 = {};
     sub_140188010(&v9, tex->width, tex->height, 1);
 
-    gl_state_bind_texture_2d(tex->tex);
+    gl_state_bind_texture_2d(tex->glid);
     glGetTexImageDLL(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, sub_140188410(&v9));
     gl_state_bind_texture_2d(0);
 
@@ -75,7 +75,7 @@ HOOK(bool, FASTCALL, sub_1401898E0, 0x00000001401898E0, __int64 a1, texture* tex
 }
 
 HOOK(void, FASTCALL, ScreenShotImpl__get_data, 0x0000000140557F50, ScreenShotImpl* impl) {
-    gl_state_active_bind_texture_2d(0, impl->tex->tex);
+    gl_state_active_bind_texture_2d(0, impl->tex->glid);
     glCopyTexSubImage2DDLL(GL_TEXTURE_2D, 0, 0, 0, 0, 0, impl->width, impl->height);
 
     float_t ratio = (float_t)(impl->curr_height * impl->curr_width) / (float_t)(impl->width * impl->height);

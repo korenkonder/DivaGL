@@ -56,16 +56,16 @@ inline bool operator !=(const texture_id& left, const texture_id& right) {
 static_assert(sizeof(texture_id) == 0x04, "\"texture_id\" struct should have a size of 0x04");
 
 struct texture {
-    int32_t init_count;
+    int32_t ref_count;
     texture_id id;
     texture_flags flags;
     int16_t width;
     int16_t height;
-    GLuint tex;
+    GLuint glid;
     GLenum target;
     GLenum internal_format;
     int32_t max_mipmap_level;
-    int32_t size;
+    int32_t size_texmem;
 
     uint32_t get_height_align_mip_level(uint8_t mip_level = 0);
     uint32_t get_width_align_mip_level(uint8_t mip_level = 0);
@@ -80,10 +80,8 @@ struct texture_param {
 
 static_assert(sizeof(texture_param) == 0x08, "\"texture_param\" struct should have a size of 0x08");
 
-extern texture* (FASTCALL* texture_init)(texture_id id);
-extern void(FASTCALL* texture_free)(texture* tex);
 extern int32_t(FASTCALL* texture_info_get_id)(const char* name);
-extern texture* (FASTCALL* texture_handler_get_texture)(uint32_t id);
+extern texture* (FASTCALL* texture_manager_get_texture)(uint32_t id);
 
 extern void texture_apply_color_tone(texture* chg_tex,
     texture* org_tex, const color_tone* col_tone);
@@ -94,6 +92,7 @@ extern texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format,
     int32_t max_mipmap_level, void** data_ptr);
 extern texture* texture_txp_load(txp* t, texture_id id);
 extern void texture_txp_store(texture* tex, txp* t);
+extern void texture_release(texture* tex);
 
 extern void texture_array_free(texture** arr);
 

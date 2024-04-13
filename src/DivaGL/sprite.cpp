@@ -356,7 +356,7 @@ namespace spr {
 
             rctx->sprite_scene_ubo.Bind(0);
 
-            gl_state_active_bind_texture_2d(7, tex->tex);
+            gl_state_active_bind_texture_2d(7, tex->glid);
 
             gl_state_bind_vertex_array(render_data.vao);
             for (sprite_draw_param& j : render_data.draw_param_buffer) {
@@ -918,7 +918,7 @@ namespace spr {
             }
             break;
         case 1:
-            draw_param.texture[0] = tex_param[0].texture ? tex_param[0].texture->tex : 0;
+            draw_param.texture[0] = tex_param[0].texture ? tex_param[0].texture->glid : 0;
             draw_param.sampler = rctx->sprite_samplers[0];
 
             if (args.num_vertex) {
@@ -1053,8 +1053,8 @@ namespace spr {
                 return;
             }
 
-            draw_param.texture[0] = tex_param[0].texture ? tex_param[0].texture->tex : 0;
-            draw_param.texture[1] = tex_param[1].texture ? tex_param[1].texture->tex : 0;
+            draw_param.texture[0] = tex_param[0].texture ? tex_param[0].texture->glid : 0;
+            draw_param.texture[1] = tex_param[1].texture ? tex_param[1].texture->glid : 0;
             draw_param.sampler = rctx->sprite_samplers[2];
 
             sprite_draw_vertex spr_vtx[4] = {};

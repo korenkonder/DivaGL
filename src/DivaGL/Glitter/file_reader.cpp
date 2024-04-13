@@ -522,9 +522,9 @@ namespace Glitter {
 
                     for (size_t l = 0; l < eff_group->resources_count; l++) {
                         if (k->data.tex_hash == eff_group->resource_hashes[l])
-                            k->data.texture = eff_group->resources[l]->tex;
+                            k->data.texture = eff_group->resources[l]->glid;
                         if (k->data.mask_tex_hash == eff_group->resource_hashes[l])
-                            k->data.mask_texture = eff_group->resources[l]->tex;
+                            k->data.mask_texture = eff_group->resources[l]->glid;
                     }
                 }
             }

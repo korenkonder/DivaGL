@@ -762,7 +762,7 @@ namespace rndr {
         rctx->obj_scene_ubo.WriteMemory(rctx->obj_scene);
 
         if (effect_texture)
-            gl_state_active_bind_texture_2d(14, effect_texture->tex);
+            gl_state_active_bind_texture_2d(14, effect_texture->glid);
         else
             gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d);
 
@@ -1049,7 +1049,7 @@ namespace rndr {
         shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
 
         if (effect_texture)
-            gl_state_active_bind_texture_2d(14, effect_texture->tex);
+            gl_state_active_bind_texture_2d(14, effect_texture->glid);
         else
             gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d);
         gl_state_bind_sampler(14, rctx->render_samplers[0]);
@@ -1438,7 +1438,7 @@ static bool draw_pass_shadow_litproj() {
     if (!stage_param_data_litproj_current)
         return false;
 
-    texture* tex = texture_handler_get_texture(stage_param_data_litproj_current->tex_id);
+    texture* tex = texture_manager_get_texture(stage_param_data_litproj_current->tex_id);
     if (!tex)
         return false;
 
@@ -1455,7 +1455,7 @@ static bool draw_pass_shadow_litproj() {
     }
 
     draw_state.shader_index = SHADER_FT_LITPROJ;
-    gl_state_active_bind_texture_2d(17, tex->tex);
+    gl_state_active_bind_texture_2d(17, tex->glid);
     gl_state_bind_sampler(17, rctx->render_samplers[2]);
     gl_state_active_bind_texture_2d(18, litproj_shadow[0].GetColorTex());
     gl_state_bind_sampler(18, rctx->render_samplers[2]);
