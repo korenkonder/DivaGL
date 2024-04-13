@@ -228,8 +228,18 @@ HOOK(void, FASTCALL, light_param_data__set_ibl, 0x00000001403E7210,
     light_param_data::set_ibl(ibl, storage);
 }
 
+HOOK(void, FASTCALL, light_param_data_storage__gen_textures, 0x00000001403E8C50, light_param_data_storage* storage) {
+    glGenTextures(5, storage->textures);
+}
+
+HOOK(void, FASTCALL, light_param_data_storage__delete_textures, 0x00000001403E8D80, light_param_data_storage* storage) {
+    glDeleteTextures(5, storage->textures);
+}
+
 void light_param_patch() {
     INSTALL_HOOK(light_param_data__set_ibl);
+    INSTALL_HOOK(light_param_data_storage__gen_textures);
+    INSTALL_HOOK(light_param_data_storage__delete_textures);
 }
 
 void light_param_data_storage_data_set_ibl() {

@@ -36,6 +36,63 @@ enum rob_chara_data_hand_adjust_type : uint16_t {
     ROB_CHARA_DATA_HAND_ADJUST_ITEM           = 0x0F, // X
 };
 
+struct opd_vec3_data {
+    const float_t* x;
+    const float_t* y;
+    const float_t* z;
+};
+
+static_assert(sizeof(opd_vec3_data) == 0x18, "\"opd_vec3_data\" struct should have a size of 0x18");
+
+struct RobOsageNodeResetData {
+    vec3 trans;
+    vec3 trans_diff;
+    vec3 rotation;
+    float_t length;
+};
+
+static_assert(sizeof(RobOsageNodeResetData) == 0x28, "\"RobOsageNodeResetData\" struct should have a size of 0x28");
+
+struct opd_node_data {
+    float_t length;
+    vec3 rotation;
+};
+
+static_assert(sizeof(opd_node_data) == 0x10, "\"opd_node_data\" struct should have a size of 0x10");
+
+struct opd_node_data_pair {
+    opd_node_data curr;
+    opd_node_data prev;
+};
+
+static_assert(sizeof(opd_node_data_pair) == 0x20, "\"opd_node_data_pair\" struct should have a size of 0x20");
+
+struct CLOTHNode {
+    uint32_t flags;
+    vec3 trans;
+    vec3 trans_orig;
+    vec3 field_1C;
+    vec3 trans_diff;
+    vec3 normal;
+    vec3 tangent;
+    vec3 binormal;
+    float_t tangent_sign;
+    vec2 texcoord;
+    vec3 field_64;
+    float_t dist_up;
+    float_t dist_down;
+    float_t dist_right;
+    float_t dist_left;
+    int64_t field_80;
+    int32_t field_88;
+    RobOsageNodeResetData reset_data;
+    int32_t field_B4;
+    prj::vector<opd_vec3_data> opd_data;
+    opd_node_data_pair opd_node_data;
+};
+
+static_assert(sizeof(CLOTHNode) == 0xF0, "\"CLOTHNode\" struct should have a size of 0xF0");
+
 struct rob_chara_age_age_object_vertex {
     vec3 position;
     vec3 normal;
@@ -713,6 +770,58 @@ const mat4* rob_chara_get_item_adjust_data_mat(size_t rob_chr) {
     return &rob_chara_item_adjust_x_array[chara_id].mat;
 }
 
+HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh* mesh, obj_mesh_vertex_buffer* vertex_buffer,
+    CLOTHNode* nodes, float_t facing, uint16_t* indices, bool double_sided) {
+    if (!mesh || !vertex_buffer || (mesh->vertex_format
+        & (OBJ_VERTEX_NORMAL | OBJ_VERTEX_POSITION)) != (OBJ_VERTEX_NORMAL | OBJ_VERTEX_POSITION))
+        return;
+
+    vertex_buffer->cycle_index();
+    GLArrayBuffer buffer = vertex_buffer->get_buffer();
+    size_t data = (size_t)buffer.MapMemory();
+    if (!data)
+        return;
+
+    int32_t indices_count = *indices++;
+
+    if (double_sided)
+        indices_count /= 2;
+
+    if (mesh->vertex_format & OBJ_VERTEX_TANGENT)
+        for (int32_t i = 2; i; i--, facing = -1.0f) {
+            for (int32_t j = indices_count; j; j--, indices++) {
+                CLOTHNode* node = &nodes[*indices];
+
+                *(vec3*)data = node->trans;
+                *(vec3*)(data + 0x0C) = node->normal * facing;
+                *(vec3*)(data + 0x18) = node->tangent;
+                *(float_t*)(data + 0x24) = node->tangent_sign;
+
+                data += mesh->size_vertex;
+            }
+
+            if (!double_sided)
+                break;
+        }
+    else
+        for (int32_t i = 2; i; i--, facing = -1.0f) {
+            for (int32_t j = indices_count; j; j--, indices++) {
+                CLOTHNode* node = &nodes[*indices];
+
+                *(vec3*)data = node->trans;
+                *(vec3*)(data + 0x0C) = node->normal * facing;
+
+                data += mesh->size_vertex;
+            }
+
+            if (!double_sided)
+                break;
+        }
+
+    buffer.UnmapMemory();
+}
+
+
 HOOK(void, FASTCALL, sub_1405044B0, 0x00000001405044B0, rob_chara* rob_chr) {
     rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr->chara_id];
     rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr->chara_id];
@@ -1076,6 +1185,7 @@ HOOK(void, FASTCALL, rob_chara_set_hand_adjust, 0x000000014053C070, rob_chara* r
 }
 
 void rob_patch() {
+    INSTALL_HOOK(RobCloth__UpdateVertexBuffer);
     INSTALL_HOOK(rob_chara_set_data_adjust_mat);
     INSTALL_HOOK(rob_chara_reset_data);
     INSTALL_HOOK(sub_1405044B0);

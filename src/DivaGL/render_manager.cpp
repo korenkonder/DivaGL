@@ -1233,6 +1233,7 @@ void render_manager_patch() {
     WRITE_NOP_6(0x0000000140502A24);
     WRITE_MEMORY(0x0000000140502A3C, uint8_t, 0xC3);
 
+    INSTALL_HOOK(render_manager_free_data);
     INSTALL_HOOK(render_manager_init_render_textures);
     INSTALL_HOOK(render_manager_free_render_textures);
     INSTALL_HOOK(render_manager_init_data);

@@ -182,6 +182,32 @@ HOOK(void, FASTCALL, env_set_offset_color, 0x00000001405E5630, float_t r, float_
     rctx->obj_batch.g_offset_color = { r, g, b, a };
 }
 
+HOOK(void, FASTCALL, set_render_defaults, 0x00000001401948B0) {
+    glClearDepthDLL(1.0);
+    glClearStencilDLL(0);
+    //glShadeModelDLL(GL_SMOOTH);
+    glPolygonModeDLL(GL_FRONT_AND_BACK, GL_FILL);
+    glDisableDLL(GL_MULTISAMPLE);
+    glDisableDLL(GL_DITHER);
+    glEnableDLL(GL_DEPTH_TEST);
+    glDepthFuncDLL(GL_LEQUAL);
+    glEnableDLL(GL_CULL_FACE);
+    glFrontFaceDLL(GL_CCW);
+    glCullFaceDLL(GL_BACK);
+    //glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_ZERO);
+    //glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FIXED_ONLY_ARB);
+    //glClampColorARB(GL_CLAMP_READ_COLOR_ARB, GL_FIXED_ONLY_ARB);
+    glPixelStoreiDLL(GL_UNPACK_ALIGNMENT, 1);
+}
+
+HOOK(GLenum, FASTCALL, gl_check_framebuffer_status, 0x0000000140503240) {
+    GLenum ret = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    if (ret != GL_FRAMEBUFFER_COMPLETE)
+        return ret;
+
+    return GL_FRAMEBUFFER_COMPLETE;
+}
+
 void hook_funcs() {
     WRITE_NOP_5(0x0000000140441290);
     WRITE_JUMP(0x00000001404412E2, 0x00000001404413BD);
@@ -210,6 +236,10 @@ void hook_funcs() {
     INSTALL_HOOK(env_set_blend_color);
     INSTALL_HOOK(env_set_offset_color);
 
+    INSTALL_HOOK(set_render_defaults);
+
+    INSTALL_HOOK(gl_check_framebuffer_status);
+
     uint8_t buf[0x0C] = {};
     buf[0x00] = 0x48; // mov rax, 0
     buf[0x01] = 0xB8;
@@ -235,15 +265,15 @@ void hook_funcs() {
 
 static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int32_t a5) {
     extern size_t glut_handle;
-    HDC& hDc = *(HDC*)(glut_handle + 0x55F20);
+    HDC& XHDC = *(HDC*)(glut_handle + 0x55F20);
 
     wrap_addresses();
 
     if (true/*a5*/) {
         typedef HGLRC(GLAPIENTRY* PFNWGLCREATECONTEXTGLUTPROC)(HDC hDc);
 
-        HGLRC tmp_ctx = wglCreateContextGLUT(hDc);;
-        wglMakeCurrentGLUT(hDc, tmp_ctx);
+        HGLRC tmp_ctx = wglCreateContextGLUT(XHDC);;
+        wglMakeCurrentGLUT(XHDC, tmp_ctx);
         PFNWGLCREATECONTEXTATTRIBSARBPROC _wglCreateContextAttribsARB
             = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddressGLUT("wglCreateContextAttribsARB");
 
@@ -257,15 +287,15 @@ static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, in
                 WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
                 0,
             };
-            ctx = _wglCreateContextAttribsARB(hDc, 0, attrib_list);;
+            ctx = _wglCreateContextAttribsARB(XHDC, 0, attrib_list);;
             minor--;
         }
-        wglMakeCurrentGLUT(hDc, ctx);
+        wglMakeCurrentGLUT(XHDC, ctx);
         wglDeleteContextGLUT(tmp_ctx);
         return ctx;
     }
     else
-        return wglCreateContextGLUT(hDc);
+        return wglCreateContextGLUT(XHDC);
 }
 
 #ifdef DEBUG
