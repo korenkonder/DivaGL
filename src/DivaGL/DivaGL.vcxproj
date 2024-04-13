@@ -135,6 +135,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="auth_2d.cpp" />
+    <ClCompile Include="clear_color.cpp" />
     <ClCompile Include="Glitter\animation.cpp" />
     <ClCompile Include="Glitter\counter.cpp" />
     <ClCompile Include="Glitter\curve.cpp" />
@@ -205,6 +206,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="auth_2d.hpp" />
+    <ClInclude Include="clear_color.hpp" />
     <ClInclude Include="Glitter\glitter.hpp" />
     <ClInclude Include="auth_3d.hpp" />
     <ClInclude Include="camera.hpp" />

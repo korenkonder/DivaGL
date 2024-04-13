@@ -10,6 +10,7 @@
 #include "light_param/light.hpp"
 #include "mdl/disp_manager.hpp"
 #include "rob/rob.hpp"
+#include "clear_color.hpp"
 #include "effect.hpp"
 #include "gl_state.hpp"
 #include "light_param.hpp"
@@ -665,8 +666,6 @@ namespace rndr {
     }
 
     void RenderManager::pass_clear() {
-        static void(FASTCALL * clear_color_set_gl)() = (void(FASTCALL*)())0x00000001405022A0;
-
         gl_state_begin_event("pass_clear");
         if (clear) {
             rctx->screen_buffer.Bind();
