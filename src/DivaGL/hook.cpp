@@ -47,7 +47,11 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 #endif
 
+#ifdef USE_STUB
+    wrap_addresses(true);
+#else
     wrap_addresses();
+#endif
 
     auth_3d_patch();
     camera_patch();

@@ -1611,7 +1611,17 @@ static void print_debug_error(const char* c, const char* e) {
 }
 #endif
 
+#ifdef USE_STUB
+void stub_func() {
+    printf_divagl("Stub Called!");
+}
+#endif
+
+#ifdef USE_STUB
+void wrap_addresses(bool stub) {
+#else
 void wrap_addresses() {
+#endif
 #ifdef DEBUG
     print_debug_error("Patching tables", 0);
 #endif
@@ -1622,8 +1632,21 @@ void wrap_addresses() {
             WRITE_MEMORY(wrap_addr_dll[i].address, uint64_t, wrap_addr_dll[i].func);
         }
 
+#ifdef USE_STUB
+    if (stub)
+        for (int i = 0; i < 9; i++)
+            WRITE_MEMORY(wrap_addr_dll[i].address, uint64_t, (size_t)&stub_func);
+#endif
+
     for (int i = 0; i < 9; i++)
         gl_addr_dll[i].func = *(size_t*)gl_addr_dll[i].address;
+
+#ifdef USE_STUB
+    if (stub)
+        for (int i = 0; i < 9; i++)
+            if (*(size_t*)gl_addr_dll[i].address)
+                WRITE_MEMORY(gl_addr_dll[i].address, uint64_t, (size_t)&stub_func);
+#endif
 
 #ifdef DEBUG
     print_debug_error("DLL include table patched", 0);
@@ -1635,8 +1658,21 @@ void wrap_addresses() {
             WRITE_MEMORY(glut_handle + wrap_addr_glut[i].address, uint64_t, wrap_addr_glut[i].func);
         }
 
+#ifdef USE_STUB
+    /*if (stub)
+        for (int i = 0; i < 27; i++)
+            WRITE_MEMORY(glut_handle + wrap_addr_glut[i].address, uint64_t, (size_t)&stub_func);*/
+#endif
+
     for (int i = 0; i < 7; i++)
         gl_addr_glut[i].func = *(size_t*)(glut_handle + gl_addr_glut[i].address);
+
+#ifdef USE_STUB
+    /*if (stub)
+        for (int i = 0; i < 7; i++)
+            if (*(size_t*)(glut_handle + gl_addr_glut[i].address))
+                WRITE_MEMORY(glut_handle + gl_addr_glut[i].address, uint64_t, (size_t)&stub_func);*/
+#endif
 
 #ifdef DEBUG
     print_debug_error("GLUT DLL include table patched", 0);
@@ -1648,8 +1684,21 @@ void wrap_addresses() {
             WRITE_MEMORY(wrap_addr[i].address, uint64_t, wrap_addr[i].func);
         }
 
+#ifdef USE_STUB
+    if (stub)
+        for (int i = 0; i < 50; i++)
+            WRITE_MEMORY(wrap_addr[i].address, uint64_t, (size_t)&stub_func);
+#endif
+
     for (int i = 0; i < 1057; i++)
         gl_addr[i].func = *(size_t*)gl_addr[i].address;
+
+#ifdef USE_STUB
+    if (stub)
+        for (int i = 0; i < 1057; i++)
+            if (*(size_t*)gl_addr[i].address)
+                WRITE_MEMORY(gl_addr[i].address, uint64_t, (size_t)&stub_func);
+#endif
 
 #ifdef DEBUG
     print_debug_error("wglGetProcAddresses table patched", 0);

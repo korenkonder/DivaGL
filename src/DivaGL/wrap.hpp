@@ -8,6 +8,8 @@
 #include "gl.hpp"
 #include <Windows.h>
 
+//#define USE_STUB
+
 struct gl_func_struct {
     size_t address;
     size_t func;
@@ -3250,7 +3252,11 @@ extern bool GL_VERSION_4_4;
 extern bool GL_VERSION_4_5;
 extern bool GL_VERSION_4_6;
 
+#ifdef USE_STUB
+extern void wrap_addresses(bool stub = false);
+#else
 extern void wrap_addresses();
+#endif
 extern void wrap_patch();
 
 extern void GLAPIENTRY glAlphaFuncDLL(GLenum func, GLfloat ref);
