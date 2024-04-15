@@ -2078,6 +2078,9 @@ void GLAPIENTRY glTexImage2DDLL(GLenum target, GLint level, GLint internalformat
     case GL_LUMINANCE8_ALPHA8:
         _internalformat = GL_RG8;
         break;
+    case GL_INTENSITY8:
+        _internalformat = GL_R8;
+        break;
     default:
         _internalformat = internalformat;
         break;
@@ -2103,6 +2106,12 @@ void GLAPIENTRY glTexImage2DDLL(GLenum target, GLint level, GLint internalformat
         glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_G, GL_RED);
         glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
         glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+        break;
+    case GL_INTENSITY8:
+        glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+        glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+        glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+        glTexParameteriDLL(target, GL_TEXTURE_SWIZZLE_A, GL_RED);
         break;
     }
 }

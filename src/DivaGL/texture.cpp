@@ -447,19 +447,19 @@ static void texture_get_format_type_by_internal_format(GLenum internal_format, G
     GLenum _type;
     switch (internal_format) {
     case GL_ALPHA8:
-        _format = GL_ALPHA;
+        _format = GL_R;
         _type = GL_UNSIGNED_BYTE;
         break;
     case GL_LUMINANCE8:
-        _format = GL_LUMINANCE;
+        _format = GL_R;
         _type = GL_UNSIGNED_BYTE;
         break;
     case GL_LUMINANCE8_ALPHA8:
-        _format = GL_LUMINANCE_ALPHA;
+        _format = GL_RG;
         _type = GL_UNSIGNED_BYTE;
         break;
     case GL_INTENSITY8:
-        _format = GL_INTENSITY;
+        _format = GL_R;
         _type = GL_UNSIGNED_BYTE;
         break;
     case GL_RGB5:
@@ -696,6 +696,13 @@ static texture* texture_load_tex(texture_id id, GLenum target,
         swizzle[1] = GL_RED;
         swizzle[2] = GL_RED;
         swizzle[3] = GL_GREEN;
+        glTexParameteriv(target, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+        break;
+    case GL_INTENSITY8:
+        swizzle[0] = GL_RED;
+        swizzle[1] = GL_RED;
+        swizzle[2] = GL_RED;
+        swizzle[3] = GL_RED;
         glTexParameteriv(target, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
         break;
     }
