@@ -67,6 +67,8 @@ struct texture {
     int32_t max_mipmap_level;
     int32_t size_texmem;
 
+    texture();
+
     uint32_t get_height_align_mip_level(uint8_t mip_level = 0);
     uint32_t get_width_align_mip_level(uint8_t mip_level = 0);
 };
@@ -81,8 +83,8 @@ struct texture_param {
 static_assert(sizeof(texture_param) == 0x08, "\"texture_param\" struct should have a size of 0x08");
 
 extern int32_t(FASTCALL* texture_info_get_id)(const char* name);
-extern texture* (FASTCALL* texture_manager_get_texture)(uint32_t id);
 
+extern texture* texture_alloc(texture_id id);
 extern void texture_apply_color_tone(texture* chg_tex,
     texture* org_tex, const color_tone* col_tone);
 extern texture* texture_copy(texture_id id, texture* org_tex);
@@ -105,5 +107,8 @@ extern void texture_params_restore(texture_param* tex_0_param = 0,
 
 extern bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids);
 extern bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids);
+
+extern texture* texture_manager_get_texture(uint32_t id);
+extern texture* texture_manager_get_texture(texture_id id);
 
 extern void texture_patch();

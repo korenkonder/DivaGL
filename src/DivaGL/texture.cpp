@@ -15,6 +15,8 @@ struct texture_handler {
     int32_t field_2C;
     int32_t field_30;
     int32_t field_34;
+
+    texture_handler();
 };
 
 static_assert(sizeof(texture_handler) == 0x30, "\"texture_handler\" struct should have a size of 0x30");
@@ -35,8 +37,6 @@ static_assert(sizeof(texture_manager) == 0x48, "\"texture_manager\" struct shoul
 
 int32_t(FASTCALL* texture_info_get_id)(const char* name)
     = (int32_t(FASTCALL*)(const char* name))0x000000014069CBD0;
-texture* (FASTCALL* texture_manager_get_texture)(uint32_t id)
-    = (texture * (FASTCALL*)(uint32_t id))0x000000014069CD70;
 
 texture_manager*& texture_manager_work_ptr = *(texture_manager**)0x000000014CC96988;
 
@@ -54,6 +54,11 @@ static texture* texture_load_tex(texture_id id, GLenum target,
     int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy);
 static GLenum texture_txp_get_gl_internal_format(txp* t);
 
+texture::texture() : ref_count(), flags(), width(), height(),
+glid(), target(), internal_format(), max_mipmap_level(), size_texmem() {
+
+}
+
 uint32_t texture::get_height_align_mip_level(uint8_t mip_level) {
     if (flags & TEXTURE_BLOCK_COMPRESSION)
         return max_def((uint32_t)height >> mip_level, 4u);
@@ -69,15 +74,25 @@ uint32_t texture::get_width_align_mip_level(uint8_t mip_level) {
 }
 
 texture* texture_alloc(texture_id id) {
+    if (!texture_manager_work_ptr)
+        return 0;
+
     auto elem = texture_manager_work_ptr->textures.find(id);
     if (elem != texture_manager_work_ptr->textures.end()) {
         elem->second.tex.ref_count++;
+        texture_manager_work_ptr->entry_count++;
         return &elem->second.tex;
     }
 
-    texture* tex = &texture_manager_work_ptr->textures.insert({ id, {} }).first->second.tex;
+    auto ret = texture_manager_work_ptr->textures.insert({ id, texture_handler() });
+    if (!ret.second)
+        return 0;
+
+    texture* tex = &ret.first->second.tex;
     tex->ref_count = 1;
     tex->id = id;
+    texture_manager_work_ptr->alloc_count++;
+    texture_manager_work_ptr->entry_count++;
     return tex;
 }
 
@@ -287,6 +302,10 @@ void texture_txp_store(texture* tex, txp* t) {
 }
 
 void texture_release(texture* tex) {
+    if (!texture_manager_work_ptr || !tex)
+        return;
+
+    texture_manager_work_ptr->entry_count--;
     if (tex->ref_count > 1) {
         tex->ref_count--;
         return;
@@ -297,6 +316,7 @@ void texture_release(texture* tex) {
         tex->glid = 0;
     }
 
+    texture_manager_work_ptr->alloc_count--;
     texture_manager_work_ptr->texmem_now_size -= tex->size_texmem;
     texture_manager_work_ptr->texmem_now_size_by_type[tex->id.id >> 4] -= tex->size_texmem;
     texture_manager_work_ptr->textures.erase(tex->id);
@@ -401,6 +421,20 @@ bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids) {
     return true;
 }
 
+inline texture* texture_manager_get_texture(uint32_t id) {
+    auto elem = texture_manager_work_ptr->textures.find(texture_id(0x00, id));
+    if (elem != texture_manager_work_ptr->textures.end())
+        return &elem->second.tex;
+    return 0;
+}
+
+inline texture* texture_manager_get_texture(texture_id id) {
+    auto elem = texture_manager_work_ptr->textures.find(id);
+    if (elem != texture_manager_work_ptr->textures.end())
+        return &elem->second.tex;
+    return 0;
+}
+
 HOOK(void, FASTCALL, texture_apply_color_tone, 0x00000001403B5DF0,
     texture* chg_tex, texture* org_tex, color_tone* col_tone) {
     texture_apply_color_tone(chg_tex, org_tex, col_tone);
@@ -420,6 +454,10 @@ HOOK(texture*, FASTCALL, texture_load_tex_2d, 0x000000014069B8E0,
         width, height, max_mipmap_level, data_ptr, use_high_anisotropy);
 }
 
+HOOK(texture*, FASTCALL, texture_manager_get_texture, 0x000000014069CD70, uint32_t id) {
+    return texture_manager_get_texture(*(texture_id*)&id);
+}
+
 HOOK(void, FASTCALL, texture_release, 0x000000014069DA70, texture* tex) {
     texture_release(tex);
 }
@@ -428,7 +466,12 @@ void texture_patch() {
     INSTALL_HOOK(texture_apply_color_tone);
     INSTALL_HOOK(texture_load_tex_cube_map);
     INSTALL_HOOK(texture_load_tex_2d);
+    INSTALL_HOOK(texture_manager_get_texture);
     INSTALL_HOOK(texture_release);
+}
+
+texture_handler::texture_handler() : field_2C(), field_30(), field_34() {
+
 }
 
 inline static void texture_bind(GLenum target, GLuint texture) {
