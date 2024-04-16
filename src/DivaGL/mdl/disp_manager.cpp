@@ -1021,7 +1021,7 @@ namespace mdl {
                 indices.push_back(j + m);
                 indices.push_back(k + m);
 
-                if (k++ >= slices)
+                if (++k >= slices)
                     k = 0;
             }
         }
