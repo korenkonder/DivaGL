@@ -1192,6 +1192,8 @@ namespace mdl {
         case mdl::ETC_OBJ_CONE: {
             EtcObjCone& cone = etc->data.cone;
 
+            mat4_scale_rot(&mat, cone.base, cone.height, cone.base, &mat);
+
             indexed = true;
             wire = cone.wire;
         } break;
@@ -1236,8 +1238,6 @@ namespace mdl {
                 || type == mdl::ETC_OBJ_CONE
                 && i.data.cone.slices == etc->data.cone.slices
                 && i.data.cone.stacks == etc->data.cone.stacks
-                && fabsf(i.data.cone.base - etc->data.cone.base) < 0.00001f
-                && fabsf(i.data.cone.height - etc->data.cone.height) < 0.00001f
                 || type == mdl::ETC_OBJ_LINE
                 && fabsf(vec3::distance(i.data.line.pos[0], i.data.line.pos[1]) - length) < 0.00001f
                 || type == mdl::ETC_OBJ_CROSS)
@@ -2572,9 +2572,7 @@ namespace mdl {
                 return i.vertex_array;
             case mdl::ETC_OBJ_CONE:
                 if (i.data.cone.slices == etc->data.cone.slices
-                    && i.data.cone.stacks == etc->data.cone.stacks
-                    && fabsf(i.data.cone.base - etc->data.cone.base) < 0.00001f
-                    && fabsf(i.data.cone.height - etc->data.cone.height) < 0.00001f)
+                    && i.data.cone.stacks == etc->data.cone.stacks)
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_LINE:
