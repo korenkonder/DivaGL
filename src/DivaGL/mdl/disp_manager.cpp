@@ -1179,6 +1179,8 @@ namespace mdl {
         case mdl::ETC_OBJ_SPHERE: {
             EtcObjSphere& sphere = etc->data.sphere;
 
+            mat4_scale_rot(&mat, sphere.radius, &mat);
+
             indexed = true;
             wire = sphere.wire;
         } break;
@@ -1230,7 +1232,6 @@ namespace mdl {
                 || type == mdl::ETC_OBJ_SPHERE
                 && i.data.sphere.slices == etc->data.sphere.slices
                 && i.data.sphere.stacks == etc->data.sphere.stacks
-                && fabsf(i.data.sphere.radius - etc->data.sphere.radius) < 0.00001f
                 || type == mdl::ETC_OBJ_PLANE
                 || type == mdl::ETC_OBJ_CONE
                 && i.data.cone.slices == etc->data.cone.slices
@@ -1326,7 +1327,7 @@ namespace mdl {
         case mdl::ETC_OBJ_SPHERE: {
             EtcObjSphere& sphere = etc->data.sphere;
 
-            gen_sphere_vertices(vtx_data, sphere.slices, sphere.stacks, sphere.radius);
+            gen_sphere_vertices(vtx_data, sphere.slices, sphere.stacks, 1.0f);
             size_t wire_offset = gen_sphere_indices(vtx_indices, sphere.slices, sphere.stacks);
 
             etc_vertex_array->offset = 0;
@@ -2564,8 +2565,7 @@ namespace mdl {
                 return i.vertex_array;
             case mdl::ETC_OBJ_SPHERE:
                 if (i.data.sphere.slices == etc->data.sphere.slices
-                    && i.data.sphere.stacks == etc->data.sphere.stacks
-                    && fabsf(i.data.sphere.radius - etc->data.sphere.radius) < 0.00001f)
+                    && i.data.sphere.stacks == etc->data.sphere.stacks)
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_PLANE:
