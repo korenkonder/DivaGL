@@ -18,6 +18,7 @@ struct program_binary {
     GLsizei length;
     GLenum binary_format;
     size_t binary;
+    uint64_t hash;
 };
 
 struct program_spv {
@@ -539,8 +540,13 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 else if (vert_data_hash != ((uint64_t*)shader_cache_file->data)[2]
                     || frag_data_hash != ((uint64_t*)shader_cache_file->data)[3])
                     printf_debug("Shader hash not equal: %s %s\n", vert_file_buf, frag_file_buf);
-                else
+                else {
                     bin = (program_binary*)&((uint64_t*)shader_cache_file->data)[4];
+                    if (bin->hash != hash_fnv1a64m((void*)((size_t)bin + bin->binary), bin->length)) {
+                        printf_debug("Compiled binary hash could not be validated: %s %s\n", vert_file_buf, frag_file_buf);
+                        bin = 0;
+                    }
+                }
             }
 
             if (shader->num_uniform > 0
@@ -701,6 +707,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     bin->length = k.length;
                     bin->binary_format = k.binary_format;
                     bin->binary = bin_data - bin_data_base;
+                    bin->hash = hash_fnv1a64m((void*)k.binary, k.length);
                     memcpy((void*)bin_data, (void*)k.binary, k.length);
                     bin_data_base += sizeof(program_binary);
                     bin_data += align_val(k.length, 0x04);
