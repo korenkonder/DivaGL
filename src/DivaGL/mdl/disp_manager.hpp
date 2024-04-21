@@ -364,6 +364,7 @@ namespace mdl {
             bool vertex_attrib_array[16];
             obj_vertex_format vertex_format;
             GLsizei size_vertex;
+            uint32_t compression;
             GLuint vertex_attrib_buffer_binding[16];
             int32_t texcoord_array[2];
 

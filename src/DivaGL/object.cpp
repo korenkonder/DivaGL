@@ -90,6 +90,8 @@ static void free_vertex_buffer(GLuint buffer);
 static void obj_vertex_add_bone_weight(vec4& bone_weight, vec4i16& bone_index, int16_t index, float_t weight);
 static void obj_vertex_validate_bone_data(vec4& bone_weight, vec4i16& bone_index);
 static uint32_t obj_vertex_format_get_vertex_size(obj_vertex_format format);
+static uint32_t obj_vertex_format_get_vertex_size_comp1(obj_vertex_format format);
+static uint32_t obj_vertex_format_get_vertex_size_comp2(obj_vertex_format format);
 
 obj_material_shader_lighting_type obj_material_shader_attrib::get_lighting_type() const {
     if (!m.is_lgt_diffuse && !m.is_lgt_specular)
@@ -239,7 +241,20 @@ bool obj_mesh_vertex_buffer::load(obj_mesh* mesh, bool dynamic) {
     if (!mesh->num_vertex)
         return false;
 
-    uint32_t size_vertex = obj_vertex_format_get_vertex_size(mesh->vertex_format);
+    uint32_t size_vertex;
+    switch (mesh->attrib.m.compression) {
+    case 0:
+    default:
+        size_vertex = obj_vertex_format_get_vertex_size(mesh->vertex_format);
+        break;
+    case 1:
+        size_vertex = obj_vertex_format_get_vertex_size_comp1(mesh->vertex_format);
+        break;
+    case 2:
+        size_vertex = obj_vertex_format_get_vertex_size_comp2(mesh->vertex_format);
+        break;
+    }
+
     mesh->size_vertex = size_vertex;
 
     void* vertex = force_malloc((size_t)size_vertex * mesh->num_vertex);
@@ -284,141 +299,382 @@ void* obj_mesh_vertex_buffer::fill_data(void* data, obj_mesh* mesh) {
     uint32_t size_vertex = mesh->size_vertex;
     uint32_t num_vertex = mesh->num_vertex;
     size_t d = (size_t)data;
-    if (vertex_format & OBJ_VERTEX_POSITION) {
-        vec3* position = vtx.position;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec3*)d = *position++;
-            d += size_vertex;
+    switch (mesh->attrib.m.compression) {
+    case 0:
+    default:
+        if (vertex_format & OBJ_VERTEX_POSITION) {
+            vec3* position = vtx.position;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec3*)d = *position++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 12;
         }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 12;
-    }
 
-    if (vertex_format & OBJ_VERTEX_NORMAL) {
-        vec3* normal = vtx.normal;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec3*)d = *normal++;
-            d += size_vertex;
+        if (vertex_format & OBJ_VERTEX_NORMAL) {
+            vec3* normal = vtx.normal;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec3*)d = *normal++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 12;
         }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 12;
-    }
-    
-    if (vertex_format & OBJ_VERTEX_TANGENT) {
-        vec4* tangent = vtx.tangent;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec4*)d = *tangent++;
-            d += size_vertex;
-        }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 16;
-    }
 
-    if (vertex_format & OBJ_VERTEX_BINORMAL) {
-        vec3* binormal = vtx.binormal;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec3*)d = *binormal++;
-            d += size_vertex;
+        if (vertex_format & OBJ_VERTEX_TANGENT) {
+            vec4* tangent = vtx.tangent;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec4*)d = *tangent++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 16;
         }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 12;
-    }
 
-    if (vertex_format & OBJ_VERTEX_TEXCOORD0) {
-        vec2* texcoord0 = vtx.texcoord0;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec2*)d = *texcoord0++;
-            d += size_vertex;
+        if (vertex_format & OBJ_VERTEX_BINORMAL) {
+            vec3* binormal = vtx.binormal;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec3*)d = *binormal++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 12;
         }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 8;
-    }
-    
-    if (vertex_format & OBJ_VERTEX_TEXCOORD1) {
-        vec2* texcoord1 = vtx.texcoord1;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec2*)d = *texcoord1++;
-            d += size_vertex;
-        }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 8;
-    }
-    
-    if (vertex_format & OBJ_VERTEX_TEXCOORD2) {
-        vec2* texcoord2 = vtx.texcoord2;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec2*)d = *texcoord2++;
-            d += size_vertex;
-        }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 8;
-    }
-    
-    if (vertex_format & OBJ_VERTEX_TEXCOORD3) {
-        vec2* texcoord3 = vtx.texcoord3;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec2*)d = *texcoord3++;
-            d += size_vertex;
-        }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 8;
-    }
-    
-    if (vertex_format & OBJ_VERTEX_COLOR0) {
-        vec4* color0 = vtx.color0;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec4*)d = *color0++;
-            d += size_vertex;
-        }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 16;
-    }
-    
-    if (vertex_format & OBJ_VERTEX_COLOR1) {
-        vec4* color1 = vtx.color1;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec4*)d = *color1++;
-            d += size_vertex;
-        }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 16;
-    }
-    
-    if ((vertex_format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA) {
-        vec4* bone_weight = vtx.bone_weight;
-        vec4* bone_index = vtx.bone_index;
-        for (uint32_t i = num_vertex; i; i--) {
-            vec4 _bone_weight = *bone_weight++;
 
-            int32_t bone_index_x = (int32_t)bone_index->x;
-            int32_t bone_index_y = (int32_t)bone_index->y;
-            int32_t bone_index_z = (int32_t)bone_index->z;
-            int32_t bone_index_w = (int32_t)bone_index->w;
-            bone_index++;
-            
-            vec4i16 _bone_index;
-            _bone_index.x = (int16_t)(bone_index_x >= 0 ? bone_index_x / 3 : -1);
-            _bone_index.y = (int16_t)(bone_index_y >= 0 ? bone_index_y / 3 : -1);
-            _bone_index.z = (int16_t)(bone_index_z >= 0 ? bone_index_z / 3 : -1);
-            _bone_index.w = (int16_t)(bone_index_w >= 0 ? bone_index_w / 3 : -1);
-            obj_vertex_validate_bone_data(_bone_weight, _bone_index);
-
-            *(vec4*)d = _bone_weight;
-            *(vec4i16*)(d + 16) = _bone_index;
-            d += size_vertex;
+        if (vertex_format & OBJ_VERTEX_TEXCOORD0) {
+            vec2* texcoord0 = vtx.texcoord0;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec2*)d = *texcoord0++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
         }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 24;
-    }
 
-    if (vertex_format & OBJ_VERTEX_UNKNOWN) {
-        vec4* unknown = vtx.unknown;
-        for (uint32_t i = num_vertex; i; i--) {
-            *(vec4*)d = *unknown++;
-            d += size_vertex;
+        if (vertex_format & OBJ_VERTEX_TEXCOORD1) {
+            vec2* texcoord1 = vtx.texcoord1;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec2*)d = *texcoord1++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
         }
-        d -= (size_t)size_vertex * num_vertex;
-        d += 16;
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD2) {
+            vec2* texcoord2 = vtx.texcoord2;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec2*)d = *texcoord2++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD3) {
+            vec2* texcoord3 = vtx.texcoord3;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec2*)d = *texcoord3++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+
+        if (vertex_format & OBJ_VERTEX_COLOR0) {
+            vec4* color0 = vtx.color0;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec4*)d = *color0++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 16;
+        }
+
+        if (vertex_format & OBJ_VERTEX_COLOR1) {
+            vec4* color1 = vtx.color1;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec4*)d = *color1++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 16;
+        }
+
+        if ((vertex_format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA) {
+            vec4* bone_weight = vtx.bone_weight;
+            vec4* bone_index = vtx.bone_index;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4 _bone_weight = *bone_weight++;
+
+                int32_t bone_index_x = (int32_t)bone_index->x;
+                int32_t bone_index_y = (int32_t)bone_index->y;
+                int32_t bone_index_z = (int32_t)bone_index->z;
+                int32_t bone_index_w = (int32_t)bone_index->w;
+                bone_index++;
+
+                vec4i16 _bone_index;
+                _bone_index.x = (int16_t)(bone_index_x >= 0 ? bone_index_x / 3 : -1);
+                _bone_index.y = (int16_t)(bone_index_y >= 0 ? bone_index_y / 3 : -1);
+                _bone_index.z = (int16_t)(bone_index_z >= 0 ? bone_index_z / 3 : -1);
+                _bone_index.w = (int16_t)(bone_index_w >= 0 ? bone_index_w / 3 : -1);
+                obj_vertex_validate_bone_data(_bone_weight, _bone_index);
+
+                *(vec4*)d = _bone_weight;
+                *(vec4i16*)(d + 16) = _bone_index;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 24;
+        }
+
+        if (vertex_format & OBJ_VERTEX_UNKNOWN) {
+            vec4* unknown = vtx.unknown;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec4*)d = *unknown++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 16;
+        }
+        break;
+    case 1:
+        if (vertex_format & OBJ_VERTEX_POSITION) {
+            vec3* position = vtx.position;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec3*)d = *position++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 12;
+        }
+
+        if (vertex_format & OBJ_VERTEX_NORMAL) {
+            vec3* normal = vtx.normal;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec3_to_vec3i16(*normal++ * 32767.0f, *(vec3i16*)d);
+                *(int16_t*)(d + 6) = 0;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TANGENT) {
+            vec4* tangent = vtx.tangent;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4_to_vec4i16(*tangent++ * 32767.0f, *(vec4i16*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD0) {
+            vec2* texcoord0 = vtx.texcoord0;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord0++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD1) {
+            vec2* texcoord1 = vtx.texcoord1;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord1++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD2) {
+            vec2* texcoord2 = vtx.texcoord2;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord2++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD3) {
+            vec2* texcoord3 = vtx.texcoord3;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord3++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_COLOR0) {
+            vec4* color0 = vtx.color0;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4_to_vec4h(*color0++, *(vec4h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+
+        if ((vertex_format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA) {
+            vec4* bone_weight = vtx.bone_weight;
+            vec4* bone_index = vtx.bone_index;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4 _bone_weight = *bone_weight++;
+
+                int32_t bone_index_x = (int32_t)bone_index->x;
+                int32_t bone_index_y = (int32_t)bone_index->y;
+                int32_t bone_index_z = (int32_t)bone_index->z;
+                int32_t bone_index_w = (int32_t)bone_index->w;
+                bone_index++;
+
+                vec4i16 _bone_index;
+                _bone_index.x = (int16_t)(bone_index_x >= 0 ? bone_index_x / 3 : -1);
+                _bone_index.y = (int16_t)(bone_index_y >= 0 ? bone_index_y / 3 : -1);
+                _bone_index.z = (int16_t)(bone_index_z >= 0 ? bone_index_z / 3 : -1);
+                _bone_index.w = (int16_t)(bone_index_w >= 0 ? bone_index_w / 3 : -1);
+                obj_vertex_validate_bone_data(_bone_weight, _bone_index);
+
+                vec4_to_vec4u16(_bone_weight * 65535.0f, *(vec4u16*)d);
+                *(vec4i16*)(d + 16) = _bone_index;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 16;
+        }
+        break;
+    case 2:
+        if (vertex_format & OBJ_VERTEX_POSITION) {
+            vec3* position = vtx.position;
+            for (uint32_t i = num_vertex; i; i--) {
+                *(vec3*)d = *position++;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 12;
+        }
+
+        if (vertex_format & OBJ_VERTEX_NORMAL) {
+            vec3* normal = vtx.normal;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec3i16 normal_int;
+                vec3_to_vec3i16(*normal++ * 511.0f, normal_int);
+                *(uint32_t*)d = (((uint32_t)0 & 0x03) << 30)
+                    | (((uint32_t)normal_int.z & 0x3FF) << 20)
+                    | (((uint32_t)normal_int.y & 0x3FF) << 10)
+                    | ((uint32_t)normal_int.x & 0x3FF);
+                *(int16_t*)(d + 6) = 0;
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TANGENT) {
+            vec4* tangent = vtx.tangent;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4i16 tangent_int;
+                vec4_to_vec4i16(*tangent++ * 511.0f, tangent_int);
+                *(uint32_t*)d = (((uint32_t)clamp_def(tangent_int.w, -1, 1) & 0x03) << 30)
+                    | (((uint32_t)tangent_int.z & 0x3FF) << 20)
+                    | (((uint32_t)tangent_int.y & 0x3FF) << 10)
+                    | ((uint32_t)tangent_int.x & 0x3FF);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD0) {
+            vec2* texcoord0 = vtx.texcoord0;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord0++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD1) {
+            vec2* texcoord1 = vtx.texcoord1;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord1++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD2) {
+            vec2* texcoord2 = vtx.texcoord2;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord2++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_TEXCOORD3) {
+            vec2* texcoord3 = vtx.texcoord3;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec2_to_vec2h(*texcoord3++, *(vec2h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 4;
+        }
+
+        if (vertex_format & OBJ_VERTEX_COLOR0) {
+            vec4* color0 = vtx.color0;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4_to_vec4h(*color0++, *(vec4h*)d);
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+
+        if ((vertex_format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA) {
+            vec4* bone_weight = vtx.bone_weight;
+            vec4* bone_index = vtx.bone_index;
+            for (uint32_t i = num_vertex; i; i--) {
+                vec4 _bone_weight = *bone_weight++;
+
+                int32_t bone_index_x = (int32_t)bone_index->x;
+                int32_t bone_index_y = (int32_t)bone_index->y;
+                int32_t bone_index_z = (int32_t)bone_index->z;
+                int32_t bone_index_w = (int32_t)bone_index->w;
+                bone_index++;
+
+                vec4i16 _bone_index;
+                _bone_index.x = (int16_t)(bone_index_x >= 0 ? bone_index_x / 3 : -1);
+                _bone_index.y = (int16_t)(bone_index_y >= 0 ? bone_index_y / 3 : -1);
+                _bone_index.z = (int16_t)(bone_index_z >= 0 ? bone_index_z / 3 : -1);
+                _bone_index.w = (int16_t)(bone_index_w >= 0 ? bone_index_w / 3 : -1);
+                obj_vertex_validate_bone_data(_bone_weight, _bone_index);
+
+                vec4i16 bone_weight_int;
+                vec4_to_vec4i16(_bone_weight * 1023.0f, bone_weight_int);
+                *(uint32_t*)d = (((uint32_t)0 & 0x03) << 30)
+                    | (((uint32_t)bone_weight_int.z & 0x3FF) << 20)
+                    | (((uint32_t)bone_weight_int.y & 0x3FF) << 10)
+                    | ((uint32_t)bone_weight_int.x & 0x3FF);
+
+                vec4i bone_index;
+                vec4i16_to_vec4i(_bone_index, bone_index);
+                vec4i_to_vec4u8(bone_index, *(vec4u8*)(d + 4));
+                d += size_vertex;
+            }
+            d -= (size_t)size_vertex * num_vertex;
+            d += 8;
+        }
+        break;
     }
 
     return (void*)((size_t)data + (size_t)size_vertex * num_vertex);
@@ -556,7 +812,21 @@ bool obj_vertex_buffer::load(obj* obj) {
         if (!mesh.num_vertex)
             continue;
 
-        uint32_t size_vertex = obj_vertex_format_get_vertex_size(mesh.vertex_format);
+        mesh.attrib.m.compression = 0;
+
+        uint32_t size_vertex;
+        switch (mesh.attrib.m.compression) {
+        case 0:
+        default:
+            size_vertex = obj_vertex_format_get_vertex_size(mesh.vertex_format);
+            break;
+        case 1:
+            size_vertex = obj_vertex_format_get_vertex_size_comp1(mesh.vertex_format);
+            break;
+        case 2:
+            size_vertex = obj_vertex_format_get_vertex_size_comp2(mesh.vertex_format);
+            break;
+        }
         mesh.size_vertex = size_vertex;
 
         buffer_size += (size_t)size_vertex * mesh.num_vertex;
@@ -975,5 +1245,51 @@ inline static uint32_t obj_vertex_format_get_vertex_size(obj_vertex_format forma
         size += 24;
     if (format & OBJ_VERTEX_UNKNOWN)
         size += 16;
+    return size;
+}
+
+inline static uint32_t obj_vertex_format_get_vertex_size_comp1(obj_vertex_format format) {
+    uint32_t size = 0;
+    if (format & OBJ_VERTEX_POSITION)
+        size += 12;
+    if (format & OBJ_VERTEX_NORMAL)
+        size += 8;
+    if (format & OBJ_VERTEX_TANGENT)
+        size += 8;
+    if (format & OBJ_VERTEX_TEXCOORD0)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD1)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD2)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD3)
+        size += 4;
+    if (format & OBJ_VERTEX_COLOR0)
+        size += 8;
+    if ((format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA)
+        size += 16;
+    return size;
+}
+
+inline static uint32_t obj_vertex_format_get_vertex_size_comp2(obj_vertex_format format) {
+    uint32_t size = 0;
+    if (format & OBJ_VERTEX_POSITION)
+        size += 12;
+    if (format & OBJ_VERTEX_NORMAL)
+        size += 4;
+    if (format & OBJ_VERTEX_TANGENT)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD0)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD1)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD2)
+        size += 4;
+    if (format & OBJ_VERTEX_TEXCOORD3)
+        size += 4;
+    if (format & OBJ_VERTEX_COLOR0)
+        size += 8;
+    if ((format & OBJ_VERTEX_BONE_DATA) == OBJ_VERTEX_BONE_DATA)
+        size += 8;
     return size;
 }

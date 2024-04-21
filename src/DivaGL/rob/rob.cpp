@@ -787,36 +787,134 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
     if (double_sided)
         indices_count /= 2;
 
-    if (mesh->vertex_format & OBJ_VERTEX_TANGENT)
-        for (int32_t i = 2; i; i--, facing = -1.0f) {
-            for (int32_t j = indices_count; j; j--, indices++) {
-                CLOTHNode* node = &nodes[*indices];
+    bool tangent = !!(mesh->vertex_format & OBJ_VERTEX_TANGENT);
 
-                *(vec3*)data = node->trans;
-                *(vec3*)(data + 0x0C) = node->normal * facing;
-                *(vec3*)(data + 0x18) = node->tangent;
-                *(float_t*)(data + 0x24) = node->tangent_sign;
+    switch (mesh->attrib.m.compression) {
+    case 0:
+    default:
+        if (tangent)
+            for (int32_t i = 2; i; i--, facing = -1.0f) {
+                for (int32_t j = indices_count; j; j--, indices++) {
+                    CLOTHNode* node = &nodes[*indices];
 
-                data += mesh->size_vertex;
+                    *(vec3*)data = node->trans;
+                    *(vec3*)(data + 0x0C) = node->normal * facing;
+                    *(vec3*)(data + 0x18) = node->tangent;
+                    *(float_t*)(data + 0x24) = node->tangent_sign;
+
+                    data += mesh->size_vertex;
+                }
+
+                if (!double_sided)
+                    break;
             }
+        else
+            for (int32_t i = 2; i; i--, facing = -1.0f) {
+                for (int32_t j = indices_count; j; j--, indices++) {
+                    CLOTHNode* node = &nodes[*indices];
 
-            if (!double_sided)
-                break;
-        }
-    else
-        for (int32_t i = 2; i; i--, facing = -1.0f) {
-            for (int32_t j = indices_count; j; j--, indices++) {
-                CLOTHNode* node = &nodes[*indices];
+                    *(vec3*)data = node->trans;
+                    *(vec3*)(data + 0x0C) = node->normal * facing;
 
-                *(vec3*)data = node->trans;
-                *(vec3*)(data + 0x0C) = node->normal * facing;
+                    data += mesh->size_vertex;
+                }
 
-                data += mesh->size_vertex;
+                if (!double_sided)
+                    break;
             }
+        break;
+    case 1:
+        if (tangent)
+            for (int32_t i = 2; i; i--, facing = -1.0f) {
+                for (int32_t j = indices_count; j; j--, indices++) {
+                    CLOTHNode* node = &nodes[*indices];
 
-            if (!double_sided)
-                break;
-        }
+                    *(vec3*)data = node->trans;
+
+                    vec3_to_vec3i16(node->normal * (32767.0f * facing), *(vec3i16*)(data + 0x0C));
+                    *(int16_t*)(data + 0x12) = 0;
+
+                    vec4 tangent;
+                    *(vec3*)&tangent = node->tangent;
+                    tangent.w = node->tangent_sign;
+                    vec4_to_vec4i16(tangent * 32767.0f, *(vec4i16*)(data + 0x14));
+
+                    data += mesh->size_vertex;
+                }
+
+                if (!double_sided)
+                    break;
+            }
+        else
+            for (int32_t i = 2; i; i--, facing = -1.0f) {
+                for (int32_t j = indices_count; j; j--, indices++) {
+                    CLOTHNode* node = &nodes[*indices];
+
+                    *(vec3*)data = node->trans;
+
+                    vec3_to_vec3i16(node->normal * (32767.0f * facing), *(vec3i16*)(data + 0x0C));
+                    *(int16_t*)(data + 0x12) = 0;
+
+                    data += mesh->size_vertex;
+                }
+
+                if (!double_sided)
+                    break;
+            }
+    case 2:
+        if (tangent)
+            for (int32_t i = 2; i; i--, facing = -1.0f) {
+                for (int32_t j = indices_count; j; j--, indices++) {
+                    CLOTHNode* node = &nodes[*indices];
+
+                    *(vec3*)data = node->trans;
+
+                    vec3i16 normal_int;
+                    vec3_to_vec3i16(node->normal * 511.0f, normal_int);
+                    *(uint32_t*)(data + 0x0C) = (((uint32_t)0 & 0x03) << 30)
+                        | (((uint32_t)normal_int.z & 0x3FF) << 20)
+                        | (((uint32_t)normal_int.y & 0x3FF) << 10)
+                        | ((uint32_t)normal_int.x & 0x3FF);
+
+                    vec4 tangent;
+                    *(vec3*)&tangent = node->tangent;
+                    tangent.w = node->tangent_sign;
+
+                    vec4i16 tangent_int;
+                    vec4_to_vec4i16(tangent * 511.0f, tangent_int);
+                    *(uint32_t*)(data + 0x10) = (((uint32_t)clamp_def(tangent_int.w, -1, 1) & 0x03) << 30)
+                        | (((uint32_t)tangent_int.z & 0x3FF) << 20)
+                        | (((uint32_t)tangent_int.y & 0x3FF) << 10)
+                        | ((uint32_t)tangent_int.x & 0x3FF);
+
+                    data += mesh->size_vertex;
+                }
+
+                if (!double_sided)
+                    break;
+            }
+        else
+            for (int32_t i = 2; i; i--, facing = -1.0f) {
+                for (int32_t j = indices_count; j; j--, indices++) {
+                    CLOTHNode* node = &nodes[*indices];
+
+                    *(vec3*)data = node->trans;
+
+                    vec3i16 normal_int;
+                    vec3_to_vec3i16(node->normal * 511.0f, normal_int);
+                    *(uint32_t*)(data + 0x0C) = (((uint32_t)0 & 0x03) << 30)
+                        | (((uint32_t)normal_int.z & 0x3FF) << 20)
+                        | (((uint32_t)normal_int.y & 0x3FF) << 10)
+                        | ((uint32_t)normal_int.x & 0x3FF);
+
+                    data += mesh->size_vertex;
+                }
+
+                if (!double_sided)
+                    break;
+            }
+        break;
+    }
 
     buffer.UnmapMemory();
 }

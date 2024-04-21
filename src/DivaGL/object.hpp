@@ -325,7 +325,8 @@ struct obj_mesh_attrib_member {
     uint32_t billboard_y_axis : 1;
     uint32_t translucent_sort_by_radius : 1;
     uint32_t billboard : 1;
-    uint32_t dummy : 28;
+    uint32_t dummy : 26; // 28
+    uint32_t compression : 2; // Own stuff
 };
 
 union obj_mesh_attrib {
