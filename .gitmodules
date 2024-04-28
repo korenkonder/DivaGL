@@ -1,0 +1,3 @@
+[submodule "src/KKdLib"]
+	path = src/KKdLib
+	url = https://github.com/korenkonder/KKdLib
