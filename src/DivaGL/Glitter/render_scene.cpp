@@ -1494,13 +1494,12 @@ namespace Glitter {
         mat4 inv_view_mat;
 
         if (rend_group->flags & PARTICLE_EMITTER_LOCAL) {
-            model_mat = rend_group->mat;
             if (rend_group->draw_type == DIRECTION_EMITTER_ROTATION
                 || rend_group->draw_type == DIRECTION_PARTICLE_ROTATION)
-                mat4_clear_rot(&rend_group->mat, &view_mat);
+                mat4_clear_rot(&rend_group->mat, &model_mat);
             else
-                mat4_normalize_rotation(&rend_group->mat, &view_mat);
-            mat4_mul(&view_mat, &cam_view, &view_mat);
+                mat4_normalize_rotation(&rend_group->mat, &model_mat);
+            mat4_mul(&model_mat, &cam_view, &view_mat);
             mat4_invert(&view_mat, &inv_view_mat);
         }
         else {
