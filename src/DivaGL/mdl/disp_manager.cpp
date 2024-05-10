@@ -874,7 +874,7 @@ namespace mdl {
             gl_state_bind_element_array_buffer(0);
     }
 
-    static size_t gen_grid_vertices(prj::vector<float_t>& data,
+    static size_t gen_grid_vertices(prj::vector<prj::pair<vec3, vec3>>& data,
         int32_t w, int32_t h, int32_t ws, int32_t hs) {
         const int32_t ws_half = ws / 2;
         const int32_t hs_half = hs / 2;
@@ -884,134 +884,71 @@ namespace mdl {
         const float_t width = w_flt * 0.5f;
         const float_t height = h_flt * 0.5f;
 
-        data.reserve(6ULL * 2 * ws * 2);
+        data.reserve(ws * 2ULL);
         for (int32_t i = 0; i <= ws; i++) {
             if (i == ws_half)
                 continue;
 
             const float_t w = (float_t)i * (w_flt / ((float_t)ws_half * 2.0f)) - width;
-            data.push_back(w);
-            data.push_back(0.0f);
-            data.push_back(-height);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
-            data.push_back(w);
-            data.push_back(0.0f);
-            data.push_back(height);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
+            data.push_back({ { w, 0.0f, -height }, { 0.0f } });
+            data.push_back({ { w, 0.0f,  height }, { 0.0f } });
         }
 
-        data.reserve(6ULL * 2 * hs * 2);
+        data.reserve(hs * 2ULL);
         for (int32_t i = 0; i <= hs; i++) {
             if (i == hs_half)
                 continue;
 
             const float_t h = (float_t)i * (h_flt / ((float_t)hs_half * 2.0f)) - height;
-            data.push_back(-width);
-            data.push_back(0.0f);
-            data.push_back(h);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
-            data.push_back(width);
-            data.push_back(0.0f);
-            data.push_back(h);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
-            data.push_back(0.0f);
+            data.push_back({ { -width, 0.0f, h }, { 0.0f } });
+            data.push_back({ {  width, 0.0f, h }, { 0.0f } });
         }
 
         size_t center_offset = data.size();
 
-        data.reserve(6ULL * 2 * 2 * 2);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(-height);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(height);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(-width);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(width);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
+        data.reserve(2 * 2ULL);
+        data.push_back({ {   0.0f, 0.0f, -height }, { 0.0f } });
+        data.push_back({ {   0.0f, 0.0f,  height }, { 0.0f } });
+        data.push_back({ { -width, 0.0f,    0.0f }, { 0.0f } });
+        data.push_back({ {  width, 0.0f,    0.0f }, { 0.0f } });
 
         return center_offset;
     }
 
-    static void gen_cube_vertices(prj::vector<float_t>& data) {
-        data.resize(6ULL * 2 * 4 * 6);
+    static void gen_cube_vertices(prj::vector<prj::pair<vec3, vec3>>& data, vec3 size) {
+        size *= 0.5f;
 
-        vec3* vtx = (vec3*)data.data();
-        *vtx++ = { -1.0f, -1.0f, -1.0f };
-        *vtx++ = {  0.0f,  0.0f, -1.0f };
-        *vtx++ = {  1.0f,  1.0f, -1.0f };
-        *vtx++ = {  0.0f,  0.0f, -1.0f };
-        *vtx++ = {  1.0f, -1.0f, -1.0f };
-        *vtx++ = {  0.0f,  0.0f, -1.0f };
-        *vtx++ = { -1.0f,  1.0f, -1.0f };
-        *vtx++ = {  0.0f,  0.0f, -1.0f };
+        data.reserve(4 * 6ULL);
 
-        *vtx++ = { -1.0f, -1.0f,  1.0f };
-        *vtx++ = {  0.0f,  0.0f,  1.0f };
-        *vtx++ = {  1.0f, -1.0f,  1.0f };
-        *vtx++ = {  0.0f,  0.0f,  1.0f };
-        *vtx++ = {  1.0f,  1.0f,  1.0f };
-        *vtx++ = {  0.0f,  0.0f,  1.0f };
-        *vtx++ = { -1.0f,  1.0f,  1.0f };
-        *vtx++ = {  0.0f,  0.0f,  1.0f };
+        data.push_back({ { -size.x, -size.y, -size.z }, {  0.0f,  0.0f, -1.0f } });
+        data.push_back({ {  size.x,  size.y, -size.z }, {  0.0f,  0.0f, -1.0f } });
+        data.push_back({ {  size.x, -size.y, -size.z }, {  0.0f,  0.0f, -1.0f } });
+        data.push_back({ { -size.x,  size.y, -size.z }, {  0.0f,  0.0f, -1.0f } });
 
-        *vtx++ = { -1.0f,  1.0f,  1.0f };
-        *vtx++ = { -1.0f,  0.0f,  0.0f };
-        *vtx++ = { -1.0f,  1.0f, -1.0f };
-        *vtx++ = { -1.0f,  0.0f,  0.0f };
-        *vtx++ = { -1.0f, -1.0f, -1.0f };
-        *vtx++ = { -1.0f,  0.0f,  0.0f };
-        *vtx++ = { -1.0f, -1.0f,  1.0f };
-        *vtx++ = { -1.0f,  0.0f,  0.0f };
+        data.push_back({ { -size.x, -size.y,  size.z }, {  0.0f,  0.0f,  1.0f } });
+        data.push_back({ {  size.x, -size.y,  size.z }, {  0.0f,  0.0f,  1.0f } });
+        data.push_back({ {  size.x,  size.y,  size.z }, {  0.0f,  0.0f,  1.0f } });
+        data.push_back({ { -size.x,  size.y,  size.z }, {  0.0f,  0.0f,  1.0f } });
 
-        *vtx++ = {  1.0f,  1.0f, -1.0f };
-        *vtx++ = {  1.0f,  0.0f,  0.0f };
-        *vtx++ = {  1.0f,  1.0f,  1.0f };
-        *vtx++ = {  1.0f,  0.0f,  0.0f };
-        *vtx++ = {  1.0f, -1.0f, -1.0f };
-        *vtx++ = {  1.0f,  0.0f,  0.0f };
-        *vtx++ = {  1.0f, -1.0f,  1.0f };
-        *vtx++ = {  1.0f,  0.0f,  0.0f };
+        data.push_back({ { -size.x,  size.y,  size.z }, { -1.0f,  0.0f,  0.0f } });
+        data.push_back({ { -size.x,  size.y, -size.z }, { -1.0f,  0.0f,  0.0f } });
+        data.push_back({ { -size.x, -size.y, -size.z }, { -1.0f,  0.0f,  0.0f } });
+        data.push_back({ { -size.x, -size.y,  size.z }, { -1.0f,  0.0f,  0.0f } });
 
-        *vtx++ = { -1.0f, -1.0f, -1.0f };
-        *vtx++ = {  0.0f, -1.0f,  0.0f };
-        *vtx++ = {  1.0f, -1.0f, -1.0f };
-        *vtx++ = {  0.0f, -1.0f,  0.0f };
-        *vtx++ = {  1.0f, -1.0f,  1.0f };
-        *vtx++ = {  0.0f, -1.0f,  0.0f };
-        *vtx++ = { -1.0f, -1.0f,  1.0f };
-        *vtx++ = {  0.0f, -1.0f,  0.0f };
+        data.push_back({ {  size.x,  size.y, -size.z }, {  1.0f,  0.0f,  0.0f } });
+        data.push_back({ {  size.x,  size.y,  size.z }, {  1.0f,  0.0f,  0.0f } });
+        data.push_back({ {  size.x, -size.y, -size.z }, {  1.0f,  0.0f,  0.0f } });
+        data.push_back({ {  size.x, -size.y,  size.z }, {  1.0f,  0.0f,  0.0f } });
 
-        *vtx++ = { -1.0f,  1.0f, -1.0f };
-        *vtx++ = {  0.0f,  1.0f,  0.0f };
-        *vtx++ = {  1.0f,  1.0f,  1.0f };
-        *vtx++ = {  0.0f,  1.0f,  0.0f };
-        *vtx++ = {  1.0f,  1.0f, -1.0f };
-        *vtx++ = {  0.0f,  1.0f,  0.0f };
-        *vtx++ = { -1.0f,  1.0f,  1.0f };
-        *vtx++ = {  0.0f,  1.0f,  0.0f };
+        data.push_back({ { -size.x, -size.y, -size.z }, {  0.0f, -1.0f,  0.0f } });
+        data.push_back({ {  size.x, -size.y, -size.z }, {  0.0f, -1.0f,  0.0f } });
+        data.push_back({ {  size.x, -size.y,  size.z }, {  0.0f, -1.0f,  0.0f } });
+        data.push_back({ { -size.x, -size.y,  size.z }, {  0.0f, -1.0f,  0.0f } });
+
+        data.push_back({ { -size.x,  size.y, -size.z }, {  0.0f,  1.0f,  0.0f } });
+        data.push_back({ {  size.x,  size.y,  size.z }, {  0.0f,  1.0f,  0.0f } });
+        data.push_back({ {  size.x,  size.y, -size.z }, {  0.0f,  1.0f,  0.0f } });
+        data.push_back({ { -size.x,  size.y,  size.z }, {  0.0f,  1.0f,  0.0f } });
     }
 
     static size_t gen_cube_indices(prj::vector<uint32_t>& indices) {
@@ -1041,20 +978,12 @@ namespace mdl {
         return wire_offset;
     }
 
-    static void gen_sphere_vertices(prj::vector<float_t>& data,
+    static void gen_sphere_vertices(prj::vector<prj::pair<vec3, vec3>>& data,
         int32_t slices, int32_t stacks, float_t radius) {
         if (slices < 2 || stacks < 2)
             return;
 
-        data.reserve(6ULL * 2);
-
-        data.push_back(0.0f);
-        data.push_back(radius);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-        data.push_back(0.0f);
+        data.push_back({ { 0.0f, radius, 0.0f }, { 0.0f, -1.0f, 0.0f} });
 
         double_t slice_step = (M_PI * 2.0) / (double_t)slices;
         double_t stack_step = M_PI / (double_t)stacks;
@@ -1064,7 +993,7 @@ namespace mdl {
             float_t xz = cosf(stack_angle);
             float_t y = sinf(stack_angle);
 
-            data.reserve(6ULL * 2 * slices);
+            data.reserve(slices);
 
             for (int32_t j = 0; j < slices; j++) {
                 float_t slice_angle = (float_t)((double_t)j * slice_step);
@@ -1072,25 +1001,11 @@ namespace mdl {
                 float_t x = xz * cosf(slice_angle);
                 float_t z = xz * sinf(slice_angle);
 
-                data.push_back(x * radius);
-                data.push_back(y * radius);
-                data.push_back(z * radius);
-
-                data.push_back(x);
-                data.push_back(y);
-                data.push_back(z);
+                data.push_back({ { x * radius, y * radius, z * radius }, { x, y, z } });
             }
         }
 
-        data.reserve(6ULL * 2);
-
-        data.push_back(0.0f);
-        data.push_back(-radius);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(-1.0f);
-        data.push_back(0.0f);
+        data.push_back({ { 0.0f, -radius, 0.0f }, { 0.0f, -1.0f, 0.0f} });
     }
 
     static size_t gen_sphere_indices(prj::vector<uint32_t>& indices,
@@ -1212,112 +1127,36 @@ namespace mdl {
         return wire_offset;
     }
 
-    static void gen_plane_vertices(prj::vector<float_t>& data) {
-        data.push_back(1.0f);
-        data.push_back(0.0f);
-        data.push_back(1.0f);
+    static void gen_plane_vertices(prj::vector<prj::pair<vec3, vec3>>& data, int32_t w, int32_t h) {
+        float_t width = (float_t)w * 0.5f;
+        float_t height = (float_t)h * 0.5f;
 
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-        data.push_back(0.0f);
+        data.reserve(4);
 
-        data.push_back(1.0f);
-        data.push_back(0.0f);
-        data.push_back(-1.0f);
-
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-        data.push_back(0.0f);
-
-        data.push_back(-1.0f);
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-        data.push_back(0.0f);
-
-        data.push_back(-1.0f);
-        data.push_back(0.0f);
-        data.push_back(-1.0f);
-
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-        data.push_back(0.0f);
+        data.push_back({ {  width, 0.0f,  height }, { 0.0f, 1.0f, 0.0f } });
+        data.push_back({ {  width, 0.0f, -height }, { 0.0f, 1.0f, 0.0f } });
+        data.push_back({ { -width, 0.0f,  height }, { 0.0f, 1.0f, 0.0f } });
+        data.push_back({ { -width, 0.0f, -height }, { 0.0f, 1.0f, 0.0f } });
     }
 
-    static void gen_line_vertices(prj::vector<float_t>& data, float_t length) {
+    static void gen_line_vertices(prj::vector<prj::pair<vec3, vec3>>& data, float_t length) {
         length *= 0.5f;
 
-        data.reserve(6ULL * 2);
+        data.reserve(2);
 
-        data.push_back(0.0f);
-        data.push_back(length);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(-length);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
+        data.push_back({ { 0.0f, length, 0.0f }, { 0.0f } });
+        data.push_back({ { 0.0f, -length, 0.0f }, { 0.0f } });
     }
 
-    static void gen_cross_vertices(prj::vector<float_t>& data) {
-        data.reserve(6ULL * 2 * 6);
+    static void gen_cross_vertices(prj::vector<prj::pair<vec3, vec3>>& data, float_t size) {
+        data.reserve(6);
 
-        data.push_back(-1.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(1.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(-1.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(-1.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(1.0f);
-
-        data.push_back(0.0f);
-        data.push_back(0.0f);
-        data.push_back(0.0f);
+        data.push_back({ { -size,  0.0f,  0.0f }, { 0.0f } });
+        data.push_back({ {  size,  0.0f,  0.0f }, { 0.0f } });
+        data.push_back({ {  0.0f, -size,  0.0f }, { 0.0f } });
+        data.push_back({ {  0.0f,  size,  0.0f }, { 0.0f }});
+        data.push_back({ {  0.0f,  0.0f, -size }, { 0.0f } });
+        data.push_back({ {  0.0f,  0.0f,  size }, { 0.0f } });
     }
 
     void DispManager::add_vertex_array(EtcObj* etc, mat4& mat) {
@@ -1353,29 +1192,20 @@ namespace mdl {
         case mdl::ETC_OBJ_CUBE: {
             EtcObjCube& cube = etc->data.cube;
 
-            vec3 size = cube.size * 0.5f;
-            mat4_scale_rot(&mat, &size, &mat);
-
             indexed = true;
             wire = cube.wire;
         } break;
         case mdl::ETC_OBJ_SPHERE: {
             EtcObjSphere& sphere = etc->data.sphere;
 
-            mat4_scale_rot(&mat, sphere.radius, &mat);
-
             indexed = true;
             wire = sphere.wire;
         } break;
         case mdl::ETC_OBJ_PLANE: {
             EtcObjPlane& plane = etc->data.plane;
-
-            mat4_scale_rot(&mat, (float_t)plane.w * 0.5f, 1.0f, (float_t)plane.h * 0.5f, &mat);
         } break;
         case mdl::ETC_OBJ_CONE: {
             EtcObjCone& cone = etc->data.cone;
-
-            mat4_scale_rot(&mat, cone.base, cone.height, cone.base, &mat);
 
             indexed = true;
             wire = cone.wire;
@@ -1400,8 +1230,6 @@ namespace mdl {
         } break;
         case mdl::ETC_OBJ_CROSS: {
             EtcObjCross& cross = etc->data.cross;
-
-            mat4_scale_rot(&mat, cross.size, &mat);
         } break;
         }
 
@@ -1414,16 +1242,23 @@ namespace mdl {
                 || type == mdl::ETC_OBJ_GRID
                 && !memcmp(&i.data.grid, &etc->data.grid, sizeof(EtcObjGrid))
                 || type == mdl::ETC_OBJ_CUBE
+                && vec3::dot(vec3::abs(i.data.cube.size - etc->data.cube.size), 1.0f) < 0.00001f
                 || type == mdl::ETC_OBJ_SPHERE
                 && i.data.sphere.slices == etc->data.sphere.slices
                 && i.data.sphere.stacks == etc->data.sphere.stacks
+                && fabsf(i.data.sphere.radius - etc->data.sphere.radius) < 0.00001f
                 || type == mdl::ETC_OBJ_PLANE
+                && i.data.plane.w == etc->data.plane.w
+                && i.data.plane.h == etc->data.plane.h
                 || type == mdl::ETC_OBJ_CONE
                 && i.data.cone.slices == etc->data.cone.slices
                 && i.data.cone.stacks == etc->data.cone.stacks
+                && fabsf(i.data.cone.base - etc->data.cone.base) < 0.00001f
+                && fabsf(i.data.cone.height - etc->data.cone.height) < 0.00001f
                 || type == mdl::ETC_OBJ_LINE
                 && fabsf(vec3::distance(i.data.line.pos[0], i.data.line.pos[1]) - length) < 0.00001f
-                || type == mdl::ETC_OBJ_CROSS)
+                || type == mdl::ETC_OBJ_CROSS
+                && fabsf(i.data.cross.size - etc->data.cross.size) < 0.00001f)
                 if (i.vertex_array) {
                     i.alive_time = 2;
                     if (!wire) {
@@ -1480,7 +1315,7 @@ namespace mdl {
         etc_vertex_array->data = etc->data;
         etc_vertex_array->type = type;
 
-        prj::vector<float_t> vtx_data;
+        prj::vector<prj::pair<vec3, vec3>> vtx_data;
         prj::vector<uint32_t> vtx_indices;
         switch (type) {
         case mdl::ETC_OBJ_TEAPOT: {
@@ -1499,7 +1334,7 @@ namespace mdl {
         case mdl::ETC_OBJ_CUBE: {
             EtcObjCube& cube = etc->data.cube;
 
-            gen_cube_vertices(vtx_data);
+            gen_cube_vertices(vtx_data, cube.size);
             size_t wire_offset = gen_cube_indices(vtx_indices);
 
             etc_vertex_array->offset = 0;
@@ -1510,7 +1345,7 @@ namespace mdl {
         case mdl::ETC_OBJ_SPHERE: {
             EtcObjSphere& sphere = etc->data.sphere;
 
-            gen_sphere_vertices(vtx_data, sphere.slices, sphere.stacks, 1.0f);
+            gen_sphere_vertices(vtx_data, sphere.slices, sphere.stacks, sphere.radius);
             size_t wire_offset = gen_sphere_indices(vtx_indices, sphere.slices, sphere.stacks);
 
             etc_vertex_array->offset = 0;
@@ -1521,9 +1356,9 @@ namespace mdl {
         case mdl::ETC_OBJ_PLANE: {
             EtcObjPlane& plane = etc->data.plane;
 
-            gen_plane_vertices(vtx_data);
+            gen_plane_vertices(vtx_data, plane.w, plane.h);
 
-            etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
+            etc_vertex_array->count = (GLsizei)(vtx_data.size());
         } break;
         case mdl::ETC_OBJ_CONE: {
             EtcObjCone& cone = etc->data.cone;
@@ -1535,14 +1370,14 @@ namespace mdl {
 
             gen_line_vertices(vtx_data, length);
 
-            etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
+            etc_vertex_array->count = (GLsizei)(vtx_data.size());
         } break;
         case mdl::ETC_OBJ_CROSS: {
             EtcObjCross& cross = etc->data.cross;
 
-            gen_cross_vertices(vtx_data);
+            gen_cross_vertices(vtx_data, cross.size);
 
-            etc_vertex_array->count = (GLsizei)(vtx_data.size() / 6);
+            etc_vertex_array->count = (GLsizei)(vtx_data.size());
         } break;
         }
 
@@ -1575,10 +1410,10 @@ namespace mdl {
         gl_state_bind_vertex_array(etc_vertex_array->vertex_array);
 
         if (etc_vertex_array->vertex_buffer.IsNull())
-            etc_vertex_array->vertex_buffer.Create(sizeof(float_t) * vtx_data.size());
+            etc_vertex_array->vertex_buffer.Create(sizeof(vec3) * 2 * vtx_data.size());
 
         etc_vertex_array->vertex_buffer.Bind(true);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float_t)
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * 2
             * vtx_data.size(), vtx_data.data());
 
         if (indexed) {
@@ -1700,6 +1535,7 @@ namespace mdl {
 
                 mat4 mat;
                 mat4_translate(&i, &mat);
+                mat4_transpose(&mat, &mat);
                 entry_obj_etc(&mat, &etc);
             }
 
@@ -1714,6 +1550,7 @@ namespace mdl {
 
                 mat4 mat;
                 mat4_translate(&i, &mat);
+                mat4_transpose(&mat, &mat);
                 entry_obj_etc(&mat, &etc);
             }
     }
@@ -2745,17 +2582,23 @@ namespace mdl {
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_CUBE:
-                return i.vertex_array;
+                if (vec3::dot(vec3::abs(i.data.cube.size - etc->data.cube.size), 1.0f) < 0.00001f)
+                    return i.vertex_array;
             case mdl::ETC_OBJ_SPHERE:
                 if (i.data.sphere.slices == etc->data.sphere.slices
-                    && i.data.sphere.stacks == etc->data.sphere.stacks)
+                    && i.data.sphere.stacks == etc->data.sphere.stacks
+                    && fabsf(i.data.sphere.radius - etc->data.sphere.radius) < 0.00001f)
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_PLANE:
-                return i.vertex_array;
+                if (i.data.plane.w == etc->data.plane.w
+                    && i.data.plane.h == etc->data.plane.h)
+                    return i.vertex_array;
             case mdl::ETC_OBJ_CONE:
                 if (i.data.cone.slices == etc->data.cone.slices
-                    && i.data.cone.stacks == etc->data.cone.stacks)
+                    && i.data.cone.stacks == etc->data.cone.stacks
+                    && fabsf(i.data.cone.base - etc->data.cone.base) < 0.00001f
+                    && fabsf(i.data.cone.height - etc->data.cone.height) < 0.00001f)
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_LINE:
@@ -2763,7 +2606,8 @@ namespace mdl {
                     return i.vertex_array;
                 break;
             case mdl::ETC_OBJ_CROSS:
-                return i.vertex_array;
+                if (fabsf(i.data.cross.size - etc->data.cross.size) < 0.00001f)
+                    return i.vertex_array;
             }
         }
         return 0;
@@ -2993,8 +2837,9 @@ namespace mdl {
         int32_t set_id = object_database_get_set_id(*(int32_t*)(a1 + 0x68));
         int32_t id = object_database_get_set_obj_id(*(int32_t*)(a1 + 0x68), *(int32_t*)(a1 + 0x74));
         disp_manager->set_obj_flags((mdl::ObjFlags)(*(int32_t*)(a1 + 0x84) | mdl::OBJ_40 | mdl::OBJ_20));
+
         mat4 mat;
-        mat4_rotate_xyz(*(float_t*)(a1 + 0x78), *(float_t*)(a1 + 0x7C), *(float_t*)(a1 + 0x80), &mat);
+        mat4_rotate_xyz((vec3*)(a1 + 0x78), &mat);
         mat4_transpose(&mat, &mat);
 
         vec3 pos = 0.0f;
@@ -3004,18 +2849,19 @@ namespace mdl {
         disp_manager->set_obj_flags((mdl::ObjFlags)0);
     }
 
-    HOOK(void, FASTCALL, sub_14031AF10, 0x000000014031AF10, obj_axis_aligned_bounding_box* aabb, color4u8_bgra color) {
-        mdl::EtcObj etc(mdl::ETC_OBJ_SPHERE);
+    HOOK(void, FASTCALL, MeshDw__DrawObjAxisAlignedBoundingBox, 0x000000014031AF10, obj_axis_aligned_bounding_box* aabb, color4u8_bgra color) {
+        mdl::EtcObj etc(mdl::ETC_OBJ_CUBE);
         etc.color = color;
         etc.fog = false;
         etc.data.cube.size = aabb->size * 2.0f;
 
         mat4 mat;
         mat4_translate(&aabb->center, &mat);
+        mat4_transpose(&mat, &mat);
         disp_manager->entry_obj_etc(&mat, &etc);
     }
 
-    HOOK(void, FASTCALL, sub_14031AFE0, 0x000000014031AFE0, obj_bounding_sphere* bounding_sphere, color4u8_bgra color) {
+    HOOK(void, FASTCALL, MeshDw__DrawObjBoundingSphere, 0x000000014031AFE0, obj_bounding_sphere* bounding_sphere, color4u8_bgra color) {
         mdl::EtcObj etc(mdl::ETC_OBJ_SPHERE);
         etc.color = color;
         etc.fog = false;
@@ -3026,6 +2872,7 @@ namespace mdl {
 
         mat4 mat;
         mat4_translate(&bounding_sphere->center, &mat);
+        mat4_transpose(&mat, &mat);
         disp_manager->entry_obj_etc(&mat, &etc);
     }
 
@@ -3073,8 +2920,8 @@ namespace mdl {
 
     void disp_manager_patch() {
         INSTALL_HOOK(DataTestObjectManager__Disp);
-        INSTALL_HOOK(sub_14031AF10);
-        INSTALL_HOOK(sub_14031AFE0);
+        INSTALL_HOOK(MeshDw__DrawObjAxisAlignedBoundingBox);
+        INSTALL_HOOK(MeshDw__DrawObjBoundingSphere);
         INSTALL_HOOK(DispManager__entry_obj);
         INSTALL_HOOK(DispManager__entry_obj_etc);
         INSTALL_HOOK(DispManager__entry_obj_by_obj);
