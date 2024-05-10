@@ -1815,8 +1815,8 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
         rctx->obj_scene.g_shadow_ambient1 = 0.0f;
     }
 
-    gl_state_bind_sampler(6, rctx->render_samplers[0]);
-    gl_state_bind_sampler(7, rctx->render_samplers[0]);
+    gl_state_bind_sampler(6, 0);
+    gl_state_bind_sampler(7, 0);
 }
 
 static void draw_pass_3d_translucent(bool opaque_enable,

@@ -391,8 +391,10 @@ void texture_params_get(GLuint tex_0, texture_param* tex_0_param,
 
 void texture_params_restore(texture_param* tex_0_param,
     texture_param* tex_1_param, texture_param* tex_2_param) {
-    for (int32_t i = 0; i < 4; i++)
+    for (int32_t i = 0; i < 4; i++) {
         gl_state_active_bind_texture_2d(i, 0);
+        gl_state_bind_sampler(i, 0);
+    }
 }
 
 bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids) {
