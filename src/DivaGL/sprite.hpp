@@ -7,6 +7,7 @@
 
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/mat.hpp"
+#include "../KKdLib/rectangle.hpp"
 #include "../KKdLib/vec.hpp"
 #include "gl_state.hpp"
 #include "render_context.hpp"
@@ -14,10 +15,59 @@
 #include "texture.hpp"
 #include "types.hpp"
 
+#define BREAK_SPRITE_VERTEX_LIMIT (0)
 
 struct spr_info {
     uint16_t index;
     uint16_t set_index;
+
+    inline spr_info() {
+        this->index = (uint16_t)-1;
+        this->set_index = (uint16_t)-1;
+    }
+
+    inline spr_info(uint16_t index, uint16_t set_index) {
+        this->index = index;
+        this->set_index = set_index;
+    }
+
+    inline bool is_null() const {
+        return index == (uint16_t)-1 && set_index == (uint16_t)-1;
+    }
+
+    inline bool not_null() const {
+        return index != (uint16_t)-1 || set_index != (uint16_t)-1;
+    }
+};
+
+constexpr bool operator==(const spr_info& left, const spr_info& right) {
+    return *(uint32_t*)&left == *(uint32_t*)&right;
+}
+
+constexpr bool operator!=(const spr_info& left, const spr_info& right) {
+    return !(left == right);
+}
+
+constexpr bool operator<(const spr_info& left, const spr_info& right) {
+    return *(uint32_t*)&left < *(uint32_t*)&right;
+}
+
+constexpr bool operator>(const spr_info& left, const spr_info& right) {
+    return right < left;
+}
+
+constexpr bool operator<=(const spr_info& left, const spr_info& right) {
+    return !(right < left);
+}
+
+constexpr bool operator>=(const spr_info& left, const spr_info& right) {
+    return !(left < right);
+}
+
+struct spr_db_spr {
+    uint32_t id;
+    prj::string name;
+    spr_info info;
 };
 
 struct SpriteHeaderFile {
@@ -191,7 +241,11 @@ namespace spr {
         mat4 mat;
         texture* texture;
         int32_t shader;
+#if BREAK_SPRITE_VERTEX_LIMIT
+        size_t vertex_array;
+#else
         SpriteVertex* vertex_array;
+#endif
         size_t num_vertex;
         Flags flags;
         vec2 sprite_size;
@@ -199,11 +253,33 @@ namespace spr {
         vec2 texture_pos;
         vec2 texture_size;
         spr::SprArgs* next;
+
+        SprArgs();
+
+        void Reset();
+        void SetSpriteSize(vec2 size);
+        void SetTexturePosSize(float_t x, float_t y, float_t width, float_t height);
+        void SetVertexArray(SpriteVertex* vertex_array, size_t num_vertex);
+
+        static void SetNext(SprArgs* args, SprArgs* next);
     };
 
+    static_assert(sizeof(spr::SprArgs) == 0xE8, "\"spr::SprArgs\" struct should have a size of 0xE8");
 
-    extern void(FASTCALL* put_rgb_cross)(mat4* mat);
+    extern void(FASTCALL* put_cross)(const mat4* mat, color4u8 color_x, color4u8 color_y, color4u8 color_z);
+    extern void(FASTCALL* put_rgb_cross)(const mat4* mat);
     extern spr::SprArgs* (FASTCALL* put_sprite)(const spr::SprArgs* args);
+
+    vec2 proj_sprite_3d_line(vec3 vec, bool offset);
+
+    void put_sprite_3d_line(vec3 p1, vec3 p2, color4u8 color);
+    void put_sprite_line(vec2 p1, vec2 p2, resolution_mode mode, spr::SprPrio prio, color4u8 color, int32_t layer);
+    void put_sprite_line_list(vec2* points, size_t count, resolution_mode mode,
+        spr::SprPrio prio, color4u8 color, int32_t layer);
+    void put_sprite_multi(rectangle rect, resolution_mode mode, spr::SprPrio prio, color4u8 color, int32_t layer);
+    void put_sprite_rect(rectangle rect, resolution_mode mode, spr::SprPrio prio, color4u8 color, int32_t layer);
+    void put_sprite_triangles(SpriteVertex* vert, size_t num, resolution_mode mode,
+        SprPrio prio, int32_t spr_id, int32_t layer);
 }
 
 extern vec4& spr_color;
@@ -213,6 +289,7 @@ extern size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index);
 extern void (FASTCALL* sprite_manager_read_file)(int32_t set_id, const prj::string mdata_dir);
 extern bool (FASTCALL* sprite_manager_load_file)(int32_t set_id);
 
+extern  const spr_db_spr* sprite_database_get_spr_by_id(int32_t id);
 extern int32_t sprite_database_get_spr_set_id_by_name(const prj::string& name);
 
 extern void sprite_manager_init();
