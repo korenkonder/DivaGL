@@ -139,31 +139,81 @@ namespace prj {
     };
 
     struct string_range {
-        const char* begin;
-        const char* end;
+        char* begin;
+        char* end;
 
         inline string_range() : begin(), end() {
 
         }
 
-        inline string_range(const char* str) {
+        inline string_range(char* str) {
             this->begin = str;
             this->end = str + utf8_length(str);
         }
 
-        inline string_range(const char* str, size_t length) {
+        inline string_range(char* str, size_t length) {
             this->begin = str;
             this->end = str + length;
         }
 
-        inline string_range(const char* begin, const char* end) {
+        inline string_range(char* begin, char* end) {
             this->begin = begin;
             this->end = end;
         }
 
-        inline string_range(const prj::string& str) {
-            begin = str.c_str();
-            end = str.c_str() + str.size();
+        inline string_range(prj::string& str) {
+            begin = (char*)str.data();
+            end = (char*)str.data() + str.size();
+        }
+    };
+
+    static_assert(sizeof(string_range) == 0x10, "\"string_range\" struct should have a size of 0x10");
+
+    struct string_range_capacity {
+        string_range range;
+        char* capacity_end;
+
+        inline string_range_capacity() : capacity_end() {
+
+        }
+
+        inline string_range_capacity(char* str) {
+            range = string_range(str);
+            capacity_end = range.end;
+        }
+
+        inline string_range_capacity(char* str, size_t length) {
+            range = string_range(str, length);
+            capacity_end = range.end;
+        }
+
+        inline string_range_capacity(char* str, size_t length, size_t capacity) {
+            range = string_range(str, length);
+            capacity_end = str + capacity;
+        }
+
+        inline string_range_capacity(char* begin, char* end) {
+            range = string_range(begin, end);
+            capacity_end = range.end;
+        }
+
+        inline string_range_capacity(char* begin, char* end, char* capacity_end) {
+            range = string_range(begin, end);
+            this->capacity_end = capacity_end;
+        }
+
+        inline string_range_capacity(prj::string& str) {
+            range = string_range(str);
+            capacity_end = (char*)str.data() + str.capacity();
+        }
+
+        inline string_range_capacity(prj::string_range_capacity str_rng_cap, const char* str) {
+            *this = str_rng_cap;
+
+            char* end = range.end;
+            while (end != capacity_end && *str)
+                *end++ = *str++;
+            range.end = end;
         }
     };
 

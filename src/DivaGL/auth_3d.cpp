@@ -8,6 +8,7 @@
 #include "light_param/fog.hpp"
 #include "mdl/disp_manager.hpp"
 #include "rob/rob.hpp"
+#include "canonical_properties.hpp"
 #include "file_handler.hpp"
 #include "frame_rate_control.hpp"
 #include "render_context.hpp"
@@ -510,30 +511,6 @@ struct auth_3d_material_list {
     uint64_t hash;
 };
 
-struct string_range {
-    char* begin;
-    char* end;
-};
-
-struct string_range_capacity {
-    string_range range;
-    char* capacity_end;
-};
-
-struct pair_string_range_string_range {
-    string_range key;
-    string_range value;
-};
-
-static_assert(sizeof(pair_string_range_string_range) == 0x20, "\"CanonicalProperties\" struct should have a size of 0x20");
-
-struct CanonicalProperties {
-    prj::string data;
-    prj::vector<pair_string_range_string_range> key_value_pair_storage;
-};
-
-static_assert(sizeof(CanonicalProperties) == 0x38, "\"CanonicalProperties\" struct should have a size of 0x38");
-
 struct struc_8 {
     float_t max_frame;
     void* data;
@@ -614,30 +591,22 @@ void (FASTCALL* auth_3d_data_unload_category)(const char* category_name)
 
 static auth_3d_data_struct* auth_3d_data = (auth_3d_data_struct*)0x0000000140EDA950;
 
-static string_range* (FASTCALL* CanonicalProperties__GetValueStringRange)(
-    CanonicalProperties* CanProp, string_range str_rng)
-    = (string_range * (FASTCALL*)(CanonicalProperties * CanProp, string_range str_rng))0x00000001400AE4F0;
-static prj::string* (FASTCALL* CanonicalProperties__GetValueString)(
-    CanonicalProperties* CanProp, prj::string* str, string_range str_rng)
-    = (prj::string * (FASTCALL*)(CanonicalProperties * CanProp, prj::string * str, string_range str_rng))0x00000001401AD640;
 static void(FASTCALL* auth_3d_rgba__free)(auth_3d_rgba* rgba)
 = (void(FASTCALL*)(auth_3d_rgba * rgba))0x00000001401B8900;
 static void (FASTCALL* auth_3d_rgba__ctrl)(auth_3d_rgba* rgba, float_t frame)
     = (void (FASTCALL*)(auth_3d_rgba * rgba, float_t frame))0x00000001401D4070;
-static bool (FASTCALL* auth_3d_key__parse)(auth_3d_key* k, struc_8* a2, string_range_capacity str_rng_cap)
-= (bool (FASTCALL*)(auth_3d_key * k, struc_8 * a2, string_range_capacity str_rng_cap))0x00000001401DB1A0;
-static bool (FASTCALL* auth_3d_rgba__parse)(auth_3d_rgba* rgba, struc_8* a2, string_range_capacity str_rng_cap)
-    = (bool (FASTCALL*)(auth_3d_rgba * rgba, struc_8 * a2, string_range_capacity str_rng_cap))0x00000001401DB520;
+static bool (FASTCALL* auth_3d_key__parse)(auth_3d_key* k, struc_8* a2, prj::string_range_capacity str_rng_cap)
+= (bool (FASTCALL*)(auth_3d_key * k, struc_8 * a2, prj::string_range_capacity str_rng_cap))0x00000001401DB1A0;
+static bool (FASTCALL* auth_3d_rgba__parse)(auth_3d_rgba* rgba, struc_8* a2, prj::string_range_capacity str_rng_cap)
+    = (bool (FASTCALL*)(auth_3d_rgba * rgba, struc_8 * a2, prj::string_range_capacity str_rng_cap))0x00000001401DB520;
 
 static int32_t auth_3d_get_auth_3d_object_index(auth_3d* auth, object_info object_info, int32_t instance);
 static const mat4* auth_3d_get_auth_3d_object_mat(auth_3d* auth, size_t index);
 static const mat4* auth_3d_get_auth_3d_object_hrc_bone_mats(auth_3d* auth, size_t index);
 static int32_t auth_3d_get_auth_3d_object_hrc_index(auth_3d* auth, object_info obj_info, int32_t instance);
 static void auth_3d_material_list_ctrl(auth_3d_material_list* ml, float_t frame);
-static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, string_range_capacity str_rng_cap);
+static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, prj::string_range_capacity str_rng_cap);
 static void auth_3d_set_material_list(auth_3d* auth);
-static prj::string string_init_CanonicalProperties_string_range(CanonicalProperties& CanProp, string_range str_rng);
-static string_range_capacity string_range_capacity_init_char_ptr(string_range_capacity str_rng_cap, const char* str);
 
 auth_3d_id::auth_3d_id(int32_t uid) : id() {
     ((auth_3d_id * (FASTCALL*)(auth_3d_id * _this, int32_t uid))0x00000001401CDC80)(this, uid);
@@ -1299,12 +1268,12 @@ HOOK(void, FASTCALL, auth_3d_curve__ctrl, 0x00000001401D4140, auth_3d_curve* c, 
 }
 
 HOOK(bool, FASTCALL, auth_3d_curve_parse, 0x00000001401DA230,
-    auth_3d_curve* c, struc_8* a2, string_range_capacity str_rng_cap) {
-    string_range_capacity name = string_range_capacity_init_char_ptr(str_rng_cap, ".name");
-    c->name.assign(string_init_CanonicalProperties_string_range(a2->CanProp, name.range));
+    auth_3d_curve* c, struc_8* a2, prj::string_range_capacity str_rng_cap) {
+    prj::string_range_capacity name = prj::string_range_capacity(str_rng_cap, ".name");
+    c->name.assign(a2->CanProp.GetValueString(name.range));
 
-    string_range_capacity ml_str = string_range_capacity_init_char_ptr(str_rng_cap, ".ml");
-    if (CanonicalProperties__GetValueStringRange(&a2->CanProp, ml_str.range)) {
+    prj::string_range_capacity ml_str = prj::string_range_capacity(str_rng_cap, ".ml");
+    if (a2->CanProp.GetValue(ml_str.range)) {
         auth_3d_material_list* ml = (auth_3d_material_list*)_operator_new(sizeof(auth_3d_material_list));
         memset(ml, 0, sizeof(auth_3d_material_list));
         auth_3d_material_list_parse(ml, a2, ml_str);
@@ -1313,7 +1282,7 @@ HOOK(bool, FASTCALL, auth_3d_curve_parse, 0x00000001401DA230,
         c->type = 1;
     }
     else {
-        string_range_capacity cv = string_range_capacity_init_char_ptr(str_rng_cap, ".cv");
+        prj::string_range_capacity cv = prj::string_range_capacity(str_rng_cap, ".cv");
         auth_3d_key__parse(&c->curve, a2, cv);
         c->type = 0;
     }
@@ -1385,16 +1354,16 @@ static void auth_3d_material_list_ctrl(auth_3d_material_list* ml, float_t frame)
     auth_3d_rgba__ctrl(&ml->emission, frame);
 }
 
-static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, string_range_capacity str_rng_cap) {
+static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, prj::string_range_capacity str_rng_cap) {
     ml->flags = (auth_3d_material_list_flags)0;
-    string_range_capacity blend_color = string_range_capacity_init_char_ptr(str_rng_cap, ".blend_color");
-    if (CanonicalProperties__GetValueStringRange(&a2->CanProp, blend_color.range)) {
+    prj::string_range_capacity blend_color = prj::string_range_capacity(str_rng_cap, ".blend_color");
+    if (a2->CanProp.GetValue(blend_color.range)) {
         auth_3d_rgba__parse(&ml->blend_color, a2, blend_color);
         enum_or(ml->flags, AUTH_3D_MATERIAL_LIST_BLEND_COLOR);
     }
 
-    string_range_capacity emission = string_range_capacity_init_char_ptr(str_rng_cap, ".emission");
-    if (CanonicalProperties__GetValueStringRange(&a2->CanProp, emission.range)) {
+    prj::string_range_capacity emission = prj::string_range_capacity(str_rng_cap, ".emission");
+    if (a2->CanProp.GetValue(emission.range)) {
         auth_3d_rgba__parse(&ml->emission, a2, emission);
         enum_or(ml->flags, AUTH_3D_MATERIAL_LIST_EMISSION);
     }
@@ -1447,18 +1416,4 @@ static void auth_3d_set_material_list(auth_3d* auth) {
     }
 
     disp_manager->set_material_list(mat_list_count, mat_list);
-}
-
-static string_range_capacity string_range_capacity_init_char_ptr(string_range_capacity str_rng_cap, const char* str) {
-    char* end = str_rng_cap.range.end;
-    while (end != str_rng_cap.capacity_end && *str)
-        *end++ = *str++;
-    str_rng_cap.range.end = end;
-    return str_rng_cap;
-}
-
-static prj::string string_init_CanonicalProperties_string_range(CanonicalProperties& CanProp, string_range str_rng) {
-    prj::string str;
-    CanonicalProperties__GetValueString(&CanProp, &str, str_rng);
-    return str;
 }
