@@ -6,6 +6,8 @@
 */
 
 #include "../KKdLib/default.hpp"
+#include "../KKdLib/prj/vector_pair.hpp"
+#include "../KKdLib/prj/vector_pair_combine.hpp"
 #include <list>
 #include <map>
 #include <set>
@@ -79,6 +81,12 @@ namespace prj {
     template<typename T>
     using vector = std::vector<T, Allocator<T>>;
 
+    template<typename T, typename U>
+    using vector_pair_alloc = prj::vector_pair<T, U, Allocator<prj::pair<T, U>>>;
+
+    template<typename T, typename U>
+    using vector_pair_combine_alloc = prj::vector_pair_combine<T, U, Allocator<prj::pair<T, U>>>;
+
     template<typename T>
     using list = std::list<T, Allocator<T>>;
 
@@ -129,4 +137,66 @@ namespace prj {
         vector<pair<T, U>> field_20;
         bool field_38;
     };
+
+    struct string_range {
+        const char* begin;
+        const char* end;
+
+        inline string_range() : begin(), end() {
+
+        }
+
+        inline string_range(const char* str) {
+            this->begin = str;
+            this->end = str + utf8_length(str);
+        }
+
+        inline string_range(const char* str, size_t length) {
+            this->begin = str;
+            this->end = str + length;
+        }
+
+        inline string_range(const char* begin, const char* end) {
+            this->begin = begin;
+            this->end = end;
+        }
+
+        inline string_range(const prj::string& str) {
+            begin = str.c_str();
+            end = str.c_str() + str.size();
+        }
+    };
+
+    static_assert(sizeof(string_range) == 0x10, "\"string_range\" struct should have a size of 0x10");
+
+    struct wstring_range {
+        const wchar_t* begin;
+        const wchar_t* end;
+
+        inline wstring_range() : begin(), end() {
+
+        }
+
+        inline wstring_range(const wchar_t* str) {
+            this->begin = str;
+            this->end = str + utf16_length(str);
+        }
+        
+        inline wstring_range(const wchar_t* str, size_t length) {
+            this->begin = str;
+            this->end = str + length;
+        }
+
+        inline wstring_range(const wchar_t* begin, const wchar_t* end) {
+            this->begin = begin;
+            this->end = end;
+        }
+
+        inline wstring_range(const prj::wstring& str) {
+            begin = str.c_str();
+            end = str.c_str() + str.size();
+        }
+    };
+
+    static_assert(sizeof(wstring_range) == 0x10, "\"wstring_range\" struct should have a size of 0x10");
 }

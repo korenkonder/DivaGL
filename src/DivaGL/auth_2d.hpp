@@ -48,28 +48,28 @@ struct aet_info {
 
 static_assert(sizeof(aet_info) == 0x04, "\"aet_info\" struct should have a size of 0x04");
 
-inline bool operator >(const aet_info& left, const aet_info& right) {
-    return *(uint32_t*)&left > *(uint32_t*)&right;
-}
-
-inline bool operator <(const aet_info& left, const aet_info& right) {
-    return *(uint32_t*)&left < *(uint32_t*)&right;
-}
-
-inline bool operator >=(const aet_info& left, const aet_info& right) {
-    return *(uint32_t*)&left >= *(uint32_t*)&right;
-}
-
-inline bool operator <=(const aet_info& left, const aet_info& right) {
-    return *(uint32_t*)&left <= *(uint32_t*)&right;
-}
-
-inline bool operator ==(const aet_info& left, const aet_info& right) {
+constexpr bool operator==(const aet_info& left, const aet_info& right) {
     return *(uint32_t*)&left == *(uint32_t*)&right;
 }
 
-inline bool operator !=(const aet_info& left, const aet_info& right) {
-    return *(uint32_t*)&left != *(uint32_t*)&right;
+constexpr bool operator!=(const aet_info& left, const aet_info& right) {
+    return !(left == right);
+}
+
+constexpr bool operator<(const aet_info& left, const aet_info& right) {
+    return *(uint32_t*)&left < *(uint32_t*)&right;
+}
+
+constexpr bool operator>(const aet_info& left, const aet_info& right) {
+    return right < left;
+}
+
+constexpr bool operator<=(const aet_info& left, const aet_info& right) {
+    return !(right < left);
+}
+
+constexpr bool operator>=(const aet_info& left, const aet_info& right) {
+    return !(left < right);
 }
 
 struct AetArgs {

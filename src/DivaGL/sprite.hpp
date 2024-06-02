@@ -14,10 +14,6 @@
 #include "texture.hpp"
 #include "types.hpp"
 
-struct rectangle {
-    vec2 pos;
-    vec2 size;
-};
 
 struct spr_info {
     uint16_t index;

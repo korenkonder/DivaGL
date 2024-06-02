@@ -16,14 +16,14 @@ size_t diva_handle;
 size_t glut_handle;
 size_t opengl32_handle;
 size_t dll_handle;
-bool aes_ni;
-bool f16c;
+bool cpu_caps_aes_ni;
+bool cpu_caps_f16c;
 
 void FASTCALL divagl_main() {
     int32_t cpuid_data[4] = {};
     __cpuid(cpuid_data, 1);
-    aes_ni = (cpuid_data[2] & (1 << 25)) ? true : false;
-    f16c = (cpuid_data[2] & (1 << 29)) ? true : false;
+    cpu_caps_aes_ni = (cpuid_data[2] & (1 << 25)) ? true : false;
+    cpu_caps_f16c = (cpuid_data[2] & (1 << 29)) ? true : false;
 
     glut_handle = (size_t)GetModuleHandleW(L"glut32.dll");
     opengl32_handle = (size_t)GetModuleHandleW(L"opengl32.dll");
