@@ -5,6 +5,7 @@
 
 #include "hook.hpp"
 #include "Glitter/glitter.hpp"
+#include "data_test/rob_osage_test.hpp"
 #include "mdl/disp_manager.hpp"
 #include "pv_game/pv_game.hpp"
 #include "rob/rob.hpp"
@@ -76,6 +77,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
 
     rctx->init();
     sprite_manager_init();
+    rob_osage_test_init();
     return ret;
 }
 

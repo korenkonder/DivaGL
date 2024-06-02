@@ -55,6 +55,8 @@ obj_mesh* (FASTCALL* object_info_get_mesh_by_index)(object_info object, int32_t 
     = (obj_mesh * (FASTCALL*)(object_info object, int32_t mesh_index))0x0000000140459D40;
 int32_t(FASTCALL* object_info_get_mesh_index)(object_info object, const char* mesh_name)
     = (int32_t(FASTCALL*)(object_info object, const char* mesh_name))0x0000000140459DE0;
+const char* (FASTCALL* object_database_get_object_name)(object_info obj_info)
+    = (const char* (FASTCALL*)(object_info obj_info))0x0000000140459F20;
 uint32_t(FASTCALL* object_database_get_object_info)(const char* name)
     = (uint32_t(FASTCALL*)(const char* name))0x0000000140459F80;
 obj* (FASTCALL* object_info_get_object)(object_info obj_info)

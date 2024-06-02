@@ -585,6 +585,7 @@ static_assert(sizeof(obj_vertex_buffer) == 0x10, "\"obj_vertex_buffer\" struct s
 extern void (FASTCALL* object_database_unload_set)(int32_t set);
 extern obj_mesh* (FASTCALL* object_info_get_mesh_by_index)(object_info object, int32_t mesh_index);
 extern int32_t(FASTCALL* object_info_get_mesh_index)(object_info object, const char* mesh_name);
+extern const char* (FASTCALL* object_database_get_object_name)(object_info obj_info);
 extern uint32_t(FASTCALL* object_database_get_object_info)(const char* name);
 extern obj* (FASTCALL* object_info_get_object)(object_info obj_info);
 extern obj_mesh_index_buffer* (FASTCALL* object_info_get_mesh_index_buffer)(object_info obj_info, int32_t a2);
