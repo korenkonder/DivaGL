@@ -77,6 +77,8 @@ namespace mdl {
         case mdl::ETC_OBJ_CONE:
         case mdl::ETC_OBJ_LINE:
         case mdl::ETC_OBJ_CROSS:
+        case mdl::ETC_OBJ_CAPSULE:  // Added
+        case mdl::ETC_OBJ_CYLINDER: // Added
             break;
         default:
             return;
@@ -106,7 +108,7 @@ namespace mdl {
         rctx->obj_batch.g_material_state_diffuse = color;
         rctx->obj_batch.g_material_state_ambient = ambient;
         rctx->obj_batch.g_material_state_specular = { 0.0f, 0.0f, 0.0f, 1.0f };
-        rctx->obj_batch.g_material_state_emission = { 0.0f, 0.0f, 0.0f, 1.0f };
+        rctx->obj_batch.g_material_state_emission = etc->constant ? 1.0f : vec4(0.0f, 0.0f, 0.0f, 1.0f);
         rctx->obj_batch.g_material_state_shininess = { 0.0f, 0.0f, 0.0f, 1.0f };
 
         rctx->obj_batch.g_blend_color = color;
@@ -114,7 +116,8 @@ namespace mdl {
         gl_state_bind_vertex_array(vao);
         rctx->obj_batch_ubo.WriteMemory(rctx->obj_batch);
 
-        shaders_ft.set(SHADER_FT_SIMPLE);
+        //shaders_ft.set(SHADER_FT_SIMPLE);
+        shaders_ft.set(etc->constant ? SHADER_FT_CONSTANT : SHADER_FT_SIMPLE);
         switch (etc->type) {
         case mdl::ETC_OBJ_TEAPOT:
             shaders_ft.draw_elements(GL_TRIANGLES, etc->count, GL_UNSIGNED_INT, 0);
@@ -152,6 +155,18 @@ namespace mdl {
             break;
         case mdl::ETC_OBJ_CROSS:
             shaders_ft.draw_arrays(GL_LINES, 0, etc->count);
+            break;
+        case mdl::ETC_OBJ_CAPSULE: // Added
+            if (etc->data.capsule.wire)
+                shaders_ft.draw_elements(GL_LINES, etc->count, GL_UNSIGNED_INT, (void*)etc->offset);
+            else
+                shaders_ft.draw_elements(GL_TRIANGLES, etc->count, GL_UNSIGNED_INT, (void*)etc->offset);
+            break;
+        case mdl::ETC_OBJ_CYLINDER: // Added
+            if (etc->data.cylinder.wire)
+                shaders_ft.draw_elements(GL_LINES, etc->count, GL_UNSIGNED_INT, (void*)etc->offset);
+            else
+                shaders_ft.draw_elements(GL_TRIANGLES, etc->count, GL_UNSIGNED_INT, (void*)etc->offset);
             break;
         }
         shader::unbind();

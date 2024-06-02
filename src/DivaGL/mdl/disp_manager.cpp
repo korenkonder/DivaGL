@@ -127,6 +127,21 @@ namespace mdl {
         size = 0.1f;
     }
 
+    EtcObjCapsule::EtcObjCapsule() : wire() {
+        radius = 1.0f;
+        slices = 8;
+        stacks = 8;
+        pos[0] = { 0.0f, 0.0f, 0.0f };
+        pos[1] = { 0.0f, 0.0f, 1.0f };
+    }
+
+    EtcObjCylinder::EtcObjCylinder() : wire() {
+        base = 1.0f;
+        height = 1.0f;
+        slices = 8;
+        stacks = 8;
+    }
+
     EtcObj::Data::Data() : line() {
 
     }
@@ -135,6 +150,7 @@ namespace mdl {
         this->type = type;
         color = 0xFFFFFFFF;
         fog = false;
+        constant = false;
         switch (type) {
         case ETC_OBJ_TEAPOT:
             data.teapot = {};
@@ -160,6 +176,11 @@ namespace mdl {
         case ETC_OBJ_CROSS:
             data.cross = {};
             break;
+        case ETC_OBJ_CAPSULE: // Added
+            data.capsule = {};
+            break;
+        case ETC_OBJ_CYLINDER: // Added
+            data.cylinder = {};
         }
     }
 
@@ -1159,6 +1180,311 @@ namespace mdl {
         data.push_back({ {  0.0f,  0.0f,  size }, { 0.0f } });
     }
 
+    static void gen_capsule_vertices(prj::vector<prj::pair<vec3, vec3>>& data,
+        int32_t slices, int32_t stacks, float_t length, float_t radius) {
+        if (slices < 2 || stacks < 2)
+            return;
+
+        stacks = ((stacks + 1) >> 1) << 1;
+
+        if (length < 0.00001f) {
+            gen_sphere_vertices(data, slices, stacks, radius);
+            return;
+        }
+
+        length *= 0.5f;
+
+        data.push_back({ { 0.0f, radius + length, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+
+        double_t slice_step = (M_PI * 2.0) / (double_t)slices;
+        double_t stack_step = M_PI / (double_t)stacks;
+
+        for (int32_t i = 1; i <= stacks / 2; i++) {
+            float_t stack_angle = (float_t)((M_PI / 2.0) - (double_t)i * stack_step);
+            float_t xz = cosf(stack_angle);
+            float_t y = sinf(stack_angle);
+            y *= radius;
+
+            data.reserve(slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                float_t slice_angle = (float_t)((double_t)j * slice_step);
+
+                float_t x = xz * cosf(slice_angle);
+                float_t z = xz * sinf(slice_angle);
+
+                data.push_back({ { x * radius, y + length, z * radius }, { x, y, z } });
+            }
+        }
+
+        for (int32_t i = stacks / 2; i < stacks; i++) {
+            float_t stack_angle = (float_t)((M_PI / 2.0) - (double_t)i * stack_step);
+            float_t xz = cosf(stack_angle);
+            float_t y = sinf(stack_angle);
+            y *= radius;
+
+            data.reserve(slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                float_t slice_angle = (float_t)((double_t)j * slice_step);
+
+                float_t x = xz * cosf(slice_angle);
+                float_t z = xz * sinf(slice_angle);
+
+                data.push_back({ { x * radius, y - length, z * radius }, { x, y, z } });
+            }
+        }
+
+        data.push_back({ { 0.0f, -radius - length, 0.0f }, { 0.0f, -1.0f, 0.0f } });
+    }
+
+    static size_t gen_capsule_indices(prj::vector<uint32_t>& indices,
+        int32_t slices, int32_t stacks, float_t length) {
+        if (slices < 2 || stacks < 2)
+            return 0;
+
+        stacks = ((stacks + 1) >> 1) << 1;
+
+        if (length < 0.00001f)
+            return gen_sphere_indices(indices, slices, stacks);
+
+        // Top stack vertices
+        {
+            int32_t m1 = 0;
+            int32_t m2 = 1;
+
+            indices.reserve(3LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(m1);
+                indices.push_back(k + m2);
+                indices.push_back(j + m2);
+
+                if (++k >= slices)
+                    k = 0;
+            }
+        }
+
+        // Middle stacks vertices
+        for (int32_t i = 1; i < stacks; i++) {
+            int32_t m1 = (i - 1) * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(6LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(k + m1);
+                indices.push_back(j + m2);
+
+                indices.push_back(k + m1);
+                indices.push_back(k + m2);
+                indices.push_back(j + m2);
+
+                if (++k >= slices)
+                    k = 0;
+            }
+        }
+
+        // Bottom stack vertices
+        {
+            int32_t m1 = (stacks - 1) * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(3LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(k + m1);
+                indices.push_back(m2);
+
+                if (++k >= slices)
+                    k = 0;
+            }
+        }
+
+        size_t wire_offset = indices.size();
+
+        // Top stack wireframe
+        {
+            int32_t m1 = 0;
+            int32_t m2 = 1;
+
+            indices.reserve(2LL * slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                indices.push_back(m1);
+                indices.push_back(j + m2);
+            }
+        }
+
+        // Middle stacks wireframe
+        for (int32_t i = 1; i < stacks; i++) {
+            int32_t m1 = (i - 1) * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(2LL * slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(j + m2);
+            }
+        }
+
+        // Bottom stack wireframe
+        {
+            int32_t m1 = (stacks - 1) * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(2LL * slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(m2);
+            }
+        }
+
+        // Slices wireframe
+        for (int32_t i = 1; i <= stacks; i++) {
+            int32_t m = (i - 1) * slices + 1;
+
+            indices.reserve(2LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(j + m);
+                indices.push_back(k + m);
+
+                if (k++ >= slices)
+                    k = 0;
+            }
+        }
+
+        return wire_offset;
+    }
+
+    static void gen_cylinder_vertices(prj::vector<prj::pair<vec3, vec3>>& data,
+        int32_t slices, int32_t stacks, float_t base, float_t height) {
+        float_t half_height = height * 0.5f;
+
+        if (slices < 2 || stacks < 0)
+            return;
+
+        data.push_back({ { 0.0f, stacks ? half_height : 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+
+        double_t slice_step = (M_PI * 2.0) / (double_t)slices;
+        double_t stack_step = M_PI / (double_t)stacks;
+
+        for (int32_t i = 0; i <= stacks; i++) {
+            float_t y = stacks ? lerp_def(half_height, -half_height, (float_t)i / (float_t)stacks) : 0.0f;
+
+            data.reserve(slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                float_t slice_angle = (float_t)((double_t)j * slice_step);
+
+                float_t x = cosf(slice_angle);
+                float_t z = sinf(slice_angle);
+
+                data.push_back({ { x * base, y, z * base }, { x, 0.0f, z } });
+            }
+        }
+
+        data.push_back({ { 0.0f, stacks ? -half_height : 0.0f, 0.0f }, { 0.0f, -1.0f, 0.0f } });
+    }
+
+    static size_t gen_cylinder_indices(prj::vector<uint32_t>& indices,
+        int32_t slices, int32_t stacks) {
+        if (slices < 2 || stacks < 0)
+            return 0;
+
+        // Top cap vertices
+        {
+            int32_t m1 = 0;
+            int32_t m2 = 1;
+
+            indices.reserve(3LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(m1);
+                indices.push_back(k + m2);
+                indices.push_back(j + m2);
+
+                if (++k >= slices)
+                    k = 0;
+            }
+        }
+
+        // Stacks vertices
+        for (int32_t i = 0; i < stacks; i++) {
+            int32_t m1 = i * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(6LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(k + m1);
+                indices.push_back(j + m2);
+
+                indices.push_back(k + m1);
+                indices.push_back(k + m2);
+                indices.push_back(j + m2);
+
+                if (++k >= slices)
+                    k = 0;
+            }
+        }
+
+        // Bottom cap vertices
+        {
+            int32_t m1 = stacks * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(3LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(k + m1);
+                indices.push_back(m2);
+
+                if (++k >= slices)
+                    k = 0;
+            }
+        }
+
+        size_t wire_offset = indices.size();
+
+        // Stacks wireframe
+        for (int32_t i = 0; i < stacks; i++) {
+            int32_t m1 = i * slices + 1;
+            int32_t m2 = m1 + slices;
+
+            indices.reserve(2LL * slices);
+
+            for (int32_t j = 0; j < slices; j++) {
+                indices.push_back(j + m1);
+                indices.push_back(j + m2);
+            }
+        }
+
+        // Slices wireframe
+        for (int32_t i = 0; i <= stacks; i++) {
+            int32_t m = i * slices + 1;
+
+            indices.reserve(2LL * slices);
+
+            for (int32_t j = 0, k = 1; j < slices; j++) {
+                indices.push_back(j + m);
+                indices.push_back(k + m);
+
+                if (k++ >= slices)
+                    k = 0;
+            }
+        }
+
+        return wire_offset;
+    }
+
     void DispManager::add_vertex_array(EtcObj* etc, mat4& mat) {
         EtcObjType type = etc->type;
         switch (type) {
@@ -1170,6 +1496,8 @@ namespace mdl {
         case mdl::ETC_OBJ_CONE:
         case mdl::ETC_OBJ_LINE:
         case mdl::ETC_OBJ_CROSS:
+        case mdl::ETC_OBJ_CAPSULE: // Added
+        case mdl::ETC_OBJ_CYLINDER: // Added
             break;
         default:
             return;
@@ -1231,6 +1559,32 @@ namespace mdl {
         case mdl::ETC_OBJ_CROSS: {
             EtcObjCross& cross = etc->data.cross;
         } break;
+        case mdl::ETC_OBJ_CAPSULE: { // Added
+            EtcObjCapsule& capsule = etc->data.capsule;
+
+            vec3 origin = (capsule.pos[0] + capsule.pos[1]) * 0.5f;
+            mat4_add_translate(&mat, &origin, &mat);
+
+            vec3 dir = vec3::normalize(capsule.pos[1] - capsule.pos[0]);
+            vec3 up = { 0.0f, 1.0f, 0.0f };
+            vec3 axis;
+            float_t angle;
+            Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
+
+            mat4 m = mat4_identity;
+            mat4_mul_rotation(&m, &axis, angle, &m);
+            mat4_mul(&m, &mat, &mat);
+
+            indexed = true;
+            wire = capsule.wire;
+            length = vec3::distance(capsule.pos[0], capsule.pos[1]);
+        } break;
+        case mdl::ETC_OBJ_CYLINDER: { // Added
+            EtcObjCylinder& cylinder = etc->data.cylinder;
+
+            indexed = true;
+            wire = cylinder.wire;
+        } break;
         }
 
         DispManager::etc_vertex_array* etc_vertex_array = 0;
@@ -1258,7 +1612,17 @@ namespace mdl {
                 || type == mdl::ETC_OBJ_LINE
                 && fabsf(vec3::distance(i.data.line.pos[0], i.data.line.pos[1]) - length) < 0.00001f
                 || type == mdl::ETC_OBJ_CROSS
-                && fabsf(i.data.cross.size - etc->data.cross.size) < 0.00001f)
+                && fabsf(i.data.cross.size - etc->data.cross.size) < 0.00001f
+                || type == mdl::ETC_OBJ_CAPSULE // Added
+                && i.data.capsule.slices == etc->data.capsule.slices
+                && ((i.data.capsule.stacks + 1)) >> 1 == ((etc->data.capsule.stacks + 1) >> 1)
+                && fabsf(i.data.capsule.radius - etc->data.capsule.radius) < 0.00001f
+                && fabsf(vec3::distance(i.data.capsule.pos[0], i.data.capsule.pos[1]) - length) < 0.00001f
+                || type == mdl::ETC_OBJ_CYLINDER // Added
+                && i.data.cylinder.slices == etc->data.cylinder.slices
+                && i.data.cylinder.stacks == etc->data.cylinder.stacks
+                && fabsf(i.data.cylinder.base - etc->data.cylinder.base) < 0.00001f
+                && fabsf(i.data.cylinder.height - etc->data.cylinder.height) < 0.00001f)
                 if (i.vertex_array) {
                     i.alive_time = 2;
                     if (!wire) {
@@ -1379,6 +1743,28 @@ namespace mdl {
 
             etc_vertex_array->count = (GLsizei)vtx_data.size();
         } break;
+        case mdl::ETC_OBJ_CAPSULE: { // Added
+            EtcObjCapsule& capsule = etc->data.capsule;
+
+            gen_capsule_vertices(vtx_data, capsule.slices, capsule.stacks, length, capsule.radius);
+            size_t wire_offset = gen_capsule_indices(vtx_indices, capsule.slices, capsule.stacks, length);
+
+            etc_vertex_array->offset = 0;
+            etc_vertex_array->count = (GLsizei)wire_offset;
+            etc_vertex_array->wire_offset = wire_offset * sizeof(uint32_t);
+            etc_vertex_array->wire_count = (GLsizei)(vtx_indices.size() - wire_offset);
+        } break;
+        case mdl::ETC_OBJ_CYLINDER: { // Added
+            EtcObjCylinder& cylinder = etc->data.cylinder;
+
+            gen_cylinder_vertices(vtx_data, cylinder.slices, cylinder.stacks, cylinder.base, cylinder.height);
+            size_t wire_offset = gen_cylinder_indices(vtx_indices, cylinder.slices, cylinder.stacks);
+
+            etc_vertex_array->offset = 0;
+            etc_vertex_array->count = (GLsizei)wire_offset;
+            etc_vertex_array->wire_offset = wire_offset * sizeof(uint32_t);
+            etc_vertex_array->wire_count = (GLsizei)(vtx_indices.size() - wire_offset);
+        } break;
         }
 
         if (!wire) {
@@ -1474,8 +1860,8 @@ namespace mdl {
     }
 
     void DispManager::calc_obj_radius(mat4* view, mdl::ObjType type) {
-        std::vector<vec3> alpha_center;
-        std::vector<vec3> mat_center;
+        prj::vector<vec3> alpha_center;
+        prj::vector<vec3> mat_center;
 
         for (ObjData*& i : get_obj_list(type)) {
             vec3 center = 0.0f;
@@ -2566,6 +2952,11 @@ namespace mdl {
             break;
         case mdl::ETC_OBJ_CROSS:
             break;
+        case mdl::ETC_OBJ_CAPSULE: // Added
+            length = vec3::distance(etc->data.capsule.pos[0], etc->data.capsule.pos[1]);
+            break;
+        case mdl::ETC_OBJ_CYLINDER: // Added
+            break;
         default:
             return 0;
         }
@@ -2608,6 +2999,20 @@ namespace mdl {
             case mdl::ETC_OBJ_CROSS:
                 if (fabsf(i.data.cross.size - etc->data.cross.size) < 0.00001f)
                     return i.vertex_array;
+            case mdl::ETC_OBJ_CAPSULE: // Added
+                if (i.data.capsule.slices == etc->data.capsule.slices
+                    && ((i.data.capsule.stacks + 1)) >> 1 == ((etc->data.capsule.stacks + 1) >> 1)
+                    && fabsf(i.data.capsule.radius - etc->data.capsule.radius) < 0.00001f
+                    && fabsf(vec3::distance(i.data.capsule.pos[0], i.data.capsule.pos[1]) - length) < 0.00001f)
+                    return i.vertex_array;
+                break;
+            case mdl::ETC_OBJ_CYLINDER: // Added
+                if (i.data.cylinder.slices == etc->data.cylinder.slices
+                    && i.data.cylinder.stacks == etc->data.cylinder.stacks
+                    && fabsf(i.data.cylinder.base - etc->data.cylinder.base) < 0.00001f
+                    && fabsf(i.data.cylinder.height - etc->data.cylinder.height) < 0.00001f)
+                    return i.vertex_array;
+                break;
             }
         }
         return 0;

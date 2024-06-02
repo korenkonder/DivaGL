@@ -28,6 +28,8 @@ namespace mdl {
         ETC_OBJ_CONE,
         ETC_OBJ_LINE,
         ETC_OBJ_CROSS,
+        ETC_OBJ_CAPSULE,  // Added
+        ETC_OBJ_CYLINDER, // Added
         ETC_OBJ_MAX,
     };
 
@@ -262,6 +264,26 @@ namespace mdl {
 
         EtcObjCross();
     };
+    
+    struct EtcObjCapsule { // Added
+        float_t radius;
+        int32_t slices;
+        int32_t stacks;
+        bool wire;
+        vec3 pos[2];
+
+        EtcObjCapsule();
+    };
+
+    struct EtcObjCylinder { // Added
+        float_t base;
+        float_t height;
+        int32_t slices;
+        int32_t stacks;
+        bool wire;
+
+        EtcObjCylinder();
+    };
 
     struct EtcObj {
         union Data {
@@ -273,6 +295,8 @@ namespace mdl {
             EtcObjCone cone;
             EtcObjLine line;
             EtcObjCross cross;
+            EtcObjCapsule capsule; // Added
+            EtcObjCylinder cylinder; // Added
 
             Data();
         };
@@ -280,6 +304,7 @@ namespace mdl {
         EtcObjType type;
         color4u8_bgra color;
         bool fog;
+        bool constant; // Added
         Data data;
         GLsizei count; // Added
         size_t offset; // Added
