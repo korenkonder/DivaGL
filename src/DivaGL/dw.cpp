@@ -2272,7 +2272,7 @@ namespace dw {
         value(), min(), field_A0(), field_A5(), field_A6() {
         parent_control = parent;
         max = 100.0f;
-        field_94 = 10.0f;
+        grab = 10.0f;
         step = 1.0f;
         step_fast = 10.0f;
         round = true;
@@ -2418,6 +2418,10 @@ namespace dw {
         field_A5 = !value;
     }
 
+    void ScrollBar::SetGrab(float_t value) {
+        grab = value;
+    }
+
     void ScrollBar::SetMax(float_t value) {
         max = value;
     }
@@ -2427,9 +2431,9 @@ namespace dw {
     }
 
     void ScrollBar::SetParams(float_t value, float_t min,
-        float_t max, float_t a5, float_t step, float_t step_fast) {
+        float_t max, float_t grab, float_t step, float_t step_fast) {
         this->value = value;
-        this->field_94 = a5;
+        this->grab = grab;
         this->min = min;
         this->step_fast = step_fast;
         this->max = max;
@@ -2448,7 +2452,7 @@ namespace dw {
         if (v6 > size) {
             min = 0.0f;
             max = v6 - size;
-            field_94 = (size / v6) * (v6 - size);
+            grab = (size / v6) * (v6 - size);
             ScrollBar::SetValue(value);
             this->step = step;
 
@@ -2468,7 +2472,7 @@ namespace dw {
         else {
             min = 0.0f;
             max = 0.0f;
-            field_94 = v6;
+            grab = v6;
             SetValue(value);
             this->step = step;
             step_fast = v6;
@@ -2520,7 +2524,7 @@ namespace dw {
         size -= _glyph_size * 2.0f;
         float_t range = max - min;
         if (range > 0.0) {
-            float_t v10 = max_def((field_94 * (1.0f / range)) * size, 20.0f);
+            float_t v10 = max_def((grab * (1.0f / range)) * size, 20.0f);
             float_t v11 = ((value - min) * (1.0f / range)) * (size - v10);
             return { v11, v10 };
         }
@@ -2660,10 +2664,6 @@ namespace dw {
             callback_data.widget = parent;
         }
         return callback_data;
-    }
-
-    void ScrollBar::sub_1402F9670(float_t value) {
-        field_94 = value;
     }
 
     void ScrollBar::sub_1402E6CC0(SelectionListener::CallbackData data) {

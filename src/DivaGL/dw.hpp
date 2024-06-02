@@ -748,7 +748,7 @@ namespace dw {
         float_t value;
         float_t min;
         float_t max;
-        float_t field_94;
+        float_t grab;
         float_t step;
         float_t step_fast;
         float_t field_A0;
@@ -795,10 +795,11 @@ namespace dw {
         virtual bool Field_60();
         virtual void Field_68(bool value);
 
+        void SetGrab(float_t value);
         void SetMax(float_t value);
         void SetMin(float_t value);
         void SetParams(float_t value, float_t min, float_t max,
-            float_t a5, float_t step, float_t step_fast);
+            float_t grab, float_t step, float_t step_fast);
         void SetParams(float_t size, float_t step, size_t items_count);
         void SetRound(bool value);
         void SetValue(float_t value);
@@ -809,7 +810,6 @@ namespace dw {
         vec2 sub_1402E4790();
         SelectionListener::CallbackData sub_1402E5140(const Widget::KeyCallbackData& key_callback_data);
         SelectionListener::CallbackData sub_1402E5380(const Widget::MouseCallbackData& mouse_callback_data);
-        void sub_1402F9670(float_t value);
 
         static void sub_1402E6CC0(SelectionListener::CallbackData callback_data);
     };
@@ -859,6 +859,10 @@ namespace dw {
             float_t pos_x = 0.0f, float_t pos_y = 0.0f,
             float_t width = 128.0f, float_t height = 20.0f, const char* text = "slider");
 
+        inline void SetGrab(float_t value) {
+            scroll_bar->SetGrab(value);
+        }
+
         inline void SetMax(float_t value) {
             scroll_bar->SetMax(value);
         }
@@ -868,8 +872,8 @@ namespace dw {
         }
 
         inline void SetParams(float_t value, float_t min, float_t max,
-            float_t a5, float_t step, float_t step_fast) {
-            scroll_bar->SetParams(value, min, max, a5, step, step_fast);
+            float_t grab, float_t step, float_t step_fast) {
+            scroll_bar->SetParams(value, min, max, grab, step, step_fast);
         }
 
         inline void SetRound(bool value) {
@@ -878,10 +882,6 @@ namespace dw {
 
         inline void SetValue(float_t value) {
             scroll_bar->SetValue(value);
-        }
-
-        inline void sub_1402F9670(float_t value) {
-            scroll_bar->sub_1402F9670(value);
         }
     };
 
