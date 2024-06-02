@@ -455,18 +455,11 @@ bool RobOsageTest::ctrl() {
 
         objects.clear();
         bocs.clear();
-        nodes.clear();
         normal_refs.clear();
 
+        size_t object_index = rob_osage_test_dw->rob.object_list_box->list->selected_item;
         rob_osage_test_dw->rob.object_list_box->ClearItems();
         rob_osage_test_dw->rob.object_list_box->SetItemIndex(-1);
-        rob_osage_test_dw->root.list_box->ClearItems();
-        rob_osage_test_dw->root.list_box->SetItemIndex(-1);
-
-        item_id = ITEM_NONE;
-        obj_info = object_info();
-        osage_index = -1;
-        collision_index = -1;
 
         rob_chara_item_equip* rob_itm_equip = rob_chara_array_get_item_equip(get_rob_chara_smth(), chara_id);
         if (!rob_itm_equip)
@@ -540,53 +533,8 @@ bool RobOsageTest::ctrl() {
                     continue;
                 }
 
-                nodes.push_back(osg, {});
-                prj::vector<skin_param_osage_node>& vn = nodes.back().second;
-
                 int32_t node_length = 0;
                 kv.read("length", node_length);
-
-                for (int32_t k = 0; k < node_length; k++) {
-                    if (!kv.open_scope_fmt(k))
-                        continue;
-
-                    vn.push_back({});
-                    skin_param_osage_node& n = vn.back();
-
-                    float_t coli_r = 0.0f;
-                    if (kv.read("coli_r", coli_r))
-                        n.coli_r = coli_r;
-
-                    float_t weight = 0.0f;
-                    if (kv.read("weight", weight))
-                        n.weight = weight;
-
-                    float_t inertial_cancel = 0.0f;
-                    if (kv.read("inertial_cancel", inertial_cancel))
-                        n.inertial_cancel = inertial_cancel;
-
-                    n.hinge.ymin = -180.0f;
-                    n.hinge.ymax = 180.0f;
-                    n.hinge.zmin = -180.0f;
-                    n.hinge.zmax = 180.0f;
-
-                    float_t hinge_ymax = 0.0f;
-                    if (kv.read("hinge_ymax", hinge_ymax))
-                        n.hinge.ymax = hinge_ymax;
-
-                    float_t hinge_ymin = 0.0f;
-                    if (kv.read("hinge_ymin", hinge_ymin))
-                        n.hinge.ymin = hinge_ymin;
-
-                    float_t hinge_zmax = 0.0f;
-                    if (kv.read("hinge_zmax", hinge_zmax))
-                        n.hinge.zmax = hinge_zmax;
-
-                    float_t hinge_zmin = 0.0f;
-                    if (kv.read("hinge_zmin", hinge_zmin))
-                        n.hinge.zmin = hinge_zmin;
-                    kv.close_scope();
-                }
 
                 kv.close_scope();
 
@@ -664,8 +612,26 @@ bool RobOsageTest::ctrl() {
         }
 
         bocs.sort();
-        nodes.sort();
         normal_refs.sort();
+
+        bool found = false;
+        for (auto& i : objects)
+            if (i.first == item_id && i.second == obj_info) {
+                found = true;
+                break;
+            }
+
+        if (!found) {
+            rob_osage_test_dw->root.list_box->ClearItems();
+            rob_osage_test_dw->root.list_box->SetItemIndex(-1);
+
+            item_id = ITEM_NONE;
+            obj_info = object_info();
+            osage_index = -1;
+            collision_index = -1;
+        }
+        else
+            rob_osage_test_dw->rob.object_list_box->SetItemIndex(object_index);
     }
 
     if (save) {
@@ -727,23 +693,22 @@ bool RobOsageTest::ctrl() {
                 std::vector<int32_t> sort_index;
                 int32_t* sort_index_data = 0;
 
-                auto elem_node = nodes.find(osg);
-                if (elem_node != nodes.end()) {
-                    prj::vector<skin_param_osage_node>& vn = elem_node->second;
-                    int32_t node_count = (int32_t)vn.size();
+                if (osg && osg->rob.nodes.size() > 1) {
+                    RobOsageNode* rob_osg_node = osg->rob.nodes.data() + 1;
+                    int32_t node_count = (int32_t)(osg->rob.nodes.size() - 1);
 
                     key_val_out::get_lexicographic_order(sort_index, node_count);
                     sort_index_data = sort_index.data();
                     kv.open_scope("node");
                     for (int32_t k = 0; k < node_count; k++) {
                         kv.open_scope_fmt(sort_index_data[k]);
-                        skin_param_osage_node* node = &vn[sort_index_data[k]];
+                        skin_param_osage_node* node = &rob_osg_node[sort_index_data[k]].data_ptr->skp_osg_node;
 
                         kv.write(s, "coli_r", node->coli_r, flt_fmt);
-                        kv.write(s, "hinge_ymax", node->hinge.ymax, flt_fmt);
-                        kv.write(s, "hinge_ymin", node->hinge.ymin, flt_fmt);
-                        kv.write(s, "hinge_zmax", node->hinge.zmax, flt_fmt);
-                        kv.write(s, "hinge_zmin", node->hinge.zmin, flt_fmt);
+                        kv.write(s, "hinge_ymax", node->hinge.ymax* RAD_TO_DEG_FLOAT, flt_fmt);
+                        kv.write(s, "hinge_ymin", node->hinge.ymin* RAD_TO_DEG_FLOAT, flt_fmt);
+                        kv.write(s, "hinge_zmax", node->hinge.zmax* RAD_TO_DEG_FLOAT, flt_fmt);
+                        kv.write(s, "hinge_zmin", node->hinge.zmin* RAD_TO_DEG_FLOAT, flt_fmt);
                         kv.write(s, "inertial_cancel", node->inertial_cancel, flt_fmt);
                         kv.write(s, "weight", node->weight, flt_fmt);
 
@@ -1219,6 +1184,19 @@ inline SkinParam::CollisionParam* RobOsageTest::get_cls_param(
     return 0;
 }
 
+void RobOsageTest::set_node(skin_param_osage_node* skp_osg_node) {
+    if (!skp_osg_node)
+        return;
+
+    node.coli_r = skp_osg_node->coli_r;
+    node.weight = skp_osg_node->weight;
+    node.inertial_cancel = skp_osg_node->inertial_cancel;
+    node.hinge.ymin = skp_osg_node->hinge.ymin * RAD_TO_DEG_FLOAT;
+    node.hinge.ymax = skp_osg_node->hinge.ymax * RAD_TO_DEG_FLOAT;
+    node.hinge.zmin = skp_osg_node->hinge.zmin * RAD_TO_DEG_FLOAT;
+    node.hinge.zmax = skp_osg_node->hinge.zmax * RAD_TO_DEG_FLOAT;
+}
+
 void RobOsageTest::set_root(skin_param* skp) {
     if (!skp)
         return;
@@ -1334,6 +1312,7 @@ void RobOsageTestDw::Rob::ObjectCallback(dw::Widget* data) {
         rob_osage_test->osage_index = -1;
         rob_osage_test->collision_index = -1;
         rob_osage_test->set_root();
+        rob_osage_test->set_node();
 
         rob_osage_test_dw->root.list_box->ClearItems();
 
@@ -2052,6 +2031,7 @@ void RobOsageTestDw::Root::OsageCallback(dw::Widget* data) {
         rob_osage_test->collision_update = true;
 
         rob_osage_test->set_root();
+        rob_osage_test->set_node();
         rob_osage_test_dw->root.Update();
         rob_osage_test_dw->node.Update();
     }
@@ -2115,6 +2095,8 @@ void RobOsageTestDw::Node::CollisionRadius::Update(bool value) {
         slider->SetText("");
         slider->format = "% 2.3f";
         slider->SetParams(rob_osage_test->node.coli_r, 0.0f, 2.0f, 0.01f, 0.001f, 0.01f);
+        slider->AddSelectionListener(new dw::SelectionListenerOnHook(
+            RobOsageTestDw::Node::CollisionRadius::Callback));
     }
     else {
         if (!slider)
@@ -2129,7 +2111,15 @@ void RobOsageTestDw::Node::CollisionRadius::Update(bool value) {
 void RobOsageTestDw::Node::CollisionRadius::Callback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.coli_r = value;
+        }
     }
 }
 
@@ -2175,28 +2165,28 @@ void RobOsageTestDw::Node::Hinge::Update(bool value) {
         y_min_slider = dw::Slider::Create(comp);
         y_min_slider->SetText("   Ymin    ");
         y_min_slider->format = "% 6.0f";
-        y_min_slider->SetParams(rob_osage_test->node.hinge.ymin, -179.0f, 0.0f, 89.5f, 0.5f, 5.0f);
+        y_min_slider->SetParams(rob_osage_test->node.hinge.ymin, -180.0f, 0.0f, 10.0f, 0.5f, 5.0f);
         y_min_slider->AddSelectionListener(new dw::SelectionListenerOnHook(
             RobOsageTestDw::Node::Hinge::YMinCallback));
 
         y_max_slider = dw::Slider::Create(comp);
         y_max_slider->SetText("   Ymax    ");
         y_max_slider->format = "% 6.0f";
-        y_max_slider->SetParams(rob_osage_test->node.hinge.ymax, 0.0f, 179.0f, 89.5f, 0.5f, 5.0f);
+        y_max_slider->SetParams(rob_osage_test->node.hinge.ymax, 0.0f, 180.0f, 10.0f, 0.5f, 5.0f);
         y_max_slider->AddSelectionListener(new dw::SelectionListenerOnHook(
             RobOsageTestDw::Node::Hinge::YMaxCallback));
 
         z_min_slider = dw::Slider::Create(comp);
         z_min_slider->SetText("   Zmin    ");
         z_min_slider->format = "% 6.0f";
-        z_min_slider->SetParams(rob_osage_test->node.hinge.zmin, -179.0f, 0.0f, 89.5f, 0.5f, 5.0f);
+        z_min_slider->SetParams(rob_osage_test->node.hinge.zmin, -180.0f, 0.0f, 10.0f, 0.5f, 5.0f);
         z_min_slider->AddSelectionListener(new dw::SelectionListenerOnHook(
             RobOsageTestDw::Node::Hinge::ZMinCallback));
 
         z_max_slider = dw::Slider::Create(comp);
         z_max_slider->SetText("   Zmax    ");
         z_max_slider->format = "% 6.0f";
-        z_max_slider->SetParams(rob_osage_test->node.hinge.zmax, 0.0f, 179.0f, 89.5f, 0.5f, 5.0f);
+        z_max_slider->SetParams(rob_osage_test->node.hinge.zmax, 0.0f, 180.0f, 10.0f, 0.5f, 5.0f);
         z_max_slider->AddSelectionListener(new dw::SelectionListenerOnHook(
             RobOsageTestDw::Node::Hinge::ZMaxCallback));
     }
@@ -2220,28 +2210,60 @@ void RobOsageTestDw::Node::Hinge::Update(bool value) {
 void RobOsageTestDw::Node::Hinge::YMinCallback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value * DEG_TO_RAD_FLOAT;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.hinge.ymin = value;
+        }
     }
 }
 
 void RobOsageTestDw::Node::Hinge::YMaxCallback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value * DEG_TO_RAD_FLOAT;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.hinge.ymax = value;
+        }
     }
 }
 
 void RobOsageTestDw::Node::Hinge::ZMinCallback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value * DEG_TO_RAD_FLOAT;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.hinge.zmin = value;
+        }
     }
 }
 
 void RobOsageTestDw::Node::Hinge::ZMaxCallback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value * DEG_TO_RAD_FLOAT;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.hinge.zmax = value;
+        }
     }
 }
 
@@ -2279,6 +2301,8 @@ void RobOsageTestDw::Node::InertialCancel::Update(bool value) {
         slider->SetText("");
         slider->format = "% 2.3f";
         slider->SetParams(rob_osage_test->node.inertial_cancel, 0.0f, 1.0f, 0.1f, 0.01f, 0.1f);
+        slider->AddSelectionListener(new dw::SelectionListenerOnHook(
+            RobOsageTestDw::Node::InertialCancel::Callback));
     }
     else if (slider) {
         comp->controls.erase(comp->controls.begin() + comp->GetControlIndex(slider));
@@ -2290,7 +2314,15 @@ void RobOsageTestDw::Node::InertialCancel::Update(bool value) {
 void RobOsageTestDw::Node::InertialCancel::Callback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.inertial_cancel = value;
+        }
     }
 }
 
@@ -2328,6 +2360,8 @@ void RobOsageTestDw::Node::Weight::Update(bool value) {
         slider->SetText("");
         slider->format = "% 2.3f";
         slider->SetParams(rob_osage_test->node.weight, 0.0f, 1.0f, 0.1f, 0.01f, 0.1f);
+        slider->AddSelectionListener(new dw::SelectionListenerOnHook(
+            RobOsageTestDw::Node::Weight::Callback));
     }
     else if (slider) {
         comp->controls.erase(comp->controls.begin() + comp->GetControlIndex(slider));
@@ -2339,7 +2373,15 @@ void RobOsageTestDw::Node::Weight::Update(bool value) {
 void RobOsageTestDw::Node::Weight::Callback(dw::Widget* data) {
     dw::Slider* slider = dynamic_cast<dw::Slider*>(data);
     if (slider) {
-
+        rob_chara_item_equip_object* itm_eq_obj = rob_osage_test->get_item_equip_object();
+        ExOsageBlock* osg = rob_osage_test->get_osage_block(itm_eq_obj);
+        if (osg) {
+            float_t value = slider->scroll_bar->value;
+            RobOsageNode* i_begin = osg->rob.nodes.data() + 1;
+            RobOsageNode* i_end = osg->rob.nodes.data() + osg->rob.nodes.size();
+            for (RobOsageNode* i = i_begin; i != i_end; i++)
+                i->data_ptr->skp_osg_node.weight = value;
+        }
     }
 }
 
