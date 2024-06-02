@@ -1226,13 +1226,13 @@ void RobOsageTest::set_root(skin_param* skp) {
     root.force = skp->force;
     root.gain = skp->force_gain;
     root.air_res = skp->air_res;
-    root.root_y_rot = skp->rot.y;
-    root.root_z_rot = skp->rot.z;
+    root.root_y_rot = skp->rot.y * RAD_TO_DEG_FLOAT;
+    root.root_z_rot = skp->rot.z * RAD_TO_DEG_FLOAT;
     root.fric = skp->friction;
     root.wind_afc = skp->wind_afc;
     root.coli_type = skp->coli_type;
-    root.init_y_rot = skp->init_rot.y;
-    root.init_z_rot = skp->init_rot.z;
+    root.init_y_rot = skp->init_rot.y * RAD_TO_DEG_FLOAT;
+    root.init_z_rot = skp->init_rot.z * RAD_TO_DEG_FLOAT;
 }
 
 HOOK(bool, FASTCALL, SubGameState__DataTestMot__Dest, 0x00000001402871F0) {
