@@ -231,8 +231,8 @@ namespace rndr {
         int32_t next_query_index = (query_index + 2) % 3;
         size_t rob_chara_smth = get_rob_chara_smth();
         for (int32_t i = 0; i < ROB_CHARA_COUNT; i++, chara_data++) {
-            size_t rob_chr = rob_chara_array_get(rob_chara_smth, i);
-            if (!rob_chr || !(*(uint8_t*)(rob_chara_smth + 0x440) & 1))
+            rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, i);
+            if (!rob_chr || !rob_chr->is_visible())
                 continue;
 
             float_t max_face_depth = rob_chara_get_max_face_depth(rob_chr);
@@ -1338,7 +1338,7 @@ namespace rndr {
             ExposureCharaData* chara_data = exposure_chara_data;
             size_t rob_chara_smth = get_rob_chara_smth();
             for (int32_t i = 0; i < ROB_CHARA_COUNT; i++, chara_data++) {
-                size_t rob_chr = rob_chara_array_get(rob_chara_smth, i);
+                rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, i);
                 if (!rob_chr || !(*(uint8_t*)(rob_chr + 0x440) & 1))
                     continue;
 

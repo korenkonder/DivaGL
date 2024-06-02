@@ -1100,7 +1100,7 @@ HOOK(void, FASTCALL, auth_3d_object_hrc_disp, 0x00000001401D04A0, auth_3d_object
     if (auth->chara_id >= 0 && auth->chara_id < ROB_CHARA_COUNT) {
         size_t rob_chara_smth = get_rob_chara_smth();
         if (rob_chara_pv_data_array_check_chara_id(rob_chara_smth, auth->chara_id)) {
-            size_t rob_chr = rob_chara_array_get(rob_chara_smth, auth->chara_id);
+            rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, auth->chara_id);
             mat4_mul(auth->chara_item
                 ? rob_chara_get_item_adjust_data_mat(rob_chr)
                 : rob_chara_get_adjust_data_mat(rob_chr),
@@ -1167,7 +1167,7 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
     if (auth->chara_id >= 0 && auth->chara_id < ROB_CHARA_COUNT) {
         size_t rob_chara_smth = get_rob_chara_smth();
         if (rob_chara_pv_data_array_check_chara_id(rob_chara_smth, auth->chara_id)) {
-            size_t rob_chr = rob_chara_array_get(rob_chara_smth, auth->chara_id);
+            rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, auth->chara_id);
             mat4 m;
             mat4_mul(auth->chara_item
                 ? rob_chara_get_item_adjust_data_mat(rob_chr)

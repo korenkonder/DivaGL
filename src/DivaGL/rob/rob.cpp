@@ -5,91 +5,10 @@
 
 #include "rob.hpp"
 #include "../../KKdLib/str_utils.hpp"
-#include "../mdl/disp_manager.hpp"
 #include "../gl_state.hpp"
-#include "../object.hpp"
 #include "../render_manager.hpp"
 #include <Helpers.h>
 #include <algorithm>
-
-enum ExNodeType {
-    EX_NONE       = 0x00,
-    EX_OSAGE      = 0x01,
-    EX_EXPRESSION = 0x02,
-    EX_CONSTRAINT = 0x03,
-    EX_CLOTH      = 0x04,
-};
-
-enum rob_chara_data_hand_adjust_type : uint16_t {
-    ROB_CHARA_DATA_HAND_ADJUST_NONE           = (uint16_t)-1,
-    ROB_CHARA_DATA_HAND_ADJUST_NORMAL         = 0x00,
-    ROB_CHARA_DATA_HAND_ADJUST_SHORT          = 0x01,
-    ROB_CHARA_DATA_HAND_ADJUST_TALL           = 0x02,
-    ROB_CHARA_DATA_HAND_ADJUST_MIN            = 0x03,
-    ROB_CHARA_DATA_HAND_ADJUST_MAX            = 0x04,
-    ROB_CHARA_DATA_HAND_ADJUST_OPPOSITE_CHARA = 0x05,
-    ROB_CHARA_DATA_HAND_ADJUST_CUSTOM         = 0x06,
-    ROB_CHARA_DATA_HAND_ADJUST_1P             = 0x07,
-    ROB_CHARA_DATA_HAND_ADJUST_2P             = 0x08,
-    ROB_CHARA_DATA_HAND_ADJUST_3P             = 0x09,
-    ROB_CHARA_DATA_HAND_ADJUST_4P             = 0x0A,
-    ROB_CHARA_DATA_HAND_ADJUST_ITEM           = 0x0F, // X
-};
-
-struct opd_vec3_data {
-    const float_t* x;
-    const float_t* y;
-    const float_t* z;
-};
-
-static_assert(sizeof(opd_vec3_data) == 0x18, "\"opd_vec3_data\" struct should have a size of 0x18");
-
-struct RobOsageNodeResetData {
-    vec3 trans;
-    vec3 trans_diff;
-    vec3 rotation;
-    float_t length;
-};
-
-static_assert(sizeof(RobOsageNodeResetData) == 0x28, "\"RobOsageNodeResetData\" struct should have a size of 0x28");
-
-struct opd_node_data {
-    float_t length;
-    vec3 rotation;
-};
-
-static_assert(sizeof(opd_node_data) == 0x10, "\"opd_node_data\" struct should have a size of 0x10");
-
-struct opd_node_data_pair {
-    opd_node_data curr;
-    opd_node_data prev;
-};
-
-static_assert(sizeof(opd_node_data_pair) == 0x20, "\"opd_node_data_pair\" struct should have a size of 0x20");
-
-struct CLOTHNode {
-    uint32_t flags;
-    vec3 trans;
-    vec3 trans_orig;
-    vec3 field_1C;
-    vec3 trans_diff;
-    vec3 normal;
-    vec3 tangent;
-    vec3 binormal;
-    float_t tangent_sign;
-    vec2 texcoord;
-    vec3 field_64;
-    float_t dist_up;
-    float_t dist_down;
-    float_t dist_right;
-    float_t dist_left;
-    vec3 field_80;
-    RobOsageNodeResetData reset_data;
-    prj::vector<opd_vec3_data> opd_data;
-    opd_node_data_pair opd_node_data;
-};
-
-static_assert(sizeof(CLOTHNode) == 0xF0, "\"CLOTHNode\" struct should have a size of 0xF0");
 
 struct rob_chara_age_age_object_vertex {
     vec3 position;
@@ -148,6 +67,7 @@ struct rob_chara_age_age_data {
     float_t remaining;
     bool alive;
 };
+
 static_assert(sizeof(rob_chara_age_age_data) == 0xF8, "\"rob_chara_age_age_data\" struct should have a size of 0xF8");
 
 struct rob_chara_age_age {
@@ -170,538 +90,6 @@ struct rob_chara_age_age {
 };
 
 static_assert(sizeof(rob_chara_age_age) == 0x1658, "\"rob_chara_age_age\" struct should have a size of 0x1658");
-
-struct bone_node_expression_data {
-    vec3 position;
-    vec3 rotation;
-    vec3 scale;
-    vec3 parent_scale;
-};
-
-static_assert(sizeof(bone_node_expression_data) == 0x30, "\"bone_node_expression_data\" struct should have a size of 0x30");
-
-struct bone_node {
-    const char* name;
-    mat4* mat;
-    bone_node* parent;
-    bone_node_expression_data exp_data;
-    mat4* ex_data_mat;
-};
-
-static_assert(sizeof(bone_node) == 0x50, "\"bone_node\" struct should have a size of 0x50");
-
-struct opd_blend_data {
-    int32_t motion_id;
-    float_t frame;
-    float_t frame_count;
-    bool use_blend;
-    int32_t type; // MotionBlendType
-    float_t blend;
-};
-
-static_assert(sizeof(opd_blend_data) == 0x18, "\"opd_blend_data\" struct should have a size of 0x18");
-
-struct ExNodeBlock;
-
-struct ExNodeBlock_vtbl {
-    ExNodeBlock* (FASTCALL* Dispose)(ExNodeBlock* node, uint8_t);
-    void(FASTCALL* Field8)(ExNodeBlock* node);
-    void(FASTCALL* Field10)(ExNodeBlock* node);
-    void(FASTCALL* Field18)(ExNodeBlock* node, int32_t stage, bool disable_external_force);
-    void(FASTCALL* Field20)(ExNodeBlock* node);
-    void(FASTCALL* SetOsagePlayData)(ExNodeBlock* node);
-    void(FASTCALL* Disp)(ExNodeBlock* node);
-    void(FASTCALL* Reset)(ExNodeBlock* node);
-    void(FASTCALL* Field40)(ExNodeBlock* node);
-    void(FASTCALL* Field48)(ExNodeBlock* node);
-    void(FASTCALL* Field50)(ExNodeBlock* node);
-    void(FASTCALL* Field58)(ExNodeBlock* node);
-};
-
-struct rob_chara_item_equip_object;
-
-struct ExNodeBlock {
-    ExNodeBlock_vtbl* __vftable;
-    bone_node* bone_node_ptr;
-    ExNodeType type;
-    const char* name;
-    bone_node* parent_bone_node;
-    prj::string parent_name;
-    ExNodeBlock* parent_node;
-    rob_chara_item_equip_object* item_equip_object;
-    bool field_58;
-    bool field_59;
-    bool has_children_node;
-};
-
-struct rob_chara_item_equip;
-
-struct rob_chara_item_equip_object {
-    size_t index;
-    mat4* mats;
-    object_info obj_info;
-    int32_t field_14;
-    prj::vector<texture_pattern_struct> texture_pattern;
-    texture_data_struct texture_data;
-    bool null_blocks_data_set;
-    bone_node_expression_data exp_data;
-    float_t alpha;
-    mdl::ObjFlags obj_flags;
-    bool can_disp;
-    int32_t field_A4;
-    mat4* mat;
-    int32_t osage_iterations;
-    bone_node* bone_nodes;
-    prj::vector<ExNodeBlock*> node_blocks;
-    prj::vector<bone_node> ex_data_bone_nodes;
-    prj::vector<mat4> ex_data_bone_mats;
-    prj::vector<mat4> ex_data_mats;
-    prj::vector<std::pair<const char*, uint32_t>> ex_bones;
-    int64_t field_138;
-    prj::vector<void*> null_blocks; // ExNullBlock
-    prj::vector<void*> osage_blocks; // ExOsageBlock
-    prj::vector<void*> constraint_blocks; // ExConstraintBlock
-    prj::vector<void*> expression_blocks; // ExExpressionBlock
-    prj::vector<void*> cloth_blocks; // ExClothBlock
-    bool field_1B8;
-    size_t osage_nodes_count;
-    bool use_opd;
-    obj_skin_ex_data* skin_ex_data;
-    obj_skin* skin;
-    rob_chara_item_equip* item_equip;
-
-    void disp(const mat4* mat);
-    int32_t get_bone_index(const char* name);
-    bone_node* get_bone_node(int32_t bone_index);
-    bone_node* get_bone_node(const char* name);
-};
-
-static_assert(sizeof(rob_chara_item_equip_object) == 0x1E8, "\"rob_chara_item_equip_object\" struct should have a size of 0x1E8");
-
-struct rob_chara_item_equip {
-    bone_node* bone_nodes;
-    mat4* matrices;
-    rob_chara_item_equip_object* item_equip_object;
-    int32_t field_18[31];
-    bool item_equip_range;
-    item_id first_item_equip_object;
-    item_id max_item_equip_object;
-    int32_t field_A0;
-    shadow_type_enum shadow_type;
-    vec3 position;
-    prj::vector<texture_pattern_struct> texture_pattern;
-    object_info field_D0;
-    item_id field_D4;
-    bool disable_update;
-    int32_t field_DC;
-    vec4 texture_color_coefficients;
-    float_t wet;
-    float_t wind_strength;
-    bool chara_color;
-    bool npr_flag;
-    mat4 mat;
-    mat4 field_13C[30];
-    int32_t field_8BC;
-    int32_t field_8C0;
-    int32_t field_8C4;
-    int32_t field_8C8;
-    int32_t field_8CC;
-    int32_t field_8D0;
-    int32_t field_8D4;
-    int32_t field_8D8;
-    int32_t field_8DC;
-    int32_t field_8E0;
-    int32_t field_8E4;
-    int32_t field_8E8;
-    int32_t field_8EC;
-    int32_t field_8F0;
-    int32_t field_8F4;
-    int32_t field_8F8;
-    int32_t field_8FC;
-    int64_t field_900;
-    int64_t field_908;
-    int64_t field_910;
-    int64_t field_918;
-    int64_t field_920;
-    int64_t field_928;
-    int64_t field_930;
-    float_t osage_step;
-    bool use_opd;
-    prj::vector<opd_blend_data> opd_blend_data;
-    bool parts_short;
-    bool parts_append;
-    bool parts_white_one_l;
-};
-
-static_assert(sizeof(rob_chara_item_equip) == 0x960, "\"rob_chara_item_equip\" struct should have a size of 0x960");
-
-struct rob_chara_item_cos_data {
-    uint8_t data[0x408];
-};
-
-static_assert(sizeof(rob_chara_item_cos_data) == 0x408, "\"rob_chara_item_cos_data\" struct should have a size of 0x408");
-
-struct struc_264 {
-    uint8_t data[0x1D8];
-};
-
-static_assert(sizeof(struc_264) == 0x1D8, "\"struc_264\" struct should have a size of 0x1D8");
-
-struct RobSubAction {
-    uint8_t data[0xB0];
-};
-
-static_assert(sizeof(RobSubAction) == 0xB0, "\"RobSubAction\" struct should have a size of 0xB0");
-
-struct struc_389 {
-    float_t frame;
-    float_t prev_frame;
-    float_t last_set_frame;
-};
-
-static_assert(sizeof(struc_389) == 0x0C, "\"struc_389\" struct should have a size of 0x0C");
-
-struct struc_406 {
-    float_t frame;
-    float_t field_4;
-    float_t step;
-};
-
-static_assert(sizeof(struc_406) == 0x0C, "\"struc_406\" struct should have a size of 0x0C");
-
-struct rob_chara_data_hand_adjust {
-    bool enable;
-    int16_t scale_select;
-    rob_chara_data_hand_adjust_type type;
-    float_t current_scale;
-    float_t scale;
-    float_t duration;
-    float_t current_time;
-    float_t rotation_blend;
-    float_t scale_blend;
-    bool enable_scale;
-    bool disable_x;
-    bool disable_y;
-    bool disable_z;
-    vec3 offset;
-    vec3 field_30;
-    float_t arm_length;
-    int32_t field_40;
-};
-
-static_assert(sizeof(rob_chara_data_hand_adjust) == 0x44, "\"rob_chara_data_hand_adjust\" struct should have a size of 0x44");
-
-struct rob_chara_motion {
-    uint32_t motion_id;
-    uint32_t prev_motion_id;
-    struc_389 frame_data;
-    struc_406 step_data;
-    uint8_t data[0x1198];
-    rob_chara_data_hand_adjust hand_adjust[2];
-    rob_chara_data_hand_adjust hand_adjust_prev[2];
-    uint8_t data1[0x30];
-};
-
-static_assert(sizeof(rob_chara_motion) == 0x12F8, "\"rob_chara_motion\" struct should have a size of 0x12F8");
-
-struct struc_526 {
-    int32_t field_0;
-    int32_t field_4;
-};
-
-struct struc_228 {
-    int32_t field_0;
-    int32_t field_4;
-    uint32_t field_8;
-    int32_t field_C;
-};
-
-struct struc_227 {
-    int32_t field_0;
-    float_t field_4;
-    float_t field_8;
-};
-
-struct struc_652 {
-    int32_t motion_id;
-    float_t frame_count;
-    float_t frame;
-    int16_t field_C;
-    struc_228 field_10;
-    struc_228 field_20;
-    struc_228 field_30;
-    struc_228 field_40;
-    int16_t field_50;
-    int16_t field_52;
-    int16_t field_54;
-    int32_t field_58;
-    int32_t field_5C;
-    int32_t field_60;
-    int32_t field_64;
-    int32_t field_68;
-    int32_t loop_count;
-    float_t loop_begin;
-    float_t loop_end;
-    float_t field_78;
-    float_t field_7C;
-    float_t field_80;
-    int8_t field_84;
-    int32_t field_88;
-    int32_t field_8C;
-    int32_t field_90;
-    int16_t field_94;
-    int16_t field_96;
-    int16_t field_98;
-    int32_t field_9C;
-    int16_t field_A0;
-    int32_t field_A4;
-    int64_t field_A8;
-    struc_227 field_B0[26];
-    int32_t field_1E8;
-    float_t field_1EC;
-    float_t field_1F0;
-    float_t field_1F4;
-    float_t field_1F8;
-    float_t field_1FC;
-    float_t field_200;
-    int32_t field_204;
-    int32_t field_208;
-    int32_t field_20C;
-    int64_t field_210;
-    float_t field_218;
-    float_t field_21C;
-    int16_t field_220;
-    prj::list<void*> field_228;
-    int16_t field_238;
-    float_t field_23C;
-    int32_t field_240;
-    int16_t field_244;
-    const void* field_248;
-    int64_t field_250;
-    float_t field_258;
-    int32_t field_25C;
-    struc_526 field_260;
-    struc_526 field_268;
-    int32_t field_270;
-    int16_t field_274;
-    int16_t field_276;
-    int32_t field_278;
-    int32_t field_27C;
-    int32_t field_280;
-    int16_t field_284;
-    int64_t field_288;
-    int32_t field_290;
-    int32_t field_294;
-    int32_t field_298;
-    float_t field_29C;
-    int8_t field_2A0;
-    float_t field_2A4;
-    float_t field_2A8;
-    float_t field_2AC;
-    int64_t field_2B0;
-    int16_t field_2B8;
-    int32_t field_2BC;
-    float_t field_2C0;
-    float_t field_2C4;
-    int32_t field_2C8;
-    int32_t field_2CC;
-    int64_t field_2D0;
-    int64_t field_2D8;
-    int64_t field_2E0;
-    int16_t field_2E8;
-    int32_t field_2EC;
-    int32_t field_2F0;
-    struc_526 field_2F4;
-    int32_t field_2FC;
-    int8_t field_300;
-    int32_t field_304;
-    int32_t field_308;
-    float_t field_30C;
-    int32_t field_310;
-    int16_t field_314;
-    vec3 field_318;
-    float_t field_324;
-    float_t field_328;
-    int32_t iterations;
-};
-
-struct struc_377 {
-    void* current; // mothead_data
-    void* data; // mothead_data
-};
-
-struct struc_226 {
-    int8_t field_0[27];
-};
-
-struct struc_225 {
-    float_t field_0[27];
-};
-
-struct struc_224 {
-    int32_t field_0[27];
-};
-
-struct struc_306 {
-    int16_t field_0;
-    float_t frame;
-    float_t field_8;
-    int16_t field_C;
-    int16_t field_E;
-    vec3 field_10;
-    vec3 field_1C;
-    vec3 field_28;
-    int32_t field_34;
-    int32_t field_38;
-    int32_t field_3C;
-    int32_t field_40;
-    int32_t field_44;
-    int32_t field_48;
-};
-
-struct struc_651 {
-    struc_377 field_0;
-    int32_t field_10;
-    int32_t field_14;
-    int32_t field_18;
-    float_t field_1C;
-    vec3 field_20;
-    struc_226 field_2C[3];
-    struc_225 field_80[3];
-    struc_224 field_1C4[3];
-    int64_t field_308;
-    float_t field_310;
-    float_t field_314;
-    int8_t field_318;
-    int32_t field_31C;
-    float_t field_320;
-    float_t field_324;
-    float_t field_328;
-    float_t field_32C;
-    float_t field_330;
-    float_t field_334;
-    int8_t field_338;
-    struc_306 field_33C[4];
-};
-
-struct struc_223 {
-    struc_652 field_0;
-    struc_651 field_330;
-    int64_t* field_7A0;
-    int32_t motion_set_id;
-};
-
-static_assert(sizeof(struc_223) == 0x7B0, "\"struc_223\" struct should have a size of 0x7B0");
-
-struct rob_chara_data_miku_rot {
-    uint8_t data[0xAC];
-};
-
-static_assert(sizeof(rob_chara_data_miku_rot) == 0xAC, "\"rob_chara_data_miku_rot\" struct should have a size of 0xAC");
-
-struct rob_chara_adjust_data {
-    float_t scale;
-    bool height_adjust;
-    float_t pos_adjust_y;
-    vec3 pos_adjust;
-    vec3 offset;
-    bool offset_x;
-    bool offset_y;
-    bool offset_z;
-    bool get_global_trans;
-    vec3 trans;
-    mat4 mat;
-    float_t left_hand_scale;
-    float_t right_hand_scale;
-    float_t left_hand_scale_default;
-    float_t right_hand_scale_default;
-};
-
-static_assert(sizeof(rob_chara_adjust_data) == 0x84, "\"rob_chara_adjust_data\" struct should have a size of 0x84");
-
-struct struc_209 {
-    uint8_t data[0x1F28];
-};
-
-static_assert(sizeof(struc_209) == 0x1F28, "\"struc_209\" struct should have a size of 0x1F28");
-
-struct rob_chara_data {
-    uint8_t field_0;
-    uint8_t field_1;
-    uint8_t field_2;
-    uint8_t field_3;
-    int32_t field_4;
-    struc_264 field_8;
-    RobSubAction rob_sub_action;
-    rob_chara_motion motion;
-    struc_223 field_1588;
-    rob_chara_data_miku_rot miku_rot;
-    rob_chara_adjust_data adjust_data;
-    struc_209 field_1E68;
-    float_t field_3D90;
-    int32_t field_3D94;
-    int16_t field_3D98;
-    int16_t field_3D9A;
-    int32_t field_3D9C;
-    int32_t field_3DA0;
-    int8_t field_3DA4;
-    int64_t field_3DA8;
-    int64_t field_3DB0;
-    int32_t field_3DB8;
-    int32_t field_3DBC;
-    int32_t field_3DC0;
-    int32_t field_3DC4;
-    int32_t field_3DC8;
-    int32_t field_3DCC;
-    int32_t field_3DD0;
-    float_t field_3DD4;
-    int32_t field_3DD8;
-    float_t field_3DDC;
-    int8_t field_3DE0;
-};
-
-static_assert(sizeof(rob_chara_data) == 0x3DE8, "\"rob_chara_data\" struct should have a size of 0x3DE8");
-
-struct rob_chara_pv_data {
-    uint8_t data[0xC4];
-};
-
-static_assert(sizeof(rob_chara_pv_data) == 0xC4, "\"rob_chara_pv_data\" struct should have a size of 0xC4");
-
-struct rob_touch {
-    uint8_t data[0x28];
-};
-
-static_assert(sizeof(rob_touch) == 0x28, "\"rob_touch\" struct should have a size of 0x28");
-
-struct rob_chara {
-    int8_t chara_id;
-    int8_t field_1;
-    int8_t field_2;
-    int8_t field_3;
-    int32_t type;
-    int16_t field_8;
-    int16_t field_A;
-    bool field_C;
-    bool field_D;
-    chara_index chara_index;
-    int32_t cos_id;
-    int32_t field_18;
-    float_t frame_speed;
-    void* field_20;
-    struct rob_chara_bone_data* bone_data;
-    rob_chara_item_equip* item_equip;
-    rob_chara_item_cos_data item_cos_data;
-    rob_chara_data data;
-    rob_chara_data data_prev;
-    struct chara_init_data* chara_init_data;
-    struct rob_detail* rob_detail;
-    rob_chara_pv_data pv_data;
-    int32_t field_80E4;
-    rob_touch rob_touch;
-};
-
-static_assert(sizeof(rob_chara) == 0x8110, "\"rob_chara\" struct should have a size of 0x8110");
 
 struct rob_chara_item_adjust_x {
     mat4 mat;
@@ -727,21 +115,25 @@ struct rob_chara_arm_adjust_x {
 
 const mat4* (FASTCALL* rob_chara_bone_data_get_mats_mat)(size_t rob_bone_data, size_t index)
     = (const mat4 * (FASTCALL*)(size_t rob_bone_data, size_t index))0x0000000140419520;
+bool (FASTCALL* pv_osage_manager_array_get_disp)(int32_t* chara_id)
+    = (bool (FASTCALL*)(int32_t * chara_id))0x00000001404F9130;
 const char* (FASTCALL* chara_index_get_auth_3d_name)(chara_index chara_index)
     = (const char* (FASTCALL*)(chara_index chara_index))0x0000000140508100;
-void(FASTCALL* sub_1405163C0)(size_t rob_chr, int32_t index, mat4* mat)
-    = (void(FASTCALL*)(size_t rob_chr, int32_t index, mat4 * mat))0x00000001405163C0;
-float_t(FASTCALL* rob_chara_get_max_face_depth)(size_t rob_chr)
-    = (float_t(FASTCALL*)(size_t rob_chr))0x0000000140516510;
-const mat4* (FASTCALL* rob_chara_get_bone_data_mat)(size_t rob_chr, mot_bone_index index)
-    = (const mat4 * (FASTCALL*)(size_t rob_chr, mot_bone_index index))0x0000000140516730;
-const mat4* (FASTCALL* sub_140516740)(size_t rob_chr)
-    = (const mat4 * (FASTCALL*)(size_t rob_chr))0x0000000140516740;
+void(FASTCALL* sub_1405163C0)(rob_chara* rob_chr, int32_t index, mat4* mat)
+    = (void(FASTCALL*)(rob_chara* rob_chr, int32_t index, mat4 * mat))0x00000001405163C0;
+float_t(FASTCALL* rob_chara_get_max_face_depth)(rob_chara* rob_chr)
+    = (float_t(FASTCALL*)(rob_chara* rob_chr))0x0000000140516510;
+const mat4* (FASTCALL* rob_chara_get_bone_data_mat)(rob_chara* rob_chr, mot_bone_index index)
+    = (const mat4 * (FASTCALL*)(rob_chara* rob_chr, mot_bone_index index))0x0000000140516730;
+const mat4* (FASTCALL* sub_140516740)(rob_chara* rob_chr)
+    = (const mat4 * (FASTCALL*)(rob_chara* rob_chr))0x0000000140516740;
 bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr_smth, int32_t chara_id)
     = (bool(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140531F50;
+rob_chara* (FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id)
+    = (rob_chara * (FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140532030;
 size_t(FASTCALL* get_rob_chara_smth)() = (size_t(FASTCALL*)())0x00000001405320E0;
-size_t(FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id)
-    = (size_t(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140532030;
+rob_chara_item_equip* (FASTCALL* rob_chara_array_get_item_equip)(size_t rob_chr_smth, int32_t chara_id)
+    = (rob_chara_item_equip * (FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140532120;
 size_t(FASTCALL* rob_chara_array_get_bone_data)(size_t rob_chr_smth, int32_t chara_id)
     = (size_t(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x00000001405320F0;
 bool (FASTCALL* rob_chara_pv_data_array_check_chara_id)(size_t rob_chr_smth, int32_t chara_id)
@@ -759,13 +151,171 @@ rob_chara_arm_adjust_x rob_chara_arm_adjust_x_array[ROB_CHARA_COUNT];
 
 static void rob_chara_age_age_array_disp(int32_t chara_id, bool reflect, bool chara_color);
 
-const mat4* rob_chara_get_adjust_data_mat(size_t rob_chr) {
-    return &((rob_chara*)rob_chr)->data.adjust_data.mat;
+SkinParam::CollisionParam::CollisionParam() : type(), node_idx(), pos() {
+    radius = 0.2f;
 }
 
-const mat4* rob_chara_get_item_adjust_data_mat(size_t rob_chr) {
-    int32_t chara_id = ((rob_chara*)rob_chr)->chara_id;
-    return &rob_chara_item_adjust_x_array[chara_id].mat;
+void RobOsage::SetAirRes(float_t air_res) {
+    skin_param_ptr->air_res = air_res;
+}
+
+void RobOsage::SetColiR(float_t coli_r) {
+    RobOsageNode* i_begin = nodes.data() + 1;
+    RobOsageNode* i_end = nodes.data() + nodes.size();
+    for (RobOsageNode* i = i_begin; i != i_end; i++)
+        i->data_ptr->skp_osg_node.coli_r = coli_r;
+}
+
+void RobOsage::SetForce(float_t force, float_t force_gain) {
+    skin_param_ptr->force = force;
+    skin_param_ptr->force_gain = force_gain;
+    RobOsageNode* i_begin = nodes.data() + 1;
+    RobOsageNode* i_end = nodes.data() + nodes.size();
+    for (RobOsageNode* i = i_begin; i != i_end; i++) {
+        i->data_ptr->force = force;
+        force = force * force_gain;
+    }
+}
+
+void RobOsage::SetHinge(float_t hinge_y, float_t hinge_z) {
+    hinge_y = min_def(hinge_y, 179.0f);
+    hinge_z = min_def(hinge_z, 179.0f);
+    hinge_y = hinge_y * DEG_TO_RAD_FLOAT;
+    hinge_z = hinge_z * DEG_TO_RAD_FLOAT;
+    RobOsageNode* i_begin = nodes.data() + 1;
+    RobOsageNode* i_end = nodes.data() + nodes.size();
+    for (RobOsageNode* i = i_begin; i != i_end; i++) {
+        RobOsageNodeData* data = i->data_ptr;
+        data->skp_osg_node.hinge.ymin = -hinge_y;
+        data->skp_osg_node.hinge.ymax = hinge_y;
+        data->skp_osg_node.hinge.zmin = -hinge_z;
+        data->skp_osg_node.hinge.zmax = hinge_z;
+    }
+}
+
+void RobOsage::SetInitRot(float_t init_rot_y, float_t init_rot_z) {
+    skin_param_ptr->init_rot.y = init_rot_y * DEG_TO_RAD_FLOAT;
+    skin_param_ptr->init_rot.z = init_rot_z * DEG_TO_RAD_FLOAT;
+}
+
+void RobOsage::SetMotionResetData(uint32_t motion_id, float_t frame) {
+    osage_reset = true;
+    auto elem = motion_reset_data.find({ motion_id, (int32_t)prj::roundf(frame * 1000.0f) });
+    if (elem != motion_reset_data.end() && elem->second.size() + 1 == nodes.size())
+        reset_data_list = &elem->second;
+}
+
+// 0x140480F40
+void RobOsage::SetNodesExternalForce(vec3* external_force, float_t strength) {
+    if (!external_force) {
+        RobOsageNode* i_begin = nodes.data() + 1;
+        RobOsageNode* i_end = nodes.data() + nodes.size();
+        for (RobOsageNode* i = i_begin; i != i_end; i++)
+            i->external_force = 0.0f;
+        return;
+    }
+
+    vec3 v4 = *external_force;
+    size_t exf = osage_setting.exf;
+    size_t v8 = 0;
+    if (exf >= 4) {
+        float_t strength4 = strength * strength * strength * strength;
+        v8 = ((exf - 4) / 4 + 1) * 4;
+        for (size_t v10 = v8 / 4; v10; v10--)
+            v4 *= strength4;
+    }
+
+    if (v8 < exf)
+        for (size_t v12 = exf - v8; v12; v12--)
+            v4 *= strength;
+
+    RobOsageNode* i_begin = nodes.data() + 1;
+    RobOsageNode* i_end = nodes.data() + nodes.size();
+    for (RobOsageNode* i = i_begin; i != i_end; i++) {
+        i->external_force = v4;
+        v4 *= strength;
+    }
+}
+
+// 0x140481540
+void RobOsage::SetNodesForce(float_t force) {
+    RobOsageNode* i_begin = nodes.data() + 1;
+    RobOsageNode* i_end = nodes.data() + nodes.size();
+    for (RobOsageNode* i = i_begin; i != i_end; i++)
+        i->force = force;
+}
+
+void RobOsage::SetRot(float_t rot_y, float_t rot_z) {
+    skin_param_ptr->rot.y = rot_y * DEG_TO_RAD_FLOAT;
+    skin_param_ptr->rot.z = rot_z * DEG_TO_RAD_FLOAT;
+}
+
+void rob_chara_item_equip_object::disp(const mat4* mat) {
+    if (obj_info.is_null())
+        return;
+
+    mdl::ObjFlags flags = disp_manager->get_obj_flags();
+    mdl::ObjFlags chara_flags = flags;
+    if (fabsf(alpha - 1.0f) > 0.000001f)
+        enum_or(chara_flags, obj_flags);
+    else
+        enum_and(chara_flags, ~(mdl::OBJ_ALPHA_ORDER_3 | mdl::OBJ_ALPHA_ORDER_2 | mdl::OBJ_ALPHA_ORDER_1));
+    disp_manager->set_obj_flags(chara_flags);
+    if (can_disp) {
+        disp_manager->entry_obj_by_object_info_object_skin(obj_info,
+            &texture_pattern, &texture_data, alpha, mats, ex_data_bone_mats.data(), 0, mat);
+
+        rob_chara_item_equip_mat = mat;
+
+        for (ExNodeBlock*& i : node_blocks)
+            i->__vftable->Disp(i);
+    }
+    disp_manager->set_obj_flags(flags);
+}
+
+int32_t rob_chara_item_equip_object::get_bone_index(const char* name) {
+    int32_t(FASTCALL * sub_1401F13B0)(int32_t a1, const char* a2)
+        = (int32_t(FASTCALL*)(int32_t a1, const char* a2))0x00000001401F13B0;
+
+    int32_t bone_index = sub_1401F13B0(0, name);
+    if (bone_index == -1)
+        for (auto& i : ex_bones)
+            if (!str_utils_compare(name, i.first))
+                return 0x8000 | i.second;
+    return bone_index;
+}
+
+bone_node* rob_chara_item_equip_object::get_bone_node(
+    int32_t bone_index) {
+    if (!(bone_index & 0x8000))
+        return &bone_nodes[bone_index & 0x7FFF];
+    else if ((bone_index & 0x7FFF) < ex_data_bone_nodes.size())
+        return &ex_data_bone_nodes[bone_index & 0x7FFF];
+    return 0;
+}
+
+bone_node* rob_chara_item_equip_object::get_bone_node(const char* name) {
+    return get_bone_node(get_bone_index(name));
+}
+
+void rob_chara_item_equip_object::skp_load(void* can_prop) {
+    void (FASTCALL * rob_chara_item_equip_object__skp_load)(rob_chara_item_equip_object * _this, void* can_prop)
+        = (void (FASTCALL*)(rob_chara_item_equip_object * _this, void* can_prop))0x00000001405F43E0;
+    rob_chara_item_equip_object__skp_load(this, can_prop);
+}
+
+rob_chara_item_equip_object* rob_chara_item_equip::get_item_equip_object(item_id id) {
+    if (id >= ITEM_BODY && id <= ITEM_ITEM16)
+        return &item_equip_object[id];
+    return 0;
+}
+
+const mat4* rob_chara_get_adjust_data_mat(rob_chara* rob_chr) {
+    return &rob_chr->data.adjust_data.mat;
+}
+
+const mat4* rob_chara_get_item_adjust_data_mat(rob_chara* rob_chr) {
+    return &rob_chara_item_adjust_x_array[rob_chr->chara_id].mat;
 }
 
 HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh* mesh, obj_mesh_vertex_buffer* vertex_buffer,
@@ -1166,7 +716,7 @@ HOOK(void, FASTCALL, mothead_func_32, 0x0000000140533C00, struct mothead_func_da
         return;
     }
 
-    size_t rob_chr_data = *(size_t*)((size_t)func_data + 0x08);
+    rob_chara_data* rob_chr_data = (rob_chara_data*)((size_t)func_data + 0x08);
     rob_chara* rob_chr = ((rob_chara*)((size_t)rob_chr_data - 0x440));
 
     float_t value = v9;
@@ -1349,54 +899,6 @@ void rob_chara_age_age::disp(size_t chara_id,
     bool npr, bool reflect, const vec3& a5, bool chara_color) {
     if (alpha >= 0.1f && this->visible)
         object.disp(chara_id, npr || this->npr, reflect, a5, chara_color);
-}
-
-void rob_chara_item_equip_object::disp(const mat4* mat) {
-    if (obj_info.is_null())
-        return;
-
-    mdl::ObjFlags flags = disp_manager->get_obj_flags();
-    mdl::ObjFlags chara_flags = flags;
-    if (fabsf(alpha - 1.0f) > 0.000001f)
-        enum_or(chara_flags, obj_flags);
-    else
-        enum_and(chara_flags, ~(mdl::OBJ_ALPHA_ORDER_3 | mdl::OBJ_ALPHA_ORDER_2 | mdl::OBJ_ALPHA_ORDER_1));
-    disp_manager->set_obj_flags(chara_flags);
-    if (can_disp) {
-        disp_manager->entry_obj_by_object_info_object_skin(obj_info,
-            &texture_pattern, &texture_data, alpha, mats, ex_data_bone_mats.data(), 0, mat);
-
-        rob_chara_item_equip_mat = mat;
-
-        for (ExNodeBlock*& i : node_blocks)
-            i->__vftable->Disp(i);
-    }
-    disp_manager->set_obj_flags(flags);
-}
-
-int32_t rob_chara_item_equip_object::get_bone_index(const char* name) {
-    int32_t(FASTCALL * sub_1401F13B0)(int32_t a1, const char* a2)
-        = (int32_t(FASTCALL*)(int32_t a1, const char* a2))0x00000001401F13B0;
-
-    int32_t bone_index = sub_1401F13B0(0, name);
-    if (bone_index == -1)
-        for (auto& i : ex_bones)
-            if (!str_utils_compare(name, i.first))
-                return 0x8000 | i.second;
-    return bone_index;
-}
-
-bone_node* rob_chara_item_equip_object::get_bone_node(
-    int32_t bone_index) {
-    if (!(bone_index & 0x8000))
-        return &bone_nodes[bone_index & 0x7FFF];
-    else if ((bone_index & 0x7FFF) < ex_data_bone_nodes.size())
-        return &ex_data_bone_nodes[bone_index & 0x7FFF];
-    return 0;
-}
-
-bone_node* rob_chara_item_equip_object::get_bone_node(const char* name) {
-    return get_bone_node(get_bone_index(name));
 }
 
 rob_chara_item_adjust_x::rob_chara_item_adjust_x() : scale() {

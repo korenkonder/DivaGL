@@ -46,8 +46,8 @@ namespace renderer {
 
                         size_t rob_chr = 0;
                         for (int32_t i = 0; i < ROB_CHARA_COUNT; i++) {
-                            size_t rob_chr = rob_chara_array_get(rob_chara_smth, i);
-                            if (!rob_chr || !(*(uint8_t*)(rob_chara_smth + 0x440) & 1))
+                            rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, i);
+                            if (!rob_chr || !rob_chr->is_visible())
                                 continue;
 
                             mat4 mat;

@@ -390,7 +390,7 @@ namespace Glitter {
 
         if (flags & EFFECT_INST_CHARA_ANIM) {
             size_t rob_chara_smth = get_rob_chara_smth();
-            size_t rob_chr = rob_chara_array_get(rob_chara_smth, ext_anim->chara_index);
+            rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, ext_anim->chara_index);
             if (!rob_chr)
                 return;
 
@@ -441,7 +441,7 @@ namespace Glitter {
 
             int32_t chara_id = ((auth_3d_id*)&ext_anim->a3da_id)->get_chara_id();
             if (chara_id >= 0 && chara_id < ROB_CHARA_COUNT) {
-                size_t rob_chr = rob_chara_array_get(get_rob_chara_smth(), chara_id);
+                rob_chara* rob_chr = rob_chara_array_get(get_rob_chara_smth(), chara_id);
                 if (rob_chr) {
                     mat4_transpose(rob_chara_get_adjust_data_mat(rob_chr), &mat);
 

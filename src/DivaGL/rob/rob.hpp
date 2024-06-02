@@ -8,6 +8,8 @@
 #include "../../KKdLib/default.hpp"
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
+#include "../mdl/disp_manager.hpp"
+#include "../object.hpp"
 
 enum chara_index {
     CHARA_NONE   = -1,
@@ -22,6 +24,23 @@ enum chara_index {
     CHARA_SAKINE = 0x08,
     CHARA_TETO   = 0x09,
     CHARA_MAX    = 0x0A,
+};
+
+enum ex_expression_block_stack_type {
+    EX_EXPRESSION_BLOCK_STACK_NUMBER          = 0x00,
+    EX_EXPRESSION_BLOCK_STACK_VARIABLE        = 0x01,
+    EX_EXPRESSION_BLOCK_STACK_VARIABLE_RADIAN = 0x02,
+    EX_EXPRESSION_BLOCK_STACK_OP1             = 0x03,
+    EX_EXPRESSION_BLOCK_STACK_OP2             = 0x04,
+    EX_EXPRESSION_BLOCK_STACK_OP3             = 0x05,
+};
+
+enum eyes_base_adjust_type {
+    EYES_BASE_ADJUST_NONE      = -1,
+    EYES_BASE_ADJUST_DIRECTION = 0x00,
+    EYES_BASE_ADJUST_CLEARANCE = 0x01,
+    EYES_BASE_ADJUST_OFF       = 0x02,
+    EYES_BASE_ADJUST_MAX       = 0x03,
 };
 
 enum item_id {
@@ -293,6 +312,99 @@ enum mot_bone_index {
     MOT_BONE_N_HARA_B_WJ_EX          = 0xC7,
     MOT_BONE_N_HARA_C_WJ_EX          = 0xC8,
     MOT_BONE_MAX                     = 0xC9,
+};
+
+enum mothead_data_type {
+    MOTHEAD_DATA_TYPE_0 = 0x00,
+    MOTHEAD_DATA_TYPE_1 = 0x01,
+    MOTHEAD_DATA_TYPE_2 = 0x02,
+    MOTHEAD_DATA_TYPE_3 = 0x03,
+    MOTHEAD_DATA_TYPE_4 = 0x04,
+    MOTHEAD_DATA_TYPE_5 = 0x05,
+    MOTHEAD_DATA_TYPE_6 = 0x06,
+    MOTHEAD_DATA_TYPE_7 = 0x07,
+    MOTHEAD_DATA_TYPE_8 = 0x08,
+    MOTHEAD_DATA_TYPE_9 = 0x09,
+    MOTHEAD_DATA_TYPE_10 = 0x0A,
+    MOTHEAD_DATA_TYPE_11 = 0x0B,
+    MOTHEAD_DATA_TYPE_12 = 0x0C,
+    MOTHEAD_DATA_TYPE_13 = 0x0D,
+    MOTHEAD_DATA_TYPE_14 = 0x0E,
+    MOTHEAD_DATA_TYPE_15 = 0x0F,
+    MOTHEAD_DATA_TYPE_16 = 0x10,
+    MOTHEAD_DATA_TYPE_17 = 0x11,
+    MOTHEAD_DATA_TYPE_18 = 0x12,
+    MOTHEAD_DATA_TYPE_19 = 0x13,
+    MOTHEAD_DATA_TYPE_20 = 0x14,
+    MOTHEAD_DATA_TYPE_21 = 0x15,
+    MOTHEAD_DATA_TYPE_22 = 0x16,
+    MOTHEAD_DATA_TYPE_23 = 0x17,
+    MOTHEAD_DATA_TYPE_24 = 0x18,
+    MOTHEAD_DATA_TYPE_25 = 0x19,
+    MOTHEAD_DATA_TYPE_26 = 0x1A,
+    MOTHEAD_DATA_TYPE_27 = 0x1B,
+    MOTHEAD_DATA_TYPE_28 = 0x1C,
+    MOTHEAD_DATA_TYPE_29 = 0x1D,
+    MOTHEAD_DATA_TYPE_30 = 0x1E,
+    MOTHEAD_DATA_TYPE_31 = 0x1F,
+    MOTHEAD_DATA_TYPE_32 = 0x20,
+    MOTHEAD_DATA_TYPE_33 = 0x21,
+    MOTHEAD_DATA_TYPE_34 = 0x22,
+    MOTHEAD_DATA_TYPE_35 = 0x23,
+    MOTHEAD_DATA_TYPE_36 = 0x24,
+    MOTHEAD_DATA_TYPE_37 = 0x25,
+    MOTHEAD_DATA_TYPE_38 = 0x26,
+    MOTHEAD_DATA_TYPE_39 = 0x27,
+    MOTHEAD_DATA_TYPE_40 = 0x28,
+    MOTHEAD_DATA_TYPE_41 = 0x29,
+    MOTHEAD_DATA_TYPE_42 = 0x2A,
+    MOTHEAD_DATA_TYPE_43 = 0x2B,
+    MOTHEAD_DATA_TYPE_44 = 0x2C,
+    MOTHEAD_DATA_TYPE_45 = 0x2D,
+    MOTHEAD_DATA_TYPE_46 = 0x2E,
+    MOTHEAD_DATA_TYPE_47 = 0x2F,
+    MOTHEAD_DATA_TYPE_48 = 0x30,
+    MOTHEAD_DATA_TYPE_49 = 0x31,
+    MOTHEAD_DATA_SET_FACE_MOTION_ID = 0x32,
+    MOTHEAD_DATA_TYPE_51 = 0x33,
+    MOTHEAD_DATA_TYPE_52 = 0x34,
+    MOTHEAD_DATA_SET_FACE_MOTTBL_MOTION = 0x35,
+    MOTHEAD_DATA_SET_HAND_R_MOTTBL_MOTION = 0x36,
+    MOTHEAD_DATA_SET_HAND_L_MOTTBL_MOTION = 0x37,
+    MOTHEAD_DATA_SET_MOUTH_MOTTBL_MOTION = 0x38,
+    MOTHEAD_DATA_SET_EYES_MOTTBL_MOTION = 0x39,
+    MOTHEAD_DATA_SET_EYELID_MOTTBL_MOTION = 0x3A,
+    MOTHEAD_DATA_SET_ROB_CHARA_HEAD_OBJECT = 0x3B,
+    MOTHEAD_DATA_TYPE_60 = 0x3C,
+    MOTHEAD_DATA_SET_EYELID_MOTION_FROM_FACE = 0x3D,
+    MOTHEAD_DATA_ROB_PARTS_ADJUST = 0x3E,
+    MOTHEAD_DATA_TYPE_63 = 0x3F,
+    MOTHEAD_DATA_WIND_RESET = 0x40,
+    MOTHEAD_DATA_OSAGE_RESET = 0x41,
+    MOTHEAD_DATA_OSAGE_STEP = 0x42,
+    MOTHEAD_DATA_SLEEVE_ADJUST = 0x43,
+    MOTHEAD_DATA_TYPE_68 = 0x44,
+    MOTHEAD_DATA_TYPE_69 = 0x45,
+    MOTHEAD_DATA_TYPE_70 = 0x46,
+    MOTHEAD_DATA_OSAGE_MOVE_CANCEL = 0x47,
+    MOTHEAD_DATA_TYPE_72 = 0x48,
+    MOTHEAD_DATA_ROB_HAND_ADJUST = 0x49,
+    MOTHEAD_DATA_DISABLE_COLLISION = 0x4A,
+    MOTHEAD_DATA_ROB_ADJUST_GLOBAL = 0x4B,
+    MOTHEAD_DATA_ROB_ARM_ADJUST = 0x4C,
+    MOTHEAD_DATA_DISABLE_EYE_MOTION = 0x4D,
+    MOTHEAD_DATA_TYPE_78 = 0x4E,
+    MOTHEAD_DATA_ROB_CHARA_COLI_RING = 0x4F,
+    MOTHEAD_DATA_ADJUST_GET_GLOBAL_TRANS = 0x50,
+    MOTHEAD_DATA_MAX = 0x51,
+};
+
+enum MotionBlendType {
+    MOTION_BLEND_NONE = -1,
+    MOTION_BLEND = 0x00,
+    MOTION_BLEND_FREEZE = 0x01,
+    MOTION_BLEND_CROSS = 0x02,
+    MOTION_BLEND_COMBINE = 0x03,
 };
 
 enum motion_bone_index {
@@ -683,30 +795,1052 @@ enum rob_bone_index {
     ROB_BONE_MAX                     = 0xC1,
 };
 
-struct rob_chara_pv_data_item {
-    int32_t head;
-    int32_t face;
-    int32_t chest;
-    int32_t back;
+enum rob_chara_type {
+    ROB_CHARA_TYPE_NONE = -1,
+    ROB_CHARA_TYPE_0    = 0x00,
+    ROB_CHARA_TYPE_1    = 0x01,
+    ROB_CHARA_TYPE_2    = 0x02,
+    ROB_CHARA_TYPE_3    = 0x03,
 };
+
+enum rob_chara_data_hand_adjust_type : uint16_t {
+    ROB_CHARA_DATA_HAND_ADJUST_NONE           = (uint16_t)-1,
+    ROB_CHARA_DATA_HAND_ADJUST_NORMAL         = 0x00,
+    ROB_CHARA_DATA_HAND_ADJUST_SHORT          = 0x01,
+    ROB_CHARA_DATA_HAND_ADJUST_TALL           = 0x02,
+    ROB_CHARA_DATA_HAND_ADJUST_MIN            = 0x03,
+    ROB_CHARA_DATA_HAND_ADJUST_MAX            = 0x04,
+    ROB_CHARA_DATA_HAND_ADJUST_OPPOSITE_CHARA = 0x05,
+    ROB_CHARA_DATA_HAND_ADJUST_CUSTOM         = 0x06,
+    ROB_CHARA_DATA_HAND_ADJUST_1P             = 0x07,
+    ROB_CHARA_DATA_HAND_ADJUST_2P             = 0x08,
+    ROB_CHARA_DATA_HAND_ADJUST_3P             = 0x09,
+    ROB_CHARA_DATA_HAND_ADJUST_4P             = 0x0A,
+    ROB_CHARA_DATA_HAND_ADJUST_ITEM           = 0x0F, // X
+};
+
+enum rob_osage_parts {
+    ROB_OSAGE_PARTS_NONE        = -1,
+    ROB_OSAGE_PARTS_LEFT        = 0x00,
+    ROB_OSAGE_PARTS_RIGHT       = 0x01,
+    ROB_OSAGE_PARTS_CENTER      = 0x02,
+    ROB_OSAGE_PARTS_LONG_C      = 0x03,
+    ROB_OSAGE_PARTS_SHORT_L     = 0x04,
+    ROB_OSAGE_PARTS_SHORT_R     = 0x05,
+    ROB_OSAGE_PARTS_APPEND_L    = 0x06,
+    ROB_OSAGE_PARTS_APPEND_R    = 0x07,
+    ROB_OSAGE_PARTS_MUFFLER     = 0x08,
+    ROB_OSAGE_PARTS_WHITE_ONE_L = 0x09,
+    ROB_OSAGE_PARTS_PONY        = 0x0A,
+    ROB_OSAGE_PARTS_ANGEL_L     = 0x0B,
+    ROB_OSAGE_PARTS_ANGEL_R     = 0x0C,
+    ROB_OSAGE_PARTS_MAX         = 0x0D,
+};
+
+enum ExNodeType {
+    EX_NONE       = 0x00,
+    EX_OSAGE      = 0x01,
+    EX_EXPRESSION = 0x02,
+    EX_CONSTRAINT = 0x03,
+    EX_CLOTH      = 0x04,
+};
+
+namespace SkinParam {
+    enum CollisionType {
+        CollisionTypeEnd     = 0x0,
+        CollisionTypeBall    = 0x1,
+        CollisionTypeCapsule = 0x2,
+        CollisionTypePlane   = 0x3,
+        CollisionTypeEllipse = 0x4,
+        CollisionTypeAABB    = 0x5,
+        CollisionTypeMax     = 0x6,
+    };
+
+    enum RootCollisionType {
+        RootCollisionTypeEnd     = 0x0,
+        RootCollisionTypeBall    = 0x1,
+        RootCollisionTypeCapsule = 0x2,
+        RootCollisionTypeMax     = 0x3,
+    };
+}
+
+struct rob_chara;
+struct rob_chara_bone_data;
+
+struct bone_node_expression_data {
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
+    vec3 parent_scale;
+};
+
+static_assert(sizeof(bone_node_expression_data) == 0x30, "\"bone_node_expression_data\" struct should have a size of 0x30");
+
+struct bone_node {
+    const char* name;
+    mat4* mat;
+    bone_node* parent;
+    bone_node_expression_data exp_data;
+    mat4* ex_data_mat;
+};
+
+static_assert(sizeof(bone_node) == 0x50, "\"bone_node\" struct should have a size of 0x50");
+
+struct rob_sleeve_data {
+    float_t radius;
+    float_t cyofs;
+    float_t czofs;
+    float_t ymin;
+    float_t ymax;
+    float_t zmin;
+    float_t zmax;
+    float_t mune_xofs;
+    float_t mune_yofs;
+    float_t mune_zofs;
+    float_t mune_rad;
+};
+
+static_assert(sizeof(rob_sleeve_data) == 0x2C, "\"rob_sleeve_data\" struct should have a size of 0x2C");
+
+struct eyes_adjust {
+    bool xrot_adjust;
+    eyes_base_adjust_type base_adjust;
+    float_t neg;
+    float_t pos;
+};
+
+static_assert(sizeof(eyes_adjust) == 0x10, "\"eyes_adjust\" struct should have a size of 0x10");
+
+union rob_chara_pv_data_item {
+    struct {
+        int32_t head;
+        int32_t face;
+        int32_t chest;
+        int32_t back;
+    };
+    int32_t arr[4];
+};
+
+static_assert(sizeof(rob_chara_pv_data_item) == 0x10, "\"rob_chara_pv_data_item\" struct should have a size of 0x10");
+
+struct rob_chara_pv_data {
+    rob_chara_type type;
+    bool field_4;
+    bool field_5;
+    bool field_6;
+    vec3 field_8;
+    int16_t rot_y_int16;
+    int16_t field_16;
+    rob_sleeve_data sleeve_l;
+    rob_sleeve_data sleeve_r;
+    int32_t field_70;
+    uint32_t motion_face_ids[10];
+    int32_t chara_size_index;
+    bool height_adjust;
+    rob_chara_pv_data_item item;
+    eyes_adjust eyes_adjust;
+};
+
+static_assert(sizeof(rob_chara_pv_data) == 0xC4, "\"rob_chara_pv_data\" struct should have a size of 0xC4");
+
+struct rob_chara_item_equip_object;
+
+struct ExNodeBlock;
+
+struct ExNodeBlock_vtbl {
+    ExNodeBlock* (FASTCALL* Dispose)(ExNodeBlock* _this, uint8_t);
+    void(FASTCALL* Field_8)(ExNodeBlock* _this);
+    void(FASTCALL* Field_10)(ExNodeBlock* _this);
+    void(FASTCALL* Field_18)(ExNodeBlock* _this, int32_t stage, bool disable_external_force);
+    void(FASTCALL* Field_20)(ExNodeBlock* _this);
+    void(FASTCALL* SetOsagePlayData)(ExNodeBlock* _this);
+    void(FASTCALL* Disp)(ExNodeBlock* _this);
+    void(FASTCALL* Reset)(ExNodeBlock* _this);
+    void(FASTCALL* Field_40)(ExNodeBlock* _this);
+    void(FASTCALL* Field_48)(ExNodeBlock* _this);
+    void(FASTCALL* Field_50)(ExNodeBlock* _this);
+    void(FASTCALL* Field_58)(ExNodeBlock* _this);
+};
+
+static_assert(sizeof(ExNodeBlock_vtbl) == 0x60, "\"ExNodeBlock_vtbl\" struct should have a size of 0x60");
+
+struct ExNodeBlock {
+    ExNodeBlock_vtbl* __vftable;
+    bone_node* bone_node_ptr;
+    ExNodeType type;
+    const char* name;
+    bone_node* parent_bone_node;
+    prj::string parent_name;
+    ExNodeBlock* parent_node;
+    rob_chara_item_equip_object* item_equip_object;
+    bool field_58;
+    bool field_59;
+    bool has_children_node;
+};
+
+static_assert(sizeof(ExNodeBlock) == 0x60, "\"ExNodeBlock\" struct should have a size of 0x60");
+
+struct RobOsageNode;
+
+struct RobOsageNodeDataNormalRef {
+    bool set;
+    RobOsageNode* n;
+    RobOsageNode* u;
+    RobOsageNode* d;
+    RobOsageNode* l;
+    RobOsageNode* r;
+    mat4 mat;
+};
+
+static_assert(sizeof(RobOsageNodeDataNormalRef) == 0x70, "\"RobOsageNodeDataNormalRef\" struct should have a size of 0x70");
+
+struct skin_param_hinge {
+    float_t ymin;
+    float_t ymax;
+    float_t zmin;
+    float_t zmax;
+};
+
+static_assert(sizeof(skin_param_hinge) == 0x10, "\"skin_param_hinge\" struct should have a size of 0x10");
+
+struct skin_param_osage_node {
+    float_t coli_r;
+    float_t weight;
+    float_t inertial_cancel;
+    skin_param_hinge hinge;
+};
+
+static_assert(sizeof(skin_param_osage_node) == 0x1C, "\"skin_param_osage_node\" struct should have a size of 0x1C");
+
+struct RobOsageNodeResetData {
+    vec3 trans;
+    vec3 trans_diff;
+    vec3 rotation;
+    float_t length;
+};
+
+static_assert(sizeof(RobOsageNodeResetData) == 0x28, "\"RobOsageNodeResetData\" struct should have a size of 0x28");
+
+struct skin_param_osage_root;
+
+struct RobOsageNodeData {
+    float_t force;
+    prj::vector<RobOsageNode*> boc;
+    RobOsageNodeDataNormalRef normal_ref;
+    skin_param_osage_node skp_osg_node;
+};
+
+static_assert(sizeof(RobOsageNodeData) == 0xB0, "\"RobOsageNodeData\" struct should have a size of 0xB0");
+
+struct opd_blend_data {
+    int32_t motion_id;
+    float_t frame;
+    float_t frame_count;
+    bool use_blend;
+    MotionBlendType type;
+    float_t blend;
+};
+
+static_assert(sizeof(opd_blend_data) == 0x18, "\"opd_blend_data\" struct should have a size of 0x18");
+
+struct opd_vec3_data {
+    const float_t* x;
+    const float_t* y;
+    const float_t* z;
+};
+
+static_assert(sizeof(opd_vec3_data) == 0x18, "\"opd_vec3_data\" struct should have a size of 0x18");
+
+struct opd_node_data {
+    float_t length;
+    vec3 rotation;
+};
+
+static_assert(sizeof(opd_node_data) == 0x10, "\"opd_node_data\" struct should have a size of 0x10");
+
+struct opd_node_data_pair {
+    opd_node_data curr;
+    opd_node_data prev;
+};
+
+static_assert(sizeof(opd_node_data_pair) == 0x20, "\"opd_node_data_pair\" struct should have a size of 0x20");
+
+struct RobOsageNode {
+    float_t length;
+    vec3 trans;
+    vec3 trans_orig;
+    vec3 trans_diff;
+    vec3 field_28;
+    float_t child_length;
+    bone_node* bone_node_ptr;
+    mat4* bone_node_mat;
+    mat4 mat;
+    RobOsageNode* sibling_node;
+    float_t max_distance;
+    vec3 field_94;
+    RobOsageNodeResetData reset_data;
+    float_t field_C8;
+    float_t friction;
+    vec3 external_force;
+    float_t force;
+    RobOsageNodeData* data_ptr;
+    RobOsageNodeData data;
+    prj::vector<opd_vec3_data> opd_data;
+    opd_node_data_pair opd_node_data;
+};
+
+static_assert(sizeof(RobOsageNode) == 0x1D0, "\"RobOsageNode\" struct should have a size of 0x1D0");
+
+namespace SkinParam {
+    struct CollisionParam {
+        CollisionType type;
+        int32_t node_idx[2];
+        float_t radius;
+        vec3 pos[2];
+
+        CollisionParam();
+    };
+
+    static_assert(sizeof(SkinParam::CollisionParam) == 0x28, "\"SkinParam::CollisionParam\" struct should have a size of 0x28");
+};
+
+struct skin_param_osage_root_normal_ref {
+    prj::string n;
+    prj::string u;
+    prj::string d;
+    prj::string l;
+    prj::string r;
+};
+
+static_assert(sizeof(skin_param_osage_root_normal_ref) == 0xA0, "\"skin_param_osage_root_normal_ref\" struct should have a size of 0xA0");
+
+struct skin_param_osage_root_boc {
+    int32_t ed_node;
+    prj::string ed_root;
+    int32_t st_node;
+};
+
+static_assert(sizeof(skin_param_osage_root_boc) == 0x30, "\"skin_param_osage_root_boc\" struct should have a size of 0x30");
+
+struct skin_param_osage_root {
+    int32_t field_0;
+    float_t force;
+    float_t force_gain;
+    float_t air_res;
+    float_t rot_y;
+    float_t rot_z;
+    float_t init_rot_y;
+    float_t init_rot_z;
+    float_t hinge_y;
+    float_t hinge_z;
+    const char* name;
+    prj::vector<SkinParam::CollisionParam> coli;
+    float_t coli_r;
+    float_t friction;
+    float_t wind_afc;
+    int32_t yz_order;
+    prj::vector<skin_param_osage_root_boc> boc;
+    SkinParam::RootCollisionType coli_type;
+    float_t stiffness;
+    float_t move_cancel;
+    prj::string colli_tgt_osg;
+    prj::vector<skin_param_osage_root_normal_ref> normal_ref;
+};
+
+static_assert(sizeof(skin_param_osage_root) == 0xB8, "\"skin_param_osage_root\" struct should have a size of 0xB8");
+
+struct skin_param {
+    prj::vector<SkinParam::CollisionParam> coli;
+    float_t friction;
+    float_t wind_afc;
+    float_t air_res;
+    vec3 rot;
+    vec3 init_rot;
+    SkinParam::RootCollisionType coli_type;
+    float_t stiffness;
+    float_t move_cancel;
+    float_t coli_r;
+    skin_param_hinge hinge;
+    float_t force;
+    float_t force_gain;
+    prj::vector<RobOsageNode>* colli_tgt_osg;
+};
+
+static_assert(sizeof(skin_param) == 0x70, "\"skin_param\" struct should have a size of 0x70");
+
+struct OsageCollision {
+    struct Work {
+        SkinParam::CollisionType type;
+        float_t radius;
+        vec3 pos[2];
+        vec3 vec_center;
+        float_t vec_center_length;
+        float_t vec_center_length_squared;
+        float_t friction;
+    };
+
+    static_assert(sizeof(OsageCollision::Work) == 0x38, "\"OsageCollision::Work\" struct should have a size of 0x38");
+
+    prj::vector<Work> work_list;
+};
+
+static_assert(sizeof(OsageCollision) == 0x18, "\"OsageCollision\" struct should have a size of 0x18");
+
+struct osage_ring_data {
+    float_t ring_rectangle_x;
+    float_t ring_rectangle_y;
+    float_t ring_rectangle_width;
+    float_t ring_rectangle_height;
+    float_t ring_height;
+    float_t ring_out_height;
+    bool init;
+    OsageCollision coli;
+    prj::vector<SkinParam::CollisionParam> skp_root_coli;
+};
+
+static_assert(sizeof(osage_ring_data) == 0x50, "\"OsageCollision\" struct should have a size of 0x50");
+
+struct skin_param_file_data;
+
+struct CLOTHNode {
+    uint32_t flags;
+    vec3 trans;
+    vec3 trans_orig;
+    vec3 field_1C;
+    vec3 trans_diff;
+    vec3 normal;
+    vec3 tangent;
+    vec3 binormal;
+    float_t tangent_sign;
+    vec2 texcoord;
+    vec3 field_64;
+    float_t dist_up;
+    float_t dist_down;
+    float_t dist_right;
+    float_t dist_left;
+    vec3 field_80;
+    RobOsageNodeResetData reset_data;
+    prj::vector<opd_vec3_data> opd_data;
+    opd_node_data_pair opd_node_data;
+};
+
+static_assert(sizeof(CLOTHNode) == 0xF0, "\"CLOTHNode\" struct should have a size of 0xF0");
+
+struct struc_341 {
+    size_t field_0;
+    size_t field_8;
+    float_t length;
+};
+
+static_assert(sizeof(struc_341) == 0x18, "\"struc_341\" struct should have a size of 0x18");
+
+struct CLOTH {
+    int32_t field_8;
+    size_t root_count;
+    size_t nodes_count;
+    prj::vector<CLOTHNode> nodes;
+    vec3 wind_direction;
+    float_t field_44;
+    bool set_external_force;
+    vec3 external_force;
+    prj::vector<struc_341> field_58;
+    skin_param* skin_param_ptr;
+    skin_param skin_param;
+    OsageCollision::Work coli[64];
+    OsageCollision::Work coli_ring[64];
+    osage_ring_data ring;
+    mat4* mats;
+};
+
+struct RobClothRoot {
+    vec3 trans;
+    vec3 normal;
+    vec4 tangent;
+    bone_node* node[4];
+    mat4* node_mat[4];
+    mat4* mat[4];
+    float_t weight[4];
+    mat4 field_98;
+    mat4 field_D8;
+    mat4 field_118;
+};
+
+struct RobClothSubMeshArray {
+    obj_sub_mesh arr[4];
+};
+
+struct RobCloth : public CLOTH {
+    prj::vector<RobClothRoot> root;
+    rob_chara_item_equip_object* itm_eq_obj;
+    struct obj_skin_block_cloth_root* cls_root;
+    struct obj_skin_block_cloth* cls_data;
+    float_t move_cancel;
+    bool osage_reset;
+    obj_mesh mesh[2];
+    RobClothSubMeshArray submesh[2];
+    obj_mesh_vertex_buffer vertex_buffer[2];
+    obj_mesh_index_buffer index_buffer[2];
+    prj::map<prj::pair<int32_t, int32_t>, prj::list<RobOsageNodeResetData>> motion_reset_data;
+    prj::list<RobOsageNodeResetData>* reset_data_list;
+};
+
+class ExClothBlock : public ExNodeBlock {
+public:
+    RobCloth rob;
+    struct obj_skin_block_cloth* cls_data;
+    mat4* mats;
+    size_t index;
+};
+
+struct skin_param_file_data {
+    skin_param skin_param;
+    prj::vector<RobOsageNodeData> nodes_data;
+    bool field_88;
+};
+
+struct osage_setting_osg_cat {
+    rob_osage_parts parts;
+    size_t exf;
+};
+
+struct RobOsage {
+    skin_param* skin_param_ptr;
+    bone_node_expression_data exp_data;
+    prj::vector<RobOsageNode> nodes;
+    RobOsageNode node;
+    skin_param skin_param;
+    osage_setting_osg_cat osage_setting;
+    bool field_2A0;
+    bool field_2A1;
+    float_t field_2A4;
+    OsageCollision::Work coli[64];
+    OsageCollision::Work coli_ring[64];
+    vec3 wind_direction;
+    float_t field_1EB4;
+    int32_t yz_order;
+    int32_t field_1EBC;
+    mat4* root_matrix_ptr;
+    mat4 root_matrix;
+    float_t move_cancel;
+    bool field_1F0C;
+    bool osage_reset;
+    bool prev_osage_reset;
+    bool disable_collision;
+    osage_ring_data ring;
+    prj::map<prj::pair<int32_t, int32_t>, prj::list<RobOsageNodeResetData>> motion_reset_data;
+    prj::list<RobOsageNodeResetData>* reset_data_list;
+    bool set_external_force;
+    vec3 external_force;
+
+    void SetAirRes(float_t air_res);
+    void SetColiR(float_t coli_r);
+    void SetForce(float_t force, float_t force_gain);
+    void SetHinge(float_t hinge_y, float_t hinge_z);
+    void SetInitRot(float_t init_rot_y, float_t init_rot_z);
+    void SetMotionResetData(uint32_t motion_id, float_t frame);
+    void SetNodesExternalForce(vec3* external_force, float_t strength);
+    void SetNodesForce(float_t force);
+    void SetRot(float_t rot_y, float_t rot_z);
+};
+
+class ExOsageBlock : public ExNodeBlock {
+public:
+    size_t index;
+    RobOsage rob;
+    mat4* mats;
+    int32_t field_1FF8;
+    float_t step;
+};
+
+struct rob_chara_item_equip;
+
+struct rob_chara_item_equip_object {
+    size_t index;
+    mat4* mats;
+    object_info obj_info;
+    int32_t field_14;
+    prj::vector<texture_pattern_struct> texture_pattern;
+    texture_data_struct texture_data;
+    bool null_blocks_data_set;
+    bone_node_expression_data exp_data;
+    float_t alpha;
+    mdl::ObjFlags obj_flags;
+    bool can_disp;
+    int32_t field_A4;
+    mat4* mat;
+    int32_t osage_iterations;
+    bone_node* bone_nodes;
+    prj::vector<ExNodeBlock*> node_blocks;
+    prj::vector<bone_node> ex_data_bone_nodes;
+    prj::vector<mat4> ex_data_bone_mats;
+    prj::vector<mat4> ex_data_mats;
+    prj::vector_pair<const char*, uint32_t> ex_bones;
+    int64_t field_138;
+    prj::vector<struct ExNullBlock*> null_blocks;
+    prj::vector<ExOsageBlock*> osage_blocks;
+    prj::vector<struct ExConstraintBlock*> constraint_blocks;
+    prj::vector<struct ExExpressionBlock*> expression_blocks;
+    prj::vector<ExClothBlock*> cloth_blocks;
+    bool field_1B8;
+    size_t osage_nodes_count;
+    bool use_opd;
+    obj_skin_ex_data* skin_ex_data;
+    obj_skin* skin;
+    rob_chara_item_equip* item_equip;
+
+    void disp(const mat4* mat);
+    int32_t get_bone_index(const char* name);
+    bone_node* get_bone_node(int32_t bone_index);
+    bone_node* get_bone_node(const char* name);
+    void skp_load(void* can_prop); // CanonicalProperties
+};
+
+static_assert(sizeof(rob_chara_item_equip_object) == 0x1E8, "\"rob_chara_item_equip_object\" struct should have a size of 0x1E8");
+
+struct rob_chara_item_equip {
+    bone_node* bone_nodes;
+    mat4* matrices;
+    rob_chara_item_equip_object* item_equip_object;
+    int32_t field_18[31];
+    bool item_equip_range;
+    item_id first_item_equip_object;
+    item_id max_item_equip_object;
+    int32_t field_A0;
+    shadow_type_enum shadow_type;
+    vec3 position;
+    prj::vector<texture_pattern_struct> texture_pattern;
+    object_info field_D0;
+    item_id field_D4;
+    bool disable_update;
+    int32_t field_DC;
+    vec4 texture_color_coefficients;
+    float_t wet;
+    float_t wind_strength;
+    bool chara_color;
+    bool npr_flag;
+    mat4 mat;
+    mat4 field_13C[30];
+    int32_t field_8BC;
+    int32_t field_8C0;
+    int32_t field_8C4;
+    int32_t field_8C8;
+    int32_t field_8CC;
+    int32_t field_8D0;
+    int32_t field_8D4;
+    int32_t field_8D8;
+    int32_t field_8DC;
+    int32_t field_8E0;
+    int32_t field_8E4;
+    int32_t field_8E8;
+    int32_t field_8EC;
+    int32_t field_8F0;
+    int32_t field_8F4;
+    int32_t field_8F8;
+    int32_t field_8FC;
+    int64_t field_900;
+    int64_t field_908;
+    int64_t field_910;
+    int64_t field_918;
+    int64_t field_920;
+    int64_t field_928;
+    int64_t field_930;
+    float_t osage_step;
+    bool use_opd;
+    prj::vector<opd_blend_data> opd_blend_data;
+    bool parts_short;
+    bool parts_append;
+    bool parts_white_one_l;
+
+    rob_chara_item_equip_object* get_item_equip_object(item_id id);
+};
+
+static_assert(sizeof(rob_chara_item_equip) == 0x960, "\"rob_chara_item_equip\" struct should have a size of 0x960");
+
+struct rob_chara_item_cos_data {
+    uint8_t data[0x408];
+};
+
+static_assert(sizeof(rob_chara_item_cos_data) == 0x408, "\"rob_chara_item_cos_data\" struct should have a size of 0x408");
+
+struct struc_264 {
+    uint8_t data[0x1D8];
+};
+
+static_assert(sizeof(struc_264) == 0x1D8, "\"struc_264\" struct should have a size of 0x1D8");
+
+struct RobSubAction {
+    uint8_t data[0xB0];
+};
+
+static_assert(sizeof(RobSubAction) == 0xB0, "\"RobSubAction\" struct should have a size of 0xB0");
+
+struct struc_389 {
+    float_t frame;
+    float_t prev_frame;
+    float_t last_set_frame;
+};
+
+static_assert(sizeof(struc_389) == 0x0C, "\"struc_389\" struct should have a size of 0x0C");
+
+struct struc_406 {
+    float_t frame;
+    float_t field_4;
+    float_t step;
+};
+
+static_assert(sizeof(struc_406) == 0x0C, "\"struc_406\" struct should have a size of 0x0C");
+
+struct rob_chara_data_hand_adjust {
+    bool enable;
+    int16_t scale_select;
+    rob_chara_data_hand_adjust_type type;
+    float_t current_scale;
+    float_t scale;
+    float_t duration;
+    float_t current_time;
+    float_t rotation_blend;
+    float_t scale_blend;
+    bool enable_scale;
+    bool disable_x;
+    bool disable_y;
+    bool disable_z;
+    vec3 offset;
+    vec3 field_30;
+    float_t arm_length;
+    int32_t field_40;
+};
+
+static_assert(sizeof(rob_chara_data_hand_adjust) == 0x44, "\"rob_chara_data_hand_adjust\" struct should have a size of 0x44");
+
+struct rob_chara_motion {
+    uint32_t motion_id;
+    uint32_t prev_motion_id;
+    struc_389 frame_data;
+    struc_406 step_data;
+    uint8_t data[0x1198];
+    rob_chara_data_hand_adjust hand_adjust[2];
+    rob_chara_data_hand_adjust hand_adjust_prev[2];
+    uint8_t data1[0x30];
+};
+
+static_assert(sizeof(rob_chara_motion) == 0x12F8, "\"rob_chara_motion\" struct should have a size of 0x12F8");
+
+struct struc_526 {
+    int32_t field_0;
+    int32_t field_4;
+};
+
+struct struc_228 {
+    int32_t field_0;
+    int32_t field_4;
+    uint32_t field_8;
+    int32_t field_C;
+};
+
+struct struc_227 {
+    int32_t field_0;
+    float_t field_4;
+    float_t field_8;
+};
+
+struct struc_652 {
+    int32_t motion_id;
+    float_t frame_count;
+    float_t frame;
+    int16_t field_C;
+    struc_228 field_10;
+    struc_228 field_20;
+    struc_228 field_30;
+    struc_228 field_40;
+    int16_t field_50;
+    int16_t field_52;
+    int16_t field_54;
+    int32_t field_58;
+    int32_t field_5C;
+    int32_t field_60;
+    int32_t field_64;
+    int32_t field_68;
+    int32_t loop_count;
+    float_t loop_begin;
+    float_t loop_end;
+    float_t field_78;
+    float_t field_7C;
+    float_t field_80;
+    int8_t field_84;
+    int32_t field_88;
+    int32_t field_8C;
+    int32_t field_90;
+    int16_t field_94;
+    int16_t field_96;
+    int16_t field_98;
+    int32_t field_9C;
+    int16_t field_A0;
+    int32_t field_A4;
+    int64_t field_A8;
+    struc_227 field_B0[26];
+    int32_t field_1E8;
+    float_t field_1EC;
+    float_t field_1F0;
+    float_t field_1F4;
+    float_t field_1F8;
+    float_t field_1FC;
+    float_t field_200;
+    int32_t field_204;
+    int32_t field_208;
+    int32_t field_20C;
+    int64_t field_210;
+    float_t field_218;
+    float_t field_21C;
+    int16_t field_220;
+    prj::list<void*> field_228;
+    int16_t field_238;
+    float_t field_23C;
+    int32_t field_240;
+    int16_t field_244;
+    const void* field_248;
+    int64_t field_250;
+    float_t field_258;
+    int32_t field_25C;
+    struc_526 field_260;
+    struc_526 field_268;
+    int32_t field_270;
+    int16_t field_274;
+    int16_t field_276;
+    int32_t field_278;
+    int32_t field_27C;
+    int32_t field_280;
+    int16_t field_284;
+    int64_t field_288;
+    int32_t field_290;
+    int32_t field_294;
+    int32_t field_298;
+    float_t field_29C;
+    int8_t field_2A0;
+    float_t field_2A4;
+    float_t field_2A8;
+    float_t field_2AC;
+    int64_t field_2B0;
+    int16_t field_2B8;
+    int32_t field_2BC;
+    float_t field_2C0;
+    float_t field_2C4;
+    int32_t field_2C8;
+    int32_t field_2CC;
+    int64_t field_2D0;
+    int64_t field_2D8;
+    int64_t field_2E0;
+    int16_t field_2E8;
+    int32_t field_2EC;
+    int32_t field_2F0;
+    struc_526 field_2F4;
+    int32_t field_2FC;
+    int8_t field_300;
+    int32_t field_304;
+    int32_t field_308;
+    float_t field_30C;
+    int32_t field_310;
+    int16_t field_314;
+    vec3 field_318;
+    float_t field_324;
+    float_t field_328;
+    int32_t iterations;
+};
+
+struct struc_377 {
+    struct mothead_data* current;
+    struct mothead_data* data;
+};
+
+struct struc_226 {
+    int8_t field_0[27];
+};
+
+struct struc_225 {
+    float_t field_0[27];
+};
+
+struct struc_224 {
+    int32_t field_0[27];
+};
+
+struct struc_306 {
+    int16_t field_0;
+    float_t frame;
+    float_t field_8;
+    int16_t field_C;
+    int16_t field_E;
+    vec3 field_10;
+    vec3 field_1C;
+    vec3 field_28;
+    int32_t field_34;
+    int32_t field_38;
+    int32_t field_3C;
+    int32_t field_40;
+    int32_t field_44;
+    int32_t field_48;
+};
+
+struct struc_651 {
+    struc_377 field_0;
+    int32_t field_10;
+    int32_t field_14;
+    int32_t field_18;
+    float_t field_1C;
+    vec3 field_20;
+    struc_226 field_2C[3];
+    struc_225 field_80[3];
+    struc_224 field_1C4[3];
+    int64_t field_308;
+    float_t field_310;
+    float_t field_314;
+    int8_t field_318;
+    int32_t field_31C;
+    float_t field_320;
+    float_t field_324;
+    float_t field_328;
+    float_t field_32C;
+    float_t field_330;
+    float_t field_334;
+    int8_t field_338;
+    struc_306 field_33C[4];
+};
+
+struct struc_223 {
+    struc_652 field_0;
+    struc_651 field_330;
+    int64_t* field_7A0;
+    int32_t motion_set_id;
+};
+
+static_assert(sizeof(struc_223) == 0x7B0, "\"struc_223\" struct should have a size of 0x7B0");
+
+struct rob_chara_data_miku_rot {
+    uint8_t data[0xAC];
+};
+
+static_assert(sizeof(rob_chara_data_miku_rot) == 0xAC, "\"rob_chara_data_miku_rot\" struct should have a size of 0xAC");
+
+struct rob_chara_adjust_data {
+    float_t scale;
+    bool height_adjust;
+    float_t pos_adjust_y;
+    vec3 pos_adjust;
+    vec3 offset;
+    bool offset_x;
+    bool offset_y;
+    bool offset_z;
+    bool get_global_trans;
+    vec3 trans;
+    mat4 mat;
+    float_t left_hand_scale;
+    float_t right_hand_scale;
+    float_t left_hand_scale_default;
+    float_t right_hand_scale_default;
+};
+
+static_assert(sizeof(rob_chara_adjust_data) == 0x84, "\"rob_chara_adjust_data\" struct should have a size of 0x84");
+
+struct struc_209 {
+    uint8_t data[0x1F28];
+};
+
+static_assert(sizeof(struc_209) == 0x1F28, "\"struc_209\" struct should have a size of 0x1F28");
+
+struct rob_chara_data {
+    uint8_t field_0;
+    uint8_t field_1;
+    uint8_t field_2;
+    uint8_t field_3;
+    int32_t field_4;
+    struc_264 field_8;
+    RobSubAction rob_sub_action;
+    rob_chara_motion motion;
+    struc_223 field_1588;
+    rob_chara_data_miku_rot miku_rot;
+    rob_chara_adjust_data adjust_data;
+    struc_209 field_1E68;
+    float_t field_3D90;
+    int32_t field_3D94;
+    int16_t field_3D98;
+    int16_t field_3D9A;
+    int32_t field_3D9C;
+    int32_t field_3DA0;
+    int8_t field_3DA4;
+    int64_t field_3DA8;
+    int64_t field_3DB0;
+    int32_t field_3DB8;
+    int32_t field_3DBC;
+    int32_t field_3DC0;
+    int32_t field_3DC4;
+    int32_t field_3DC8;
+    int32_t field_3DCC;
+    int32_t field_3DD0;
+    float_t field_3DD4;
+    int32_t field_3DD8;
+    float_t field_3DDC;
+    int8_t field_3DE0;
+};
+
+static_assert(sizeof(rob_chara_data) == 0x3DE8, "\"rob_chara_data\" struct should have a size of 0x3DE8");
+
+struct rob_touch {
+    uint8_t data[0x28];
+};
+
+static_assert(sizeof(rob_touch) == 0x28, "\"rob_touch\" struct should have a size of 0x28");
+
+struct rob_chara {
+    int8_t chara_id;
+    int8_t field_1;
+    int8_t field_2;
+    int8_t field_3;
+    int32_t type;
+    int16_t field_8;
+    int16_t field_A;
+    bool field_C;
+    bool field_D;
+    chara_index chara_index;
+    int32_t cos_id;
+    int32_t field_18;
+    float_t frame_speed;
+    void* field_20;
+    struct rob_chara_bone_data* bone_data;
+    rob_chara_item_equip* item_equip;
+    rob_chara_item_cos_data item_cos_data;
+    rob_chara_data data;
+    rob_chara_data data_prev;
+    struct chara_init_data* chara_init_data;
+    struct rob_detail* rob_detail;
+    rob_chara_pv_data pv_data;
+    int32_t field_80E4;
+    rob_touch rob_touch;
+
+    inline bool is_visible() {
+        return !!(data.field_0 & 0x01);
+    }
+};
+
+static_assert(sizeof(rob_chara) == 0x8110, "\"rob_chara\" struct should have a size of 0x8110");
 
 #define ROB_CHARA_COUNT 6
 
 extern const mat4* (FASTCALL* rob_chara_bone_data_get_mats_mat)(size_t rob_bone_data, size_t index);
+extern bool (FASTCALL* pv_osage_manager_array_get_disp)(int32_t* chara_id);
 extern const char* (FASTCALL* chara_index_get_auth_3d_name)(chara_index chara_index);
-extern void(FASTCALL* sub_1405163C0)(size_t rob_chr, int32_t index, mat4* mat);
-extern float_t(FASTCALL* rob_chara_get_max_face_depth)(size_t rob_chr);
-extern const mat4* (FASTCALL* rob_chara_get_bone_data_mat)(size_t rob_chr, mot_bone_index index);
-extern const mat4* (FASTCALL* sub_140516740)(size_t rob_chr);
-extern bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr, int32_t chara_id);
+extern void(FASTCALL* sub_1405163C0)(rob_chara* rob_chr, int32_t index, mat4* mat);
+extern float_t(FASTCALL* rob_chara_get_max_face_depth)(rob_chara* rob_chr);
+extern const mat4* (FASTCALL* rob_chara_get_bone_data_mat)(rob_chara* rob_chr, mot_bone_index index);
+extern const mat4* (FASTCALL* sub_140516740)(rob_chara* rob_chr);
+extern bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr_smth, int32_t chara_id);
+extern rob_chara* (FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id);
 extern size_t(FASTCALL* get_rob_chara_smth)();
-extern size_t(FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id);
+extern rob_chara_item_equip* (FASTCALL* rob_chara_array_get_item_equip)(size_t rob_chr_smth, int32_t chara_id);
 extern size_t(FASTCALL* rob_chara_array_get_bone_data)(size_t rob_chr_smth, int32_t chara_id);
 extern bool (FASTCALL* rob_chara_pv_data_array_check_chara_id)(size_t rob_chr_smth, int32_t chara_id);
 
 extern const mat4* rob_chara_item_equip_mat;
 
-extern const mat4* rob_chara_get_adjust_data_mat(size_t rob_chr);
-extern const mat4* rob_chara_get_item_adjust_data_mat(size_t rob_chr);
+extern const mat4* rob_chara_get_adjust_data_mat(rob_chara* rob_chr);
+extern const mat4* rob_chara_get_item_adjust_data_mat(rob_chara* rob_chr);
 
 extern void rob_patch();
