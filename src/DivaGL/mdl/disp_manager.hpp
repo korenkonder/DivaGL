@@ -467,7 +467,8 @@ namespace mdl {
             ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
             obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha);
 #endif
-        bool entry_obj_by_object_info(const mat4* mat, object_info obj_info, mat4* bone_mat = 0);
+        bool entry_obj_by_object_info(const mat4* mat, object_info obj_info);
+        bool entry_obj_by_object_info(const mat4* mat, object_info obj_info, mat4* bone_mat);
         bool entry_obj_by_object_info(const mat4* mat, object_info obj_info,
             vec4* blend_color, mat4* bone_mat, int32_t instances_count, mat4* instances_mat,
             void(*func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data, bool enable_bone_mat, bool local = false);

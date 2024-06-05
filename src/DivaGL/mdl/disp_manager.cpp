@@ -2751,6 +2751,10 @@ namespace mdl {
 #pragma warning(pop)
 #endif
 
+    bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info) {
+        return entry_obj_by_object_info(mat, obj_info, 0, 0, 0, 0, 0, 0, false);
+    }
+
     bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info, mat4* bone_mat) {
         vec4 blend_color = 1.0f;
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true);
