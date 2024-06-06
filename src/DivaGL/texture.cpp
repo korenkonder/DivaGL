@@ -407,7 +407,7 @@ bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids) {
     *texs = force_malloc<texture*>(count + 1);
     texture** tex = *texs;
     for (size_t i = 0; i < count; i++)
-        tex[i] = texture_txp_load(&t->textures[i], texture_id(0, ids[i]));
+        tex[i] = texture_txp_load(&t->textures[i], texture_id(0x00, ids[i]));
     tex[count] = 0;
     return true;
 }
@@ -444,6 +444,11 @@ HOOK(void, FASTCALL, texture_apply_color_tone, 0x00000001403B5DF0,
     texture_apply_color_tone(chg_tex, org_tex, col_tone);
 }
 
+HOOK(texture*, FASTCALL, texture_copy, 0x000000014069B550,
+    texture_id id, texture* org_tex) {
+    return texture_copy(id, org_tex);
+}
+
 HOOK(texture*, FASTCALL, texture_load_tex_cube_map, 0x000000014069B860,
     texture_id id, GLenum internal_format, int32_t width, int32_t height,
     int32_t max_mipmap_level, void** data_ptr) {
@@ -468,6 +473,7 @@ HOOK(void, FASTCALL, texture_release, 0x000000014069DA70, texture* tex) {
 
 void texture_patch() {
     INSTALL_HOOK(texture_apply_color_tone);
+    INSTALL_HOOK(texture_copy);
     INSTALL_HOOK(texture_load_tex_cube_map);
     INSTALL_HOOK(texture_load_tex_2d);
     INSTALL_HOOK(texture_manager_get_texture);

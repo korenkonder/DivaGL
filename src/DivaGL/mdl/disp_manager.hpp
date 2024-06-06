@@ -138,11 +138,11 @@ struct morph_struct {
 static_assert(sizeof(morph_struct) == 0x08, "\"morph_struct\" struct should have a size of 0x08");
 
 struct texture_pattern_struct {
-    uint32_t src;
-    uint32_t dst;
+    texture_id src;
+    texture_id dst;
 
     texture_pattern_struct();
-    texture_pattern_struct(uint32_t src, uint32_t dst);
+    texture_pattern_struct(texture_id src, texture_id dst);
 };
 
 static_assert(sizeof(texture_pattern_struct) == 0x08, "\"texture_pattern_struct\" struct should have a size of 0x08");

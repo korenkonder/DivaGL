@@ -54,11 +54,10 @@ material_list_struct::material_list_struct(uint64_t hash, vec4& blend_color,
 }
 
 texture_pattern_struct::texture_pattern_struct() {
-    src = (uint32_t)-1;
-    dst = (uint32_t)-1;
+
 }
 
-texture_pattern_struct::texture_pattern_struct(uint32_t src, uint32_t dst) : src(src), dst(dst) {
+texture_pattern_struct::texture_pattern_struct(texture_id src, texture_id dst) : src(src), dst(dst) {
 
 }
 
