@@ -42,11 +42,8 @@ texture_manager*& texture_manager_work_ptr = *(texture_manager**)0x000000014CC96
 
 static void texture_bind(GLenum target, GLuint texture);
 static void texture_get_format_type_by_internal_format(GLenum internal_format, GLenum* format, GLenum* type);
-static uint32_t texture_get_height_mip_level(texture* tex, int32_t mip_level);
 static GLuint texture_get_working_internal_format(GLuint internal_format);
 static int32_t texture_get_size(GLenum internal_format, int32_t width, int32_t height);
-static int32_t texture_get_size_mip_level(texture* tex, int32_t mip_level);
-static uint32_t texture_get_width_mip_level(texture* tex, int32_t mip_level);
 static int32_t texture_load(GLenum target, GLenum internal_format,
     int32_t width, int32_t height, int32_t level, void* data);
 static texture* texture_load_tex(texture_id id, GLenum target,
@@ -59,14 +56,19 @@ glid(), target(), internal_format(), max_mipmap_level(), size_texmem() {
 
 }
 
-uint32_t texture::get_height_align_mip_level(uint8_t mip_level) {
+int32_t texture::get_height_align_mip_level(uint8_t mip_level) {
     if (flags & TEXTURE_BLOCK_COMPRESSION)
         return max_def((uint32_t)height >> mip_level, 4u);
     else
         return max_def((uint32_t)height >> mip_level, 1u);
 }
 
-uint32_t texture::get_width_align_mip_level(uint8_t mip_level) {
+int32_t texture::get_size_mip_level(uint8_t mip_level) {
+    return texture_get_size(internal_format,
+        get_width_mip_level(mip_level), get_height_mip_level(mip_level));
+}
+
+int32_t texture::get_width_align_mip_level(uint8_t mip_level) {
     if (flags & TEXTURE_BLOCK_COMPRESSION)
         return max_def((uint32_t)width >> mip_level, 4u);
     else
@@ -98,7 +100,7 @@ texture* texture_alloc(texture_id id) {
 
 void texture_apply_color_tone(texture* chg_tex, texture* org_tex, color_tone* col_tone) {
     for (int32_t i = 0; i <= org_tex->max_mipmap_level; i++) {
-        int32_t size = texture_get_size_mip_level(org_tex, i);
+        int32_t size = org_tex->get_size_mip_level(i);
         void* data = prj::HeapCMallocAllocate(prj::HeapCMallocTemp, size, "imgf_color_tone_cpu()");
         if (!data)
             break;
@@ -114,8 +116,8 @@ void texture_apply_color_tone(texture* chg_tex, texture* org_tex, color_tone* co
                 dxt5_image_apply_color_tone(width_align, height_align, size, (dxt5_block*)data, col_tone);
 
             texture_bind(chg_tex->target, chg_tex->glid);
-            uint32_t width = texture_get_width_mip_level(org_tex, i);
-            uint32_t height = texture_get_height_mip_level(org_tex, i);
+            int32_t width = org_tex->get_width_mip_level(i);
+            int32_t height = org_tex->get_height_mip_level(i);
             glCompressedTexSubImage2D(chg_tex->target, i, 0, 0, width, height,
                 chg_tex->internal_format, size, data);
         }
@@ -125,8 +127,8 @@ void texture_apply_color_tone(texture* chg_tex, texture* org_tex, color_tone* co
             rgb565_image_apply_color_tone(width_align, height_align, size, (rgb565*)data, col_tone);
 
             texture_bind(chg_tex->target, chg_tex->glid);
-            uint32_t width = texture_get_width_mip_level(org_tex, i);
-            uint32_t height = texture_get_height_mip_level(org_tex, i);
+            int32_t width = org_tex->get_width_mip_level(i);
+            int32_t height = org_tex->get_height_mip_level(i);
             glTexSubImage2DDLL(chg_tex->target, i, 0, 0, width, height,
                 GL_RGB, GL_UNSIGNED_SHORT_5_6_5, data);
         }
@@ -143,7 +145,7 @@ texture* texture_copy(texture_id id, texture* org_tex) {
     texture_bind(org_tex->target, org_tex->glid);
     std::vector<void*> vec_data;
     for (int32_t i = 0; i <= org_tex->max_mipmap_level; i++) {
-        void* data = force_malloc(texture_get_size_mip_level(org_tex, i));
+        void* data = force_malloc(org_tex->get_size_mip_level(i));
         if (!data)
             break;
 
@@ -188,8 +190,8 @@ texture* texture_txp_load(txp* t, texture_id id) {
 
     int32_t count = t->array_size * t->mipmaps_count;
     void** data_ptr = force_malloc<void*>(count);
-    for (uint32_t i = 0, k = 0; i < t->array_size; i++)
-        for (uint32_t j = 0; j < t->mipmaps_count; j++, k++)
+    for (int32_t i = 0, k = 0; i < t->array_size; i++)
+        for (int32_t j = 0; j < t->mipmaps_count; j++, k++)
             data_ptr[k] = t->mipmaps[k].data.data();
 
     GLenum internal_format = texture_txp_get_gl_internal_format(t);
@@ -264,10 +266,10 @@ void texture_txp_store(texture* tex, txp* t) {
     }
 
     auto get_tex_mipmap_data = [&](txp_mipmap& mipmap, GLenum target, int32_t mip_level) {
-        mipmap.width = texture_get_width_mip_level(tex, mip_level);
-        mipmap.height = texture_get_height_mip_level(tex, mip_level);
+        mipmap.width = tex->get_width_mip_level(mip_level);
+        mipmap.height = tex->get_height_mip_level(mip_level);
         mipmap.format = format;
-        mipmap.size = texture_get_size_mip_level(tex, mip_level);
+        mipmap.size = tex->get_size_mip_level(mip_level);
         mipmap.data.resize(mipmap.size);
 
         if (tex->flags & TEXTURE_BLOCK_COMPRESSION)
@@ -598,10 +600,6 @@ static void texture_get_format_type_by_internal_format(GLenum internal_format, G
         *type = _type;
 }
 
-inline static uint32_t texture_get_height_mip_level(texture* tex, int32_t mip_level) {
-    return max_def((uint32_t)tex->height >> mip_level, 1u);
-}
-
 inline static GLuint texture_get_working_internal_format(GLuint internal_format) {
     switch (internal_format) {
     case GL_ALPHA8:
@@ -660,16 +658,6 @@ static int32_t texture_get_size(GLenum internal_format, int32_t width, int32_t h
     default:
         return 0;
     }
-}
-
-inline static int32_t texture_get_size_mip_level(texture* tex, int32_t mip_level) {
-    return texture_get_size(tex->internal_format,
-        texture_get_width_mip_level(tex, mip_level),
-        texture_get_height_mip_level(tex, mip_level));
-}
-
-inline static uint32_t texture_get_width_mip_level(texture* tex, int32_t mip_level) {
-    return max_def((uint32_t)tex->width >> mip_level, 1u);
 }
 
 static int32_t texture_load(GLenum target, GLenum internal_format,

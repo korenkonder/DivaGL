@@ -69,8 +69,16 @@ struct texture {
 
     texture();
 
-    uint32_t get_height_align_mip_level(uint8_t mip_level = 0);
-    uint32_t get_width_align_mip_level(uint8_t mip_level = 0);
+    int32_t get_height_align_mip_level(uint8_t mip_level = 0);
+    int32_t get_size_mip_level(uint8_t mip_level = 0);
+    int32_t get_width_align_mip_level(uint8_t mip_level = 0);
+
+    inline int32_t get_height_mip_level(uint8_t mip_level) {
+        return max_def(height >> mip_level, 1);
+    }
+    inline int32_t get_width_mip_level(uint8_t mip_level) {
+        return max_def(width >> mip_level, 1);
+    }
 };
 
 static_assert(sizeof(texture) == 0x24, "\"texture\" struct should have a size of 0x24");
