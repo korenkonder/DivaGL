@@ -736,7 +736,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
     free_def(temp_frag);
 
     if (!ignore_cache && shader_cache_changed)
-        shader_cache_farc.write(temp_buf, FARC_FArC, FARC_NONE, false);
+        shader_cache_farc.write(temp_buf, FARC_FArC, FARC_NONE, true, false);
 
     this->get_index_by_name_func = get_index_by_name;
 }
