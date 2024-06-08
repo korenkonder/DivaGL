@@ -101,7 +101,6 @@ extern texture* texture_load_tex_2d(texture_id id, GLenum internal_format, int32
 extern texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format, int32_t width, int32_t height,
     int32_t max_mipmap_level, void** data_ptr);
 extern texture* texture_txp_load(txp* t, texture_id id);
-extern void texture_txp_store(texture* tex, txp* t);
 extern void texture_release(texture* tex);
 
 extern void texture_array_free(texture** arr);
