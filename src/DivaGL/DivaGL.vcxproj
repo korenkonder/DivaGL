@@ -169,6 +169,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="file_handler.cpp" />
     <ClCompile Include="frame_rate_control.cpp" />
     <ClCompile Include="gl_state.cpp" />
+    <ClCompile Include="graphics\color_change_dw.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="light_param.cpp" />
     <ClCompile Include="light_param\fog.cpp" />
@@ -228,7 +229,9 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="gl_shader_storage_buffer.hpp" />
     <ClInclude Include="gl_state.hpp" />
     <ClInclude Include="gl_uniform_buffer.hpp" />
+    <ClInclude Include="graphics\color_change_dw.hpp" />
     <ClInclude Include="hook.hpp" />
+    <ClInclude Include="item_table.hpp" />
     <ClInclude Include="light_param.hpp" />
     <ClInclude Include="light_param\fog.hpp" />
     <ClInclude Include="light_param\light.hpp" />

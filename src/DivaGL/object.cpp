@@ -77,6 +77,10 @@ int32_t(FASTCALL* object_database_get_set_id)(int32_t set_index)
     = (int32_t(FASTCALL*)(int32_t set_index))0x000000014045AA10;
 int32_t(FASTCALL* object_database_get_object_set_id)(const char* name)
     = (int32_t(FASTCALL*)(const char* name))0x000000014045AA60;
+int32_t(FASTCALL* objset_info_storage_get_set_tex_num)(int32_t set)
+    = (int32_t(FASTCALL*)(int32_t set))0x000000014045ADE0;
+texture** (FASTCALL* objset_info_storage_get_set_textures)(int32_t set)
+    = (texture * *(FASTCALL*)(int32_t set))0x000000014045AE20;
 int32_t(FASTCALL* objset_info_storage_load_set)(int32_t set)
     = (int32_t(FASTCALL*)(int32_t set))0x000000014045C6A0;
 bool (FASTCALL* objset_info_storage_load_obj_set_check_not_read)(int32_t set)

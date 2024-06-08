@@ -596,6 +596,8 @@ extern GLuint(FASTCALL* objset_info_storage_get_set_texture)(int32_t set, int32_
 extern prj::vector<GLuint>* (FASTCALL* objset_info_storage_get_set_gentex)(int32_t set);
 extern int32_t(FASTCALL* object_database_get_set_id)(int32_t set_index);
 extern int32_t(FASTCALL* object_database_get_object_set_id)(const char* name);
+extern int32_t(FASTCALL* objset_info_storage_get_set_tex_num)(int32_t set);
+extern texture** (FASTCALL* objset_info_storage_get_set_textures)(int32_t set);
 extern int32_t(FASTCALL* objset_info_storage_load_set)(int32_t set);
 extern bool (FASTCALL* objset_info_storage_load_obj_set_check_not_read)(int32_t set);
 

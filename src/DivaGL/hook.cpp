@@ -6,6 +6,7 @@
 #include "hook.hpp"
 #include "Glitter/glitter.hpp"
 #include "data_test/rob_osage_test.hpp"
+#include "graphics/color_change_dw.hpp"
 #include "mdl/disp_manager.hpp"
 #include "pv_game/pv_game.hpp"
 #include "rob/rob.hpp"
@@ -56,6 +57,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
 
     auth_3d_patch();
     camera_patch();
+    color_change_dw_patch();
     mdl::disp_manager_patch();
     effect_patch();
     light_param_patch();
