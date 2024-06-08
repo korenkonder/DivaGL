@@ -126,12 +126,12 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
     if (s->stage_data->lens_flare_texture != -1 && s->lens_flare) {
         int32_t object_set_id = s->stage_data->object_set_id;
         rndr::Render* rend = render_get();
-        rend->lens_flare_texture = object_database_get_set_texture(
+        rend->lens_flare_texture = objset_info_storage_get_set_texture(
             object_set_id, s->stage_data->lens_flare_texture);
         if (rend->lens_flare_texture) {
-            rend->lens_shaft_texture = object_database_get_set_texture(
+            rend->lens_shaft_texture = objset_info_storage_get_set_texture(
                 object_set_id, s->stage_data->lens_shaft_texture);
-            rend->lens_ghost_texture = object_database_get_set_texture(
+            rend->lens_ghost_texture = objset_info_storage_get_set_texture(
                 object_set_id, s->stage_data->lens_ghost_texture);
             rend->lens_ghost_count = 16;
             rend->lens_shaft_inv_scale = s->stage_data->lens_shaft_inv_scale;

@@ -582,22 +582,22 @@ struct obj_vertex_buffer {
 static_assert(sizeof(obj_vertex_buffer) == 0x10, "\"obj_vertex_buffer\" struct should have a size of 0x10");
 #endif
 
-extern void (FASTCALL* object_database_unload_set)(int32_t set);
+extern void (FASTCALL* objset_info_storage_unload_set)(int32_t set);
 extern obj_mesh* (FASTCALL* object_info_get_mesh_by_index)(object_info object, int32_t mesh_index);
-extern int32_t(FASTCALL* object_info_get_mesh_index)(object_info object, const char* mesh_name);
+extern int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(object_info object, const char* mesh_name);
 extern const char* (FASTCALL* object_database_get_object_name)(object_info obj_info);
 extern uint32_t(FASTCALL* object_database_get_object_info)(const char* name);
-extern obj* (FASTCALL* object_info_get_object)(object_info obj_info);
-extern obj_mesh_index_buffer* (FASTCALL* object_info_get_mesh_index_buffer)(object_info obj_info, int32_t a2);
-extern obj_skin* (FASTCALL* object_database_get_object_skin)(object_info obj_info);
-extern obj_mesh_vertex_buffer* (FASTCALL* object_info_get_mesh_vertex_buffer)(object_info obj_info, int32_t a2);
-extern int32_t(FASTCALL* object_database_get_set_obj_id)(int32_t set_index, int32_t obj_index);
-extern GLuint(FASTCALL* object_database_get_set_texture)(int32_t set, int32_t tex_id);
-extern prj::vector<GLuint>* (FASTCALL* object_database_get_set_gentex)(int32_t set);
+extern obj* (FASTCALL* objset_info_storage_get_object)(object_info obj_info);
+extern obj_mesh_index_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_index_buffer)(object_info obj_info, int32_t a2);
+extern obj_skin* (FASTCALL* objset_info_storage_get_obj_skin)(object_info obj_info);
+extern obj_mesh_vertex_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_vertex_buffer)(object_info obj_info, int32_t a2);
+extern int32_t(FASTCALL* objset_info_storage_get_set_obj_id)(int32_t set_index, int32_t obj_index);
+extern GLuint(FASTCALL* objset_info_storage_get_set_texture)(int32_t set, int32_t tex_id);
+extern prj::vector<GLuint>* (FASTCALL* objset_info_storage_get_set_gentex)(int32_t set);
 extern int32_t(FASTCALL* object_database_get_set_id)(int32_t set_index);
 extern int32_t(FASTCALL* object_database_get_object_set_id)(const char* name);
-extern int32_t(FASTCALL* object_database_load_set)(int32_t set);
-extern bool (FASTCALL* object_database_load_obj_set_check_not_read)(int32_t set);
+extern int32_t(FASTCALL* objset_info_storage_load_set)(int32_t set);
+extern bool (FASTCALL* objset_info_storage_load_obj_set_check_not_read)(int32_t set);
 
 extern int32_t obj_material_texture_type_get_texcoord_index(
     obj_material_texture_type type, int32_t index);

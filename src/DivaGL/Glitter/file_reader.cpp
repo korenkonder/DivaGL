@@ -65,7 +65,7 @@ namespace Glitter {
 
         for (MeshX& i : effect_group->meshes)
             if (!i.ready && i.object_set != -1)
-                if (object_database_load_obj_set_check_not_read(i.object_set))
+                if (objset_info_storage_load_obj_set_check_not_read(i.object_set))
                     ret = true;
                 else
                     i.ready = true;
@@ -209,7 +209,7 @@ namespace Glitter {
         else if (GPMX_VAL->AppendEffectGroup(hash, eff_group, this)) {
             for (MeshX& i : eff_group->meshes)
                 if (i.object_set != -1) {
-                    object_database_load_set(i.object_set);
+                    objset_info_storage_load_set(i.object_set);
                     i.load = true;
                 }
 

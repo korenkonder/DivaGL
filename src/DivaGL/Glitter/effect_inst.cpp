@@ -455,7 +455,7 @@ namespace Glitter {
 
             if (ext_anim->mesh_name) {
                 if (ext_anim->mesh_index == -1)
-                    ext_anim->mesh_index = object_info_get_mesh_index(ext_anim->object, ext_anim->mesh_name);
+                    ext_anim->mesh_index = objset_info_storage_get_obj_mesh_index(ext_anim->object, ext_anim->mesh_name);
 
                 if (ext_anim->mesh_index != -1) {
                     obj_mesh* mesh = object_info_get_mesh_by_index(ext_anim->object, ext_anim->mesh_index);
@@ -474,7 +474,7 @@ namespace Glitter {
                 if (!ext_anim->mesh_name)
                     return;
 
-                ext_anim->mesh_index = object_info_get_mesh_index(ext_anim->object, ext_anim->mesh_name);
+                ext_anim->mesh_index = objset_info_storage_get_obj_mesh_index(ext_anim->object, ext_anim->mesh_name);
             }
 
             if (ext_anim->mesh_index != -1) {

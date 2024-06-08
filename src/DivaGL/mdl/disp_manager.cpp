@@ -2766,19 +2766,19 @@ namespace mdl {
         if (obj_info.id == (uint16_t)-1 && obj_info.set_id == (uint16_t)-1)
             return false;
 
-        ::obj* object = object_info_get_object(obj_info);
+        ::obj* object = objset_info_storage_get_object(obj_info);
         if (!object)
             return false;
 
-        prj::vector<GLuint>* textures = object_database_get_set_gentex(obj_info.set_id);
-        obj_mesh_vertex_buffer* obj_vertex_buffer = object_info_get_mesh_vertex_buffer(obj_info, 0);
-        obj_mesh_index_buffer* obj_index_buffer = object_info_get_mesh_index_buffer(obj_info, 0);
+        prj::vector<GLuint>* textures = objset_info_storage_get_set_gentex(obj_info.set_id);
+        obj_mesh_vertex_buffer* obj_vertex_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(obj_info, 0);
+        obj_mesh_index_buffer* obj_index_buffer = objset_info_storage_get_obj_mesh_index_buffer(obj_info, 0);
 
         ::obj* obj_morph = 0;
         obj_mesh_vertex_buffer* obj_morph_vertex_buffer = 0;
         if (morph.object.set_id != (uint16_t)-1) {
-            obj_morph = object_info_get_object(morph.object);
-            obj_morph_vertex_buffer = object_info_get_mesh_vertex_buffer(morph.object, 0);
+            obj_morph = objset_info_storage_get_object(morph.object);
+            obj_morph_vertex_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
         }
 
         return entry_obj(object, obj_vertex_buffer, obj_index_buffer,
@@ -2807,7 +2807,7 @@ namespace mdl {
     void DispManager::entry_obj_by_object_info_object_skin(object_info obj_info,
         prj::vector<texture_pattern_struct>* texture_pattern, texture_data_struct* texture_data, float_t alpha,
         mat4* matrices, mat4* ex_data_matrices, const mat4* mat, const mat4* global_mat) {
-        obj_skin* skin = object_database_get_object_skin(obj_info);
+        obj_skin* skin = objset_info_storage_get_obj_skin(obj_info);
         if (!skin)
             return;
 
@@ -3243,7 +3243,7 @@ namespace mdl {
             return;
 
         int32_t set_id = object_database_get_set_id(*(int32_t*)(a1 + 0x68));
-        int32_t id = object_database_get_set_obj_id(*(int32_t*)(a1 + 0x68), *(int32_t*)(a1 + 0x74));
+        int32_t id = objset_info_storage_get_set_obj_id(*(int32_t*)(a1 + 0x68), *(int32_t*)(a1 + 0x74));
         disp_manager->set_obj_flags((mdl::ObjFlags)(*(int32_t*)(a1 + 0x84) | mdl::OBJ_40 | mdl::OBJ_20));
 
         mat4 mat;

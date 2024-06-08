@@ -18,7 +18,7 @@ namespace Glitter {
     EffectGroupX::~EffectGroupX() {
         for (MeshX& i : meshes)
             if (i.object_set != -1) {
-                object_database_unload_set(i.object_set);
+                objset_info_storage_unload_set(i.object_set);
                 i.load = false;
             }
 

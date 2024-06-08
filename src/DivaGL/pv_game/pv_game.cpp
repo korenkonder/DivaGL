@@ -655,7 +655,7 @@ void pv_game_load_state_4_tail_impl(size_t pv_game) {
 bool pv_game_load_state_6_head_impl() {
     if (task_pv_game_x->use) {
         int32_t objhrc_set = task_pv_game_x->stage_data.objhrc_set;
-        if (objhrc_set != -1 && object_database_load_obj_set_check_not_read(objhrc_set))
+        if (objhrc_set != -1 && objset_info_storage_load_obj_set_check_not_read(objhrc_set))
             return true;
     }
     return false;
@@ -1201,7 +1201,7 @@ void x_pv_game_chara_effect::ctrl() {
                 if (!auth_3d_data_check_category_loaded(j.category.c_str()))
                     wait_load |= true;
 
-                if (object_database_load_obj_set_check_not_read(j.object_set))
+                if (objset_info_storage_load_obj_set_check_not_read(j.object_set))
                     wait_load |= true;
             }
 
@@ -1347,7 +1347,7 @@ void x_pv_game_chara_effect::load_data() {
                 continue;
 
             auth_3d_data_load_category(j.category.c_str());
-            object_database_load_set(j.object_set);
+            objset_info_storage_load_set(j.object_set);
         }
 
     state = 20;
@@ -1466,7 +1466,7 @@ void x_pv_game_chara_effect::unload() {
 
                 j.id.unload();
                 auth_3d_data_unload_category(j.category.c_str());
-                object_database_unload_set(j.object_set);
+                objset_info_storage_unload_set(j.object_set);
             }
         state = 10;
     }
@@ -1498,7 +1498,7 @@ void x_pv_game_effect::ctrl() {
                 wait_load |= true;
 
         for (int32_t& i : pv_obj_set)
-            if (object_database_load_obj_set_check_not_read(i))
+            if (objset_info_storage_load_obj_set_check_not_read(i))
                 wait_load |= true;
 
         if (wait_load)
@@ -1623,7 +1623,7 @@ void x_pv_game_effect::load_data(int32_t pv_id) {
         return;
 
     for (int32_t& i : pv_obj_set)
-        object_database_load_set(i);
+        objset_info_storage_load_set(i);
 
     for (prj::string& i : pv_auth_3d)
         auth_3d_data_load_category(i.c_str());
@@ -1825,7 +1825,7 @@ void x_pv_game_effect::unload() {
         auth_3d_data_unload_category(i.c_str());
 
     for (int32_t& i : pv_obj_set)
-        object_database_unload_set(i);
+        objset_info_storage_unload_set(i);
 
     for (uint32_t& i : pv_glitter)
         Glitter::glt_particle_manager_x->UnloadEffectGroup(i);
@@ -3367,7 +3367,7 @@ void x_pv_game_stage::load(int32_t pv_id, bool a4) {
     char buf[0x40];
     sprintf_s(buf, sizeof(buf), "STGPV%03dHRC", pv_id);
     objhrc_set = object_database_get_object_set_id(buf);
-    object_database_load_set(objhrc_set);
+    objset_info_storage_load_set(objhrc_set);
 }
 
 void x_pv_game_stage::load_change_effect(int32_t curr_stage_effect, int32_t next_stage_effect) {
@@ -3797,7 +3797,7 @@ void x_pv_game_stage::unload() {
 
     env.unload();
 
-    object_database_unload_set(objhrc_set);
+    objset_info_storage_unload_set(objhrc_set);
     objhrc_set = -1;
 
     pv_id = 0;

@@ -467,7 +467,7 @@ bool RobOsageTest::ctrl() {
 
         for (int32_t i = 0; i < ITEM_MAX; i++) {
             rob_chara_item_equip_object* itm_eq_obj = rob_itm_equip->get_item_equip_object((::item_id)i);
-            ::obj* obj = object_info_get_object(itm_eq_obj->obj_info);
+            ::obj* obj = objset_info_storage_get_object(itm_eq_obj->obj_info);
             if (!obj || !itm_eq_obj->osage_blocks.size() && !itm_eq_obj->cloth_blocks.size())
                 continue;
 
@@ -647,7 +647,7 @@ bool RobOsageTest::ctrl() {
 
         for (int32_t i = 0; i < ITEM_MAX; i++) {
             rob_chara_item_equip_object* itm_eq_obj = rob_itm_equip->get_item_equip_object((::item_id)i);
-            ::obj* obj = object_info_get_object(itm_eq_obj->obj_info);
+            ::obj* obj = objset_info_storage_get_object(itm_eq_obj->obj_info);
             if (!obj || !itm_eq_obj->osage_blocks.size() && !itm_eq_obj->cloth_blocks.size())
                 continue;
 
