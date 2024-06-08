@@ -29,31 +29,31 @@ struct texture_id {
     }
 };
 
-inline bool operator >(const texture_id& left, const texture_id& right) {
-    return (((uint32_t)left.id << 24) | left.index) > (((uint32_t)right.id << 24) | right.index);
-}
-
-inline bool operator <(const texture_id& left, const texture_id& right) {
-    return (((uint32_t)left.id << 24) | left.index) < (((uint32_t)right.id << 24) | right.index);
-}
-
-inline bool operator >=(const texture_id& left, const texture_id& right) {
-    return (((uint32_t)left.id << 24) | left.index) >= (((uint32_t)right.id << 24) | right.index);
-}
-
-inline bool operator <=(const texture_id& left, const texture_id& right) {
-    return (((uint32_t)left.id << 24) | left.index) <= (((uint32_t)right.id << 24) | right.index);
-}
-
-inline bool operator ==(const texture_id& left, const texture_id& right) {
-    return (((uint32_t)left.id << 24) | left.index) == (((uint32_t)right.id << 24) | right.index);
-}
-
-inline bool operator !=(const texture_id& left, const texture_id& right) {
-    return (((uint32_t)left.id << 24) | left.index) != (((uint32_t)right.id << 24) | right.index);
-}
-
 static_assert(sizeof(texture_id) == 0x04, "\"texture_id\" struct should have a size of 0x04");
+
+constexpr bool operator==(const texture_id& left, const texture_id& right) {
+    return (((uint64_t)left.id << 32) | left.index) == (((uint64_t)right.id << 32) | right.index);
+}
+
+constexpr bool operator!=(const texture_id& left, const texture_id& right) {
+    return !(left == right);
+}
+
+constexpr bool operator<(const texture_id& left, const texture_id& right) {
+    return (((uint64_t)left.id << 32) | left.index) < (((uint64_t)right.id << 32) | right.index);
+}
+
+constexpr bool operator>(const texture_id& left, const texture_id& right) {
+    return right < left;
+}
+
+constexpr bool operator<=(const texture_id& left, const texture_id& right) {
+    return !(right < left);
+}
+
+constexpr bool operator>=(const texture_id& left, const texture_id& right) {
+    return !(left < right);
+}
 
 struct texture {
     int32_t ref_count;
@@ -96,6 +96,8 @@ extern texture* texture_alloc(texture_id id);
 extern void texture_apply_color_tone(texture* chg_tex,
     texture* org_tex, const color_tone* col_tone);
 extern texture* texture_create_copy_texture(texture_id id, texture* org_tex);
+extern texture* texture_create_copy_texture_apply_color_tone(
+    texture_id id, texture* org_tex, const color_tone* col_tone);
 extern texture* texture_load_tex_2d(texture_id id, GLenum internal_format, int32_t width, int32_t height,
     int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy);
 extern texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format, int32_t width, int32_t height,
@@ -115,6 +117,7 @@ extern void texture_params_restore(texture_param* tex_0_param = 0,
 extern bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids);
 extern bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids);
 
+extern texture_id texture_manager_get_copy_id(uint32_t id);
 extern texture* texture_manager_get_texture(uint32_t id);
 extern texture* texture_manager_get_texture(texture_id id);
 

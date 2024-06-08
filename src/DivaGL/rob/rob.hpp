@@ -9,6 +9,7 @@
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
 #include "../mdl/disp_manager.hpp"
+#include "../item_table.hpp"
 #include "../object.hpp"
 
 enum chara_index {
@@ -41,72 +42,6 @@ enum eyes_base_adjust_type {
     EYES_BASE_ADJUST_CLEARANCE = 0x01,
     EYES_BASE_ADJUST_OFF       = 0x02,
     EYES_BASE_ADJUST_MAX       = 0x03,
-};
-
-enum item_id {
-    ITEM_NONE        = -1,
-    ITEM_BODY        = 0x00,
-    ITEM_ATAMA       = 0x01,
-    ITEM_KATA_R      = 0x02,
-    ITEM_MUNE        = 0x03,
-    ITEM_KATA_L      = 0x04,
-    ITEM_UDE_R       = 0x05,
-    ITEM_SENAKA      = 0x06,
-    ITEM_UDE_L       = 0x07,
-    ITEM_HARA        = 0x08,
-    ITEM_KOSI        = 0x09,
-    ITEM_TE_R        = 0x0A,
-    ITEM_TE_L        = 0x0B,
-    ITEM_MOMO        = 0x0C,
-    ITEM_SUNE        = 0x0D,
-    ITEM_ASI         = 0x0E,
-    ITEM_KAMI        = 0x0F,
-    ITEM_OUTER       = 0x10,
-    ITEM_PANTS       = 0x11,
-    ITEM_ZUJO        = 0x12,
-    ITEM_MEGANE      = 0x13,
-    ITEM_KUBI        = 0x14,
-    ITEM_JOHA_USHIRO = 0x15,
-    ITEM_KUCHI       = 0x16,
-    ITEM_ITEM09      = 0x17,
-    ITEM_ITEM10      = 0x18,
-    ITEM_ITEM11      = 0x19,
-    ITEM_ITEM12      = 0x1A,
-    ITEM_ITEM13      = 0x1B,
-    ITEM_ITEM14      = 0x1C,
-    ITEM_ITEM15      = 0x1D,
-    ITEM_ITEM16      = 0x1E,
-    ITEM_MAX         = 0x1F,
-};
-
-enum item_sub_id {
-    ITEM_SUB_NONE        = -1,
-    ITEM_SUB_ZUJO        = 0x00,
-    ITEM_SUB_KAMI        = 0x01,
-    ITEM_SUB_HITAI       = 0x02,
-    ITEM_SUB_ME          = 0x03,
-    ITEM_SUB_MEGANE      = 0x04,
-    ITEM_SUB_MIMI        = 0x05,
-    ITEM_SUB_KUCHI       = 0x06,
-    ITEM_SUB_MAKI        = 0x07,
-    ITEM_SUB_KUBI        = 0x08,
-    ITEM_SUB_INNER       = 0x09,
-    ITEM_SUB_OUTER       = 0x0A,
-    ITEM_SUB_KATA        = 0x0B,
-    ITEM_SUB_U_UDE       = 0x0C,
-    ITEM_SUB_L_UDE       = 0x0D,
-    ITEM_SUB_TE          = 0x0E,
-    ITEM_SUB_JOHA_MAE    = 0x0F,
-    ITEM_SUB_JOHA_USHIRO = 0x10,
-    ITEM_SUB_BELT        = 0x11,
-    ITEM_SUB_KOSI        = 0x12,
-    ITEM_SUB_PANTS       = 0x13,
-    ITEM_SUB_ASI         = 0x14,
-    ITEM_SUB_SUNE        = 0x15,
-    ITEM_SUB_KUTSU       = 0x16,
-    ITEM_SUB_HADA        = 0x17,
-    ITEM_SUB_HEAD        = 0x18,
-    ITEM_SUB_MAX         = 0x19,
 };
 
 enum mot_bone_index {
@@ -1456,8 +1391,25 @@ struct rob_chara_item_equip {
 
 static_assert(sizeof(rob_chara_item_equip) == 0x960, "\"rob_chara_item_equip\" struct should have a size of 0x960");
 
+struct item_cos_texture_change_tex {
+    texture* org;
+    texture* chg;
+    bool changed;
+};
+
+static_assert(sizeof(item_cos_texture_change_tex) == 0x18, "\"rob_chara_item_cos_data\" struct should have a size of 0x18");
+
 struct rob_chara_item_cos_data {
-    uint8_t data[0x408];
+    ::chara_index chara_index;
+    ::chara_index chara_index_2nd;
+    item_cos_data cos;
+    item_cos_data cos_2nd;
+    prj::map<int32_t, std::vector<item_cos_texture_change_tex>> texture_change;
+    prj::map<int32_t, std::vector<uint32_t>> item_change;
+    prj::map<object_info, item_id> field_F0;
+    prj::map<int32_t, item_id> field_100;
+    std::vector<texture_pattern_struct> texture_pattern[31];
+    std::map<int32_t, object_info> head_replace;
 };
 
 static_assert(sizeof(rob_chara_item_cos_data) == 0x408, "\"rob_chara_item_cos_data\" struct should have a size of 0x408");

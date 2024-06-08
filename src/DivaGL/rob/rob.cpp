@@ -698,6 +698,60 @@ HOOK(void, FASTCALL, rob_chara_set_chara_size, 0x0000000140516810, rob_chara* ro
     item_adjust.scale = value;
 }
 
+HOOK(void, FASTCALL, sub_140526FD0, 0x0000000140526FD0,
+    rob_chara_item_cos_data* item_cos_data, int32_t item_no, item_table_item* item) {
+    if (!(item->attr & 0x0C))
+        return;
+
+    if (!(item->attr & 0x08)) {
+        std::vector<item_cos_texture_change_tex> tex_chg_vec;
+        for (const item_table_item_data_tex& i : item->data.tex) {
+            item_cos_texture_change_tex chg_tex;
+            chg_tex.org = texture_manager_get_texture(i.org);
+            chg_tex.chg = texture_manager_get_texture(i.chg);
+            chg_tex.changed = false;
+            tex_chg_vec.push_back(chg_tex);
+        }
+        item_cos_data->texture_change.insert({ item_no, tex_chg_vec });
+        return;
+    }
+    else if (item->data.col.size() <= 0)
+        return;
+
+    std::vector<int32_t> chg_tex_ids;
+    if (item->attr & 0x04)
+        for (const item_table_item_data_tex& i : item->data.tex)
+            chg_tex_ids.push_back(i.chg);
+    else
+        for (const item_table_item_data_col& i : item->data.col)
+            chg_tex_ids.push_back(i.tex_id);
+
+    std::vector<item_cos_texture_change_tex> tex_chg_vec;
+    size_t index = 0;
+    for (int32_t& i : chg_tex_ids) {
+        size_t j = &i - chg_tex_ids.data();
+        texture* tex = texture_manager_get_texture(i);
+        if (!tex) {
+            index++;
+            continue;
+        }
+
+        bool changed = false;
+        if (item->data.col[j].flag & 0x01) {
+            tex = texture_create_copy_texture_apply_color_tone(
+                texture_manager_get_copy_id(0x30), tex, &item->data.col[j].col_tone);
+            changed = true;
+        }
+
+        item_cos_texture_change_tex chg_tex;
+        chg_tex.org = texture_manager_get_texture(item->data.col[j].tex_id);
+        chg_tex.chg = tex;
+        chg_tex.changed = changed;
+        tex_chg_vec.push_back(chg_tex);
+    }
+    item_cos_data->texture_change.insert({ item_no, tex_chg_vec });
+}
+
 HOOK(void, FASTCALL, sub_1405335C0, 0x0000001405335C0, struc_223* a1) {
     originalsub_1405335C0(a1);
     int32_t chara_id = ((rob_chara*)((size_t)a1 - 0x19C8))->chara_id;
@@ -837,6 +891,7 @@ void rob_patch() {
     INSTALL_HOOK(sub_1405044B0);
     INSTALL_HOOK(rob_chara_item_equip_disp);
     INSTALL_HOOK(rob_chara_set_chara_size);
+    INSTALL_HOOK(sub_140526FD0);
     INSTALL_HOOK(sub_1405335C0);
     INSTALL_HOOK(mothead_func_32);
     INSTALL_HOOK(sub_14053ACA0);
