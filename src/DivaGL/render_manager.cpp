@@ -356,6 +356,7 @@ namespace rndr {
 
     void RenderManager::pass_shadow() {
         gl_state_begin_event("pass_shadow");
+        gl_state_begin_event("texproj");
         if (draw_pass_shadow_litproj_set()) {
             rctx->obj_scene_ubo.WriteMemory(rctx->obj_scene);
 
@@ -386,6 +387,7 @@ namespace rndr {
                 gl_state_bind_framebuffer(0);
             }
         }
+        gl_state_end_event();
 
         rctx->obj_scene_ubo.WriteMemory(rctx->obj_scene);
 
@@ -1022,6 +1024,7 @@ namespace rndr {
         RenderTexture* rt = &render->rend_texture[0];
         RenderTexture* contour_rt = render->sss_contour_texture;
 
+        gl_state_begin_event("`anonymous-namespace'::draw_npr_frame");
         gl_state_enable_blend();
         gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         gl_state_set_blend_equation(GL_FUNC_ADD);
@@ -1054,6 +1057,7 @@ namespace rndr {
         gl_state_bind_sampler(14, rctx->render_samplers[0]);
         gl_state_enable_depth_test();
         gl_state_disable_blend();
+        gl_state_end_event();
     }
 
     void RenderManager::pass_sprite_surf() {
@@ -1077,6 +1081,7 @@ void image_filter_scale(GLuint dst, GLuint src, const vec4 scale) {
     if (!dst || !src)
         return;
 
+    gl_state_begin_event("`anonymous-namespace'::Impl::apply_no_filter_sub");
     texture_param tex_params[2];
     texture_params_get(dst, &tex_params[0], src, &tex_params[1]);
 
@@ -1100,6 +1105,7 @@ void image_filter_scale(GLuint dst, GLuint src, const vec4 scale) {
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
 
     texture_params_restore(&tex_params[0], &tex_params[1]);
+    gl_state_end_event();
 }
 
 void draw_pass_set_camera() {
@@ -1337,6 +1343,7 @@ static void draw_pass_shadow_filter(RenderTexture* a1, RenderTexture* a2,
         || tex_params[0].height != tex_params[1].height)
         return;
 
+    gl_state_begin_event("`anonymous-namespace'::Impl::apply_esm_filter");
     filter_scene_shader_data filter_scene = {};
     filter_scene.g_transform = 0.0f;
     filter_scene.g_texcoord = { 1.0f, 1.0f, 0.0f, 0.0f };
@@ -1383,15 +1390,20 @@ static void draw_pass_shadow_filter(RenderTexture* a1, RenderTexture* a2,
     shader::unbind();
 
     texture_params_restore(&tex_params[0], &tex_params[1], 0);
+    gl_state_end_event();
 }
 
 static void draw_pass_shadow_esm_filter(RenderTexture* dst, RenderTexture* buf, RenderTexture* src) {
     GLuint dst_tex = dst->GetColorTex();
     GLuint buf_tex = buf->GetColorTex();
     GLuint src_tex = src->GetColorTex();
-    if (!dst_tex || !buf_tex || !src_tex)
+    gl_state_begin_event("`anonymous-namespace'::Impl::apply_esm_min_filter");
+    if (!dst_tex || !buf_tex || !src_tex) {
+        gl_state_end_event();
         return;
+    }
 
+    gl_state_begin_event("minimize");
     filter_scene_shader_data filter_scene = {};
     filter_scene.g_transform = 0.0f;
     filter_scene.g_texcoord = { 1.0f, 1.0f, 0.0f, 0.0f };
@@ -1418,7 +1430,9 @@ static void draw_pass_shadow_esm_filter(RenderTexture* dst, RenderTexture* buf, 
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
     gl_state_bind_vertex_array(rctx->common_vao);
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
+    gl_state_end_event();
 
+    gl_state_begin_event("erosion");
     dst->Bind();
     esm_filter_batch.g_params = { 0.75f / (float_t)tex_params[2].width,
         0.75f / (float_t)tex_params[2].height, 0.0f, 0.0f };
@@ -1432,6 +1446,8 @@ static void draw_pass_shadow_esm_filter(RenderTexture* dst, RenderTexture* buf, 
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
 
     texture_params_restore(&tex_params[0], &tex_params[1], &tex_params[2]);
+    gl_state_end_event();
+    gl_state_end_event();
 }
 
 static bool draw_pass_shadow_litproj() {
@@ -1889,6 +1905,7 @@ static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     if (!dst || !src)
         return;
 
+    gl_state_begin_event("`anonymous-namespace'::Impl::apply_blur_filter_sub");
     filter_scene_shader_data filter_scene = {};
     float_t w = res_scale.x / (float_t)src->GetWidth();
     float_t h = res_scale.y / (float_t)src->GetHeight();
@@ -1913,6 +1930,7 @@ static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     gl_state_active_bind_texture_2d(0, src->GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, (GLint)(filter * 4LL), 4);
+    gl_state_end_event();
 }
 
 static void render_manager_free_render_textures() {
