@@ -281,7 +281,7 @@ struct obj_material {
 };
 
 struct obj_material_data {
-    uint32_t num_of_textures;
+    int32_t num_of_textures;
     obj_material material;
 };
 
@@ -303,12 +303,12 @@ struct obj_sub_mesh {
     obj_bounding_sphere bounding_sphere;
     uint32_t material_index;
     uint8_t uv_index[8];
-    uint32_t num_bone_index;
+    int32_t num_bone_index;
     uint16_t* bone_index_array;
     uint32_t bones_per_vertex;
     obj_primitive_type primitive_type;
     obj_index_format index_format;
-    uint32_t num_index;
+    int32_t num_index;
     uint16_t* index_array;
     obj_sub_mesh_attrib attrib;
     uint32_t reserved[4];
@@ -362,11 +362,11 @@ static_assert(sizeof(obj_mesh_vertex_array) == 0xA0, "\"obj_mesh_vertex_array\" 
 struct obj_mesh {
     uint32_t flags;
     obj_bounding_sphere bounding_sphere;
-    uint32_t num_submesh;
+    int32_t num_submesh;
     obj_sub_mesh* submesh_array;
     obj_vertex_format vertex_format;
     uint32_t size_vertex;
-    uint32_t num_vertex;
+    int32_t num_vertex;
     union {
         obj_mesh_vertex_array vertex_array;
         void* vertex_array_ptr[20];
@@ -383,9 +383,9 @@ struct obj {
     uint32_t version;
     uint32_t flags;
     obj_bounding_sphere bounding_sphere;
-    uint32_t num_mesh;
+    int32_t num_mesh;
     obj_mesh* mesh_array;
-    uint32_t num_material;
+    int32_t num_material;
     obj_material_data* material_array;
     uint32_t reserved[10];
 };
@@ -393,13 +393,13 @@ struct obj {
 static_assert(sizeof(obj) == 0x60, "\"obj\" struct should have a size of 0x60");
 
 struct obj_skin_ex_data {
-    uint32_t num_osage_name;
-    uint32_t num_osage_node;
+    int32_t num_osage_name;
+    int32_t num_osage_node;
     const char** field_8;
     struct obj_skin_osage_node* osage_node_array;
     const char** osage_name_array;
     struct obj_skin_block* block_array;
-    uint32_t num_bone_name;
+    int32_t num_bone_name;
     const char** bone_name_array;
     struct obj_skin_osage_sibling_info* osage_sibling_infos;
     uint32_t cloth_count;
@@ -413,7 +413,7 @@ struct obj_skin {
     mat4* bone_matrix_array;
     const char** bone_name_array;
     obj_skin_ex_data* ex_data;
-    uint32_t num_bone;
+    int32_t num_bone;
     int32_t bone_parent_ids_offset;
     int32_t field_28;
     int32_t field_2C;
@@ -424,14 +424,14 @@ static_assert(sizeof(obj_skin) == 0x38, "\"obj_skin\" struct should have a size 
 
 struct obj_set {
     uint32_t version;
-    uint32_t obj_num;
+    int32_t obj_num;
     uint32_t last_obj_id;
     obj** obj_data;
     obj_skin** obj_skin_data;
     const char** obj_name_data;
     uint32_t* obj_id_data;
     uint32_t* tex_id_data;
-    uint32_t tex_num;
+    int32_t tex_num;
     uint32_t reserved[2];
 };
 
@@ -549,7 +549,7 @@ static_assert(sizeof(obj_mesh_vertex_buffer) == 0x18, "\"obj_mesh_vertex_buffer\
 #endif
 
 struct obj_index_buffer {
-    uint32_t mesh_num;
+    int32_t mesh_num;
     obj_mesh_index_buffer* mesh_data;
 #if SHARED_OBJECT_BUFFER
     GLuint buffer;
@@ -566,7 +566,7 @@ static_assert(sizeof(obj_index_buffer) == 0x10, "\"obj_index_buffer\" struct sho
 #endif
 
 struct obj_vertex_buffer {
-    uint32_t mesh_num;
+    int32_t mesh_num;
     obj_mesh_vertex_buffer* mesh_data;
 #if SHARED_OBJECT_BUFFER
     GLuint buffers[3];
