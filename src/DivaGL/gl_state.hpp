@@ -114,10 +114,11 @@ extern void gl_state_set_primitive_restart_index(GLuint index, bool force = fals
 extern void gl_state_set_stencil_mask(GLuint mask, bool force = false);
 extern void gl_state_use_program(GLuint program, bool force = false);
 
-inline constexpr void gl_state_begin_event(const char* str) {
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, (GLsizei)utf8_length(str), str);
+template <size_t size>
+inline void gl_state_begin_event(const char(&str)[size]) {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, (GLsizei)(size - 1), str);
 }
 
-inline constexpr void gl_state_end_event() {
+inline void gl_state_end_event() {
     glPopDebugGroup();
 }
