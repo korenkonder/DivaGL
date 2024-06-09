@@ -323,52 +323,6 @@ void texture_set_params(GLenum target, int32_t max_mipmap_level, bool use_high_a
     glTexParameterfDLL(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_anisotropy);
 }
 
-void texture_params_get(GLuint tex_0, texture_param* tex_0_param,
-    GLuint tex_1, texture_param* tex_1_param, GLuint tex_2, texture_param* tex_2_param) {
-    gl_state_disable_depth_test();
-    if (tex_0_param) {
-        tex_0_param->width = 0;
-        tex_0_param->height = 0;
-        if (tex_0) {
-            gl_state_bind_texture_2d(tex_0);
-            glGetTexLevelParameterivDLL(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tex_0_param->width);
-            glGetTexLevelParameterivDLL(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &tex_0_param->height);
-        }
-    }
-
-    if (tex_1_param) {
-        tex_1_param->width = 0;
-        tex_1_param->height = 0;
-        if (tex_1) {
-            gl_state_bind_texture_2d(tex_1);
-            glGetTexLevelParameterivDLL(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tex_1_param->width);
-            glGetTexLevelParameterivDLL(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &tex_1_param->height);
-        }
-    }
-
-    if (tex_2_param) {
-        tex_2_param->width = 0;
-        tex_2_param->height = 0;
-        if (tex_2) {
-            gl_state_bind_texture_2d(tex_2);
-            glGetTexLevelParameterivDLL(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tex_2_param->width);
-            glGetTexLevelParameterivDLL(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &tex_2_param->height);
-        }
-    }
-    gl_state_bind_texture_2d(0);
-
-    if (tex_0_param)
-        glViewportDLL(0, 0, tex_0_param->width, tex_0_param->height);
-}
-
-void texture_params_restore(texture_param* tex_0_param,
-    texture_param* tex_1_param, texture_param* tex_2_param) {
-    for (int32_t i = 0; i < 4; i++) {
-        gl_state_active_bind_texture_2d(i, 0);
-        gl_state_bind_sampler(i, 0);
-    }
-}
-
 bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids) {
     if (!t || !texs || !ids)
         return false;

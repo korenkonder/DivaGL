@@ -1413,15 +1413,12 @@ void EffectFogRing::draw() {
     gl_state_get_error();
 }
 
-static void sub_1403B6F60(GLuint a1, GLuint a2, GLuint a3, EffectRipple::Params& params) {
-    if (!a1 || !a2 || !a3)
+static void sub_1403B6F60(texture* a1, texture* a2, texture* a3, EffectRipple::Params& params) {
+    if (!a1 || !a1->glid || !a2 || !a2->glid || !a3 || !a3->glid)
         return;
 
-    texture_param tex_params[2];
-    texture_params_get(0, 0, a1, &tex_params[0], a2, &tex_params[1]);
-
-    int32_t width = tex_params[1].width;
-    int32_t height = tex_params[1].height;
+    int32_t width = a2->width;
+    int32_t height = a2->height;
 
     GLint v43[4];
     glGetIntegervDLL(GL_VIEWPORT, v43);
@@ -1443,16 +1440,14 @@ static void sub_1403B6F60(GLuint a1, GLuint a2, GLuint a3, EffectRipple::Params&
     shaders_ft.set(SHADER_FT_RIPPLE);
     ripple_scene_ubo.Bind(0);
     ripple_batch_ubo.Bind(1);
-    gl_state_active_bind_texture_2d(0, a2);
-    gl_state_active_bind_texture_2d(1, a3);
+    gl_state_active_bind_texture_2d(0, a2->glid);
+    gl_state_active_bind_texture_2d(1, a3->glid);
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, 0, 4);
     gl_state_active_bind_texture_2d(1, 0);
     gl_state_active_bind_texture_2d(0, 0);
     gl_state_bind_vertex_array(0);
 
     glViewportDLL(v43[0], v43[1], v43[2], v43[3]);
-
-    texture_params_restore(&tex_params[0], &tex_params[1]);
 }
 
 static void sub_1403B6ED0(RenderTexture* a1, RenderTexture* a2, RenderTexture* a3, EffectRipple::Params& params) {
@@ -1462,7 +1457,7 @@ static void sub_1403B6ED0(RenderTexture* a1, RenderTexture* a2, RenderTexture* a
         uniform->arr[U_RIPPLE] = 1;
     else
         uniform->arr[U_RIPPLE] = 0;
-    sub_1403B6F60(a1->GetColorTex(), a2->GetColorTex(), a3->GetColorTex(), params);
+    sub_1403B6F60(a1->color_texture, a2->color_texture, a3->color_texture, params);
     gl_state_bind_framebuffer(0);
 }
 
@@ -1541,7 +1536,7 @@ void EffectRipple::sub_1403584A0(RenderTexture* rt) {
     field_BB8.SetColorDepthTextures(ripple_tex->glid);
     field_BB8.Bind();
 
-    image_filter_scale(ripple_tex->glid, rt->GetColorTex(), 1.0f);
+    image_filter_scale(&field_BB8, rt->color_texture);
     gl_state_bind_framebuffer(0);
 }
 
