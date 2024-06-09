@@ -2005,7 +2005,7 @@ static void draw_ripple_particles(ripple_struct* data, mat4* mat) {
     color4u8* color = data->color;
 
     for (size_t i = data->count; i; i--, vtx_data++, position++, color++)
-        *vtx_data = { position->x, position->z, (float_t)color->a * (float_t)(1.0 / 255.0) };
+        *vtx_data = { position->x, -position->z, (float_t)color->a * (float_t)(1.0 / 255.0) };
 
     ripple_emit_ssbo.UnmapMemory();
 
