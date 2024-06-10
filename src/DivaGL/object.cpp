@@ -737,8 +737,8 @@ bool obj_index_buffer::load(obj* obj) {
     for (int32_t i = 0; i < mesh_num; i++) {
         obj_mesh& mesh = obj->mesh_array[i];
         size_t num_index = 0;
-        for (int32_t i = 0; i < mesh.num_submesh; i++)
-            num_index += mesh.submesh_array[i].num_index;
+        for (int32_t j = 0; j < mesh.num_submesh; j++)
+            num_index += mesh.submesh_array[j].num_index;
         buffer_size += num_index * sizeof(uint16_t);
     }
 
