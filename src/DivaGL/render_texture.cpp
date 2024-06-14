@@ -5,12 +5,22 @@
 
 #include "render_texture.hpp"
 #include "gl_state.hpp"
+#include <Helpers.h>
 
 static uint32_t& render_texture_counter = *(uint32_t*)0x00000001411AD648;
 
 static int32_t render_texture_init_framebuffer(RenderTexture* rt, int32_t max_level);
 static int32_t render_texture_set_framebuffer_texture(RenderTexture* rrt,
     GLuint color_texture, int32_t level, GLuint depth_texture, bool stencil);
+
+RenderTexture::RenderTexture() : color_texture(), depth_texture(),
+binding(), max_level(), fbos()/*, depth_rbo(), stencil_rbo()*/ {
+
+}
+
+RenderTexture::~RenderTexture() {
+    Free();
+}
 
 int32_t RenderTexture::Bind(int32_t index) {
     if (index < 0 || index > max_level)
@@ -35,15 +45,15 @@ void RenderTexture::Free() {
         color_texture = 0;
     }
 
-    if (rbo) {
-        glDeleteRenderbuffers(1, &rbo);
-        rbo = 0;
+    /*if (depth_rbo) {
+        glDeleteRenderbuffers(1, &depth_rbo);
+        depth_rbo = 0;
     }
 
-    if (field_2C) {
-        glDeleteRenderbuffers(1, &field_2C);
-        field_2C = 0;
-    }
+    if (stencil_rbo) {
+        glDeleteRenderbuffers(1, &stencil_rbo);
+        stencil_rbo = 0;
+    }*/
 
     if (fbos) {
         glDeleteFramebuffers(max_level + 1, fbos);
@@ -110,6 +120,26 @@ int32_t RenderTexture::Init(int32_t width, int32_t height,
     return 0;
 }
 
+/*int32_t RenderTexture::InitDepthRenderbuffer(GLenum internal_format, int32_t width, int32_t height) {
+    gl_state_bind_framebuffer(fbos[0]);
+    glGenRenderbuffers(1, &depth_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth_rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, internal_format, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
+    gl_state_bind_framebuffer(0);
+    return -(glGetError() != GL_ZERO);
+}
+
+int32_t RenderTexture::InitStencilRenderbuffer(GLenum internal_format, int32_t width, int32_t height) {
+    gl_state_bind_framebuffer(fbos[0]);
+    glGenRenderbuffers(1, &stencil_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, stencil_rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, internal_format, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencil_rbo);
+    gl_state_bind_framebuffer(0);
+    return -(glGetError() != GL_ZERO);
+}*/
+
 int32_t RenderTexture::SetColorDepthTextures(GLuint color_texture,
     int32_t max_level, GLuint depth_texture, bool stencil) {
     int32_t error = 0;
@@ -122,6 +152,21 @@ int32_t RenderTexture::SetColorDepthTextures(GLuint color_texture,
 
 void render_texture_counter_reset() {
     render_texture_counter = 0;
+}
+
+HOOK(void, FASTCALL, RenderTexture__RenderTexture, 0x00000001405030C0, RenderTexture* This) {
+    RenderTexture temp;
+    *(void***)This =  *(void***)&temp;
+    *This = temp;
+}
+
+HOOK(void, FASTCALL, RenderTexture___RenderTexture, 0x00000001405030F0, RenderTexture* This) {
+    This->~RenderTexture();
+}
+
+void render_texture_patch() {
+    INSTALL_HOOK(RenderTexture__RenderTexture);
+    INSTALL_HOOK(RenderTexture___RenderTexture);
 }
 
 static int32_t render_texture_init_framebuffer(RenderTexture* rt, int32_t max_level) {
@@ -157,10 +202,10 @@ static int32_t render_texture_set_framebuffer_texture(RenderTexture* rt,
             if (depth_texture)
                 glFramebufferTexture(GL_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT, depth_texture, 0);
-            else if (rt->rbo) {
-                glBindRenderbuffer(GL_RENDERBUFFER, rt->rbo);
+            else if (rt->depth_rbo) {
+                glBindRenderbuffer(GL_RENDERBUFFER, rt->depth_rbo);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rt->rbo);
+                    GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rt->depth_rbo);
             }
             else
                 glFramebufferTexture(GL_FRAMEBUFFER,
@@ -170,10 +215,10 @@ static int32_t render_texture_set_framebuffer_texture(RenderTexture* rt,
             if (depth_texture)
                 glFramebufferTexture(GL_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT, depth_texture, 0);
-            else if (rt->rbo) {
-                glBindRenderbuffer(GL_RENDERBUFFER, rt->rbo);
+            else if (rt->depth_rbo) {
+                glBindRenderbuffer(GL_RENDERBUFFER, rt->depth_rbo);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->rbo);
+                    GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth_rbo);
             }
             else
                 glFramebufferTexture(GL_FRAMEBUFFER,

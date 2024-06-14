@@ -9,19 +9,23 @@
 #include "texture.hpp"
 
 struct RenderTexture {
-    void* __vftable;
     texture* color_texture;
     texture* depth_texture;
     int32_t binding;
     int32_t max_level;
     GLuint* fbos;
-    GLuint rbo;
-    GLuint field_2C;
+    GLuint depth_rbo;
+    GLuint stencil_rbo;
+
+    RenderTexture();
+    virtual ~RenderTexture();
 
     int32_t Bind(int32_t index = 0);
     void Free();
     int32_t Init(int32_t width, int32_t height,
         int32_t max_level, GLenum color_format, GLenum depth_format);
+    /*int32_t InitDepthRenderbuffer(GLenum internal_format, int32_t width, int32_t height);
+    int32_t InitStencilRenderbuffer(GLenum internal_format, int32_t width, int32_t height);*/
     int32_t SetColorDepthTextures(GLuint color_texture,
         int32_t max_level = 0, GLuint depth_texture = 0, bool stencil = false);
 
@@ -49,3 +53,5 @@ struct RenderTexture {
 static_assert(sizeof(RenderTexture) == 0x30, "\"RenderTexture\" struct should have a size of 0x30");
 
 extern void render_texture_counter_reset();
+
+extern void render_texture_patch();
