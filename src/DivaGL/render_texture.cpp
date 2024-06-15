@@ -198,32 +198,15 @@ static int32_t render_texture_set_framebuffer_texture(RenderTexture* rt,
     gl_state_get_error();
 
     if (!level) {
-        if (stencil) {
-            if (depth_texture)
-                glFramebufferTexture(GL_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT, depth_texture, 0);
-            else if (rt->depth_rbo) {
-                glBindRenderbuffer(GL_RENDERBUFFER, rt->depth_rbo);
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rt->depth_rbo);
-            }
-            else
-                glFramebufferTexture(GL_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT, 0, 0);
-        }
-        else {
-            if (depth_texture)
-                glFramebufferTexture(GL_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT, depth_texture, 0);
-            else if (rt->depth_rbo) {
-                glBindRenderbuffer(GL_RENDERBUFFER, rt->depth_rbo);
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth_rbo);
-            }
-            else
-                glFramebufferTexture(GL_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT, 0, 0);
-        }
+        GLenum attechment = stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
+        if (depth_texture)
+            glFramebufferTexture(GL_FRAMEBUFFER, attechment, depth_texture, 0);
+        /*else if (rt->depth_rbo) {
+            glBindRenderbuffer(GL_RENDERBUFFER, rt->depth_rbo);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attechment, GL_RENDERBUFFER, rt->depth_rbo);
+        }*/
+        else
+            glFramebufferTexture(GL_FRAMEBUFFER, attechment, 0, 0);
         gl_state_get_error();
     }
 

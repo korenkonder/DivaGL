@@ -4,8 +4,6 @@
 */
 
 #include "texture.hpp"
-#include "../KKdLib/mat.hpp"
-#include "../KKdLib/txp.hpp"
 #include "gl_state.hpp"
 #include "types.hpp"
 #include <Helpers.h>
