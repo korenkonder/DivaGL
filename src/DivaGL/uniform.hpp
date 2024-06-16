@@ -26,7 +26,7 @@ enum uniform_name {
     U_EXPOSURE      = 0x0F,
     U_SCENE_FADE    = 0x10,
     U_FADE          = 0x11,
-    U12             = 0x12,
+    U_STAGE_AMBIENT = 0x12,
     U_FLARE         = 0x13,
     U_FOG_HEIGHT    = 0x14,
     U_FOG           = 0x15,

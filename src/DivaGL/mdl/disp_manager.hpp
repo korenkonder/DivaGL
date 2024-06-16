@@ -498,7 +498,7 @@ namespace mdl {
         void get_texture_specular_offset(vec4& value);
         void get_texture_transform(int32_t& count, texture_transform_struct*& value);
         float_t get_wet_param();
-        void obj_sort(mat4* view, ObjType type, int32_t compare_func);
+        void obj_sort(mat4* view, ObjType type, int32_t compare_func, bool a3 = false);
         void refresh();
         void set_chara_color(bool value = false);
         void set_culling_finc(bool(FASTCALL* func)(obj_bounding_sphere*) = 0);

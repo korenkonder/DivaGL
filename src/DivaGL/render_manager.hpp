@@ -94,10 +94,10 @@ namespace rndr {
         texture* effect_texture;
         int32_t npr_param;
         bool field_31C;
-        bool field_31D;
-        bool field_31E;
+        bool reflect_texture_mask;
+        bool reflect_tone_curve;
         bool field_31F;
-        bool field_320;
+        bool light_stage_ambient;
         bool npr;
 
         void add_pre_process(int32_t type, void(*func)(void*), void* data);

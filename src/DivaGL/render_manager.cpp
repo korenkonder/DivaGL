@@ -145,10 +145,10 @@ namespace rndr {
         refract = false;
         npr_param = 0;
         field_31C = false;
-        field_31D = false;
-        field_31E = false;
+        reflect_texture_mask = false;
+        reflect_tone_curve = false;
         field_31F = false;
-        field_320 = false;
+        light_stage_ambient = false;
 
         for (bool& i : draw_pass_3d)
             i = true;
@@ -573,7 +573,7 @@ namespace rndr {
             gl_state_enable_depth_test();
             gl_state_set_depth_func(GL_LEQUAL);
             gl_state_set_depth_mask(GL_TRUE);
-            disp_manager->draw(mdl::OBJ_TYPE_REFLECT_OPAQUE, 0, field_31D);
+            disp_manager->draw(mdl::OBJ_TYPE_REFLECT_OPAQUE, 0, reflect_texture_mask);
             if (reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP) {
                 gl_state_enable_blend();
                 gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -583,7 +583,7 @@ namespace rndr {
             }
 
             if (reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP) {
-                uniform->arr[U_REFLECT] = field_31E;
+                uniform->arr[U_REFLECT] = reflect_tone_curve ? 1 : 0;
                 uniform->arr[U_CLIP_PLANE] = clip_plane.data[0];
                 disp_manager->draw(mdl::OBJ_TYPE_REFLECT_CHARA_OPAQUE);
             }
@@ -783,15 +783,15 @@ namespace rndr {
         gl_state_bind_sampler(15, rctx->render_samplers[0]);
         gl_state_bind_sampler(16, rctx->render_samplers[0]);
 
-        uniform->arr[U12] = field_320 ? 1 : 0;
+        uniform->arr[U_STAGE_AMBIENT] = light_stage_ambient ? 1 : 0;
 
         if (alpha_z_sort) {
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT, 1);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT, 1, field_31F);
             disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, 2);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, 1);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, 1);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3, 1);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL, 1);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, 1, field_31F);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2, 1, field_31F);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3, 1, field_31F);
+            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL, 1, field_31F);
         }
 
         if (opaque_z_sort)
@@ -939,14 +939,6 @@ namespace rndr {
         draw_pass_set_camera();
 
         rctx->obj_scene_ubo.WriteMemory(rctx->obj_scene);
-
-        if (alpha_z_sort) {
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT, 1);
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS, 2);
-        }
-
-        if (opaque_z_sort)
-            disp_manager->obj_sort(&rctx->view_mat, mdl::OBJ_TYPE_OPAQUE, 0);
 
         //shaders_ft.env_vert_set(20, show_vector_length, show_vector_z_offset, 0.0f, 0.0f);
         for (int32_t i = 1; i < 4; i++) {

@@ -1985,7 +1985,7 @@ static const std::pair<uniform_name, bool> STAGE_uniform[] = {
     { U_NORMAL       , false },
     { U_FOG_HEIGHT   , false },
     { U_LIGHT_1      , false },
-    { U12            , false },
+    { U_STAGE_AMBIENT, false },
     { U_ALPHA_TEST   , true  }, // 11th added
 };
 
