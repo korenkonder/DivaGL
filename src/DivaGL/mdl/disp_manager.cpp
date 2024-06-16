@@ -1971,7 +1971,7 @@ namespace mdl {
                 i.reset_vertex_attrib();
     }
 
-    void DispManager::draw(ObjType type, int32_t depth_mask, bool a4) {
+    void DispManager::draw(ObjType type, int32_t depth_mask, bool reflect_texture_mask) {
         if (type < 0 || type >= mdl::OBJ_TYPE_LOCAL_MAX || get_obj_count(type) < 1)
             return;
 
@@ -2057,7 +2057,7 @@ namespace mdl {
             break;
         case OBJ_TYPE_REFLECT_OPAQUE:
             alpha_test = 1;
-            if (!a4)
+            if (!reflect_texture_mask)
                 func = draw_sub_mesh_reflect_reflect_map;
             break;
         case OBJ_TYPE_REFLECT_TRANSLUCENT:

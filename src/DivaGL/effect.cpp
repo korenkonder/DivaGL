@@ -1491,7 +1491,7 @@ void EffectRipple::draw() {
         glClearDLL(GL_DEPTH_BUFFER_BIT);
         if (disp_manager->get_obj_count(mdl::OBJ_TYPE_USER)) {
             gl_state_active_bind_texture_2d(7, rt[counter % 3]->GetColorTex());
-            disp_manager->draw(mdl::OBJ_TYPE_USER, 0, true);
+            disp_manager->draw(mdl::OBJ_TYPE_USER);
             gl_state_active_bind_texture_2d(7, 0);
         }
 
