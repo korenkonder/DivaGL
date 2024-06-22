@@ -89,11 +89,15 @@ namespace rndr {
         if (taa_blend < 0.0f || taa_blend >= 1.0f)
             taa_texture = taa_texture_selector;
         else {
-            bool depth = false;
-            GLuint sampler = rctx->render_samplers[1];
+            bool blur;
+            GLuint sampler;
             if (taa_blend > 0.99f) {
-                depth = 1;
+                blur = true;
                 sampler = rctx->render_samplers[0];
+            }
+            else {
+                blur = false;
+                sampler = rctx->render_samplers[1];
             }
 
             taa_texture = 2;
@@ -102,7 +106,7 @@ namespace rndr {
             gl_state_active_bind_texture_2d(0, taa_tex[taa_texture_selector]->glid);
             gl_state_bind_sampler(0, sampler);
 
-            if (depth) {
+            if (blur) {
                 gl_state_active_bind_texture_2d(2, rend_texture[0].depth_texture->glid);
                 gl_state_bind_sampler(2, sampler);
 
@@ -1160,7 +1164,7 @@ namespace rndr {
                 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 
             taa_buffer[destination].Bind();
-            gl_state_active_bind_texture_2d(0, taa_tex[2]->glid);
+            gl_state_active_bind_texture_2d(0, taa_tex[source]->glid);
             gl_state_active_bind_texture_2d(1, temp_buffer.GetColorTex());
             gl_state_bind_sampler(0, rctx->render_samplers[1]);
             gl_state_bind_sampler(1, rctx->render_samplers[1]);
