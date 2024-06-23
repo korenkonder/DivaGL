@@ -1018,6 +1018,7 @@ namespace rndr {
 
         gl_state_begin_event("`anonymous-namespace'::draw_npr_frame");
         gl_state_enable_blend();
+        gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
         gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         gl_state_set_blend_equation(GL_FUNC_ADD);
         gl_state_disable_depth_test();
@@ -1047,6 +1048,7 @@ namespace rndr {
         else
             gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d);
         gl_state_bind_sampler(14, rctx->render_samplers[0]);
+        gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         gl_state_enable_depth_test();
         gl_state_disable_blend();
         gl_state_end_event();
