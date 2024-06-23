@@ -292,7 +292,7 @@ static const int32_t tights_vpt_unival_max[] = {
 
 static const int32_t tights_fpt_unival_max[] = {
     //1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1,
-    1, 1, 1, 0, 1, 0, 1, 1, 1, // 0th removed
+    0, 1, 1, 1, 0, 1, 0, 1, 1, 1, // 0th removed
 };
 
 static const int32_t sky_default_vpt_unival_max[] = {
