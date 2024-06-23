@@ -32,7 +32,7 @@ static GLuint shader_compile_shader(GLenum type, const char* data, const char* f
 static GLuint shader_compile(const char* vert, const char* frag, const char* vp, const char* fp);
 static GLuint shader_compile_binary(const char* vert, const char* frag, const char* vp, const char* fp,
     program_binary* bin, GLsizei* buffer_size, void** binary);
-static bool shader_load_binary_shader(program_binary* bin, GLuint* program);
+static bool shader_load_binary_shader(program_binary* bin, GLuint* program, const char* vp, const char* fp);
 static void shader_update_data(shader_set_data* set);
 
 int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
@@ -400,7 +400,7 @@ int32_t shader_set_data::get_index_by_name(const char* name) {
 void shader_set_data::load(farc* f, bool ignore_cache,
     const char* name, const shader_table* shaders_table, const size_t size,
     const shader_bind_func* bind_func_table, const size_t bind_func_table_size,
-    PFNSHADERGLSLGETINDEXFUNCPROC get_index_by_name) {
+    PFNSHADERGETINDEXFUNCPROC get_index_by_name) {
     if (!this || !f || !shaders_table || !size)
         return;
 
@@ -409,7 +409,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
         return;
 
     wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\PDAFT");
-    CreateDirectoryW(temp_buf, 0);
+    path_create_directory(temp_buf);
 
     wchar_t buf[MAX_PATH];
     swprintf_s(buf, sizeof(buf) / sizeof(wchar_t), L"\\%hs_shader_cache", name);
@@ -425,6 +425,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
     char frag_buf[MAX_PATH];
     char vert_file_buf[MAX_PATH];
     char frag_file_buf[MAX_PATH];
+    char shader_cache_file_name[MAX_PATH];
 
     GLsizei buffer_size = 0x100000;
     void* binary = force_malloc(buffer_size);
@@ -491,32 +492,44 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 continue;
             }
 
-            uint32_t uniform_flags = 0;
+            uint32_t uniform_vert_flags = 0;
+            uint32_t uniform_frag_flags = 0;
             for (int32_t k = 0; k < shader->num_uniform; k++)
-                if (shader->use_uniform[k].second)
-                    uniform_flags |= 1 << k;
+                if (shader->use_uniform[k].second) {
+                    if (sub_table->vp_unival_max[k] > 0)
+                        uniform_vert_flags |= 1 << k;
+                    if (sub_table->fp_unival_max[k] > 0)
+                        uniform_frag_flags |= 1 << k;
+                }
 
-            char uniform_flags_buf[9];
+            char uniform_vert_flags_buf[9];
+            char uniform_frag_flags_buf[9];
             for (int32_t k = 0, l = 7; k < 32; k += 4, l--) {
-                int32_t digit = (uniform_flags >> k) & 0xF;
-                if (digit >= 0x00 && digit <= 0x09)
-                    uniform_flags_buf[l] = (char)('0' + digit);
+                int32_t vert_flags_digit = (uniform_vert_flags >> k) & 0xF;
+                if (vert_flags_digit >= 0x00 && vert_flags_digit <= 0x09)
+                    uniform_vert_flags_buf[l] = (char)('0' + vert_flags_digit);
                 else
-                    uniform_flags_buf[l] = (char)('A' + (digit - 0x0A));
+                    uniform_vert_flags_buf[l] = (char)('A' + (vert_flags_digit - 0x0A));
+
+                int32_t frag_flags_digit = (uniform_frag_flags >> k) & 0xF;
+                if (frag_flags_digit >= 0x00 && frag_flags_digit <= 0x09)
+                    uniform_frag_flags_buf[l] = (char)('0' + frag_flags_digit);
+                else
+                    uniform_frag_flags_buf[l] = (char)('A' + (frag_flags_digit - 0x0A));
             }
-            uniform_flags_buf[8] = 0;
+            uniform_vert_flags_buf[8] = 0;
+            uniform_frag_flags_buf[8] = 0;
 
             strcpy_s(vert_buf, sizeof(vert_buf), vert_file_buf);
             strcpy_s(frag_buf, sizeof(frag_buf), frag_file_buf);
             strcat_s(vert_buf, sizeof(vert_buf), ".");
             strcat_s(frag_buf, sizeof(frag_buf), ".");
-            strcat_s(vert_buf, sizeof(vert_buf), uniform_flags_buf);
-            strcat_s(frag_buf, sizeof(frag_buf), uniform_flags_buf);
+            strcat_s(vert_buf, sizeof(vert_buf), uniform_vert_flags_buf);
+            strcat_s(frag_buf, sizeof(frag_buf), uniform_frag_flags_buf);
 
-            uint64_t vert_file_name_hash = hash_utf8_fnv1a64m(vert_buf);
-            uint64_t frag_file_name_hash = hash_utf8_fnv1a64m(frag_buf);
+            uint64_t vert_file_name_hash = hash_utf8_xxh3_64bits(vert_buf);
+            uint64_t frag_file_name_hash = hash_utf8_xxh3_64bits(frag_buf);
 
-            char shader_cache_file_name[MAX_PATH];
             strcpy_s(shader_cache_file_name, sizeof(shader_cache_file_name), sub_table->vp);
             if (str_utils_compare(sub_table->vp, sub_table->fp)) {
                 strcat_s(shader_cache_file_name, sizeof(shader_cache_file_name), ".");
@@ -526,8 +539,8 @@ void shader_set_data::load(farc* f, bool ignore_cache,
 
             vert_data = shader::parse_include(vert_data, f);
             frag_data = shader::parse_include(frag_data, f);
-            uint64_t vert_data_hash = hash_utf8_fnv1a64m(vert_data);
-            uint64_t frag_data_hash = hash_utf8_fnv1a64m(frag_data);
+            uint64_t vert_data_hash = hash_utf8_xxh3_64bits(vert_data);
+            uint64_t frag_data_hash = hash_utf8_xxh3_64bits(frag_data);
 
             farc_file* shader_cache_file = shader_cache_farc.read_file(shader_cache_file_name);
             program_binary* bin = 0;
@@ -540,13 +553,8 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 else if (vert_data_hash != ((uint64_t*)shader_cache_file->data)[2]
                     || frag_data_hash != ((uint64_t*)shader_cache_file->data)[3])
                     printf_debug("Shader hash not equal: %s %s\n", vert_file_buf, frag_file_buf);
-                else {
+                else
                     bin = (program_binary*)&((uint64_t*)shader_cache_file->data)[4];
-                    if (bin->hash != hash_fnv1a64m((void*)((size_t)bin + bin->binary), bin->length)) {
-                        printf_debug("Compiled binary hash could not be validated: %s %s\n", vert_file_buf, frag_file_buf);
-                        bin = 0;
-                    }
-                }
             }
 
             if (shader->num_uniform > 0
@@ -602,7 +610,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                         }
 
                         if (!bin || !bin->binary_format || !bin->length
-                            || !shader_load_binary_shader(bin, &shaders[k].program)) {
+                            || !shader_load_binary_shader(bin, &shaders[k].program, vert_buf, frag_buf)) {
                             bool vert_succ = shader::parse_define(vert_data, num_uniform,
                                 vec_vert_data, &temp_vert, &temp_vert_size);
                             bool frag_succ = shader::parse_define(frag_data, num_uniform,
@@ -648,7 +656,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     strcat_s(frag_buf, sizeof(vert_buf), "..frag");
 
                     if (!bin || !bin->binary_format || !bin->length
-                        || !shader_load_binary_shader(bin, &shaders[0].program)) {
+                        || !shader_load_binary_shader(bin, &shaders[0].program, vert_buf, frag_buf)) {
                         bool vert_succ = shader::parse_define(vert_data, &temp_vert, &temp_vert_size);
                         bool frag_succ = shader::parse_define(frag_data, &temp_frag, &temp_frag_size);
 
@@ -707,7 +715,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                     bin->length = k.length;
                     bin->binary_format = k.binary_format;
                     bin->binary = bin_data - bin_data_base;
-                    bin->hash = hash_fnv1a64m((void*)k.binary, k.length);
+                    bin->hash = hash_xxh3_64bits((void*)k.binary, k.length);
                     memcpy((void*)bin_data, (void*)k.binary, k.length);
                     bin_data_base += sizeof(program_binary);
                     bin_data += align_val(k.length, 0x04);
@@ -735,7 +743,7 @@ void shader_set_data::load(farc* f, bool ignore_cache,
     free_def(temp_vert);
     free_def(temp_frag);
 
-    if (!ignore_cache && shader_cache_changed)
+    if (shader_cache_changed)
         shader_cache_farc.write(temp_buf, FARC_FArC, FARC_NONE, true, false);
 
     this->get_index_by_name_func = get_index_by_name;
@@ -763,14 +771,14 @@ void shader_set_data::unload() {
 
         int32_t num_sub = shader->num_sub;
         shader_sub* sub = shader->sub;
-        for (size_t j = 0; j < num_sub; j++, sub++) {
+        for (int32_t j = 0; j < num_sub; j++, sub++) {
             int32_t unival_shad_count = 1;
             if (shader->num_uniform > 0) {
                 int32_t num_uniform = shader->num_uniform;
                 int32_t unival_shad_curr = 1;
                 const int32_t* vp_unival_max = sub->vp_unival_max;
                 const int32_t* fp_unival_max = sub->fp_unival_max;
-                for (size_t k = 0; k < num_uniform; k++) {
+                for (int32_t k = 0; k < num_uniform; k++) {
                     const int32_t unival_max = shader->use_uniform[k].second
                         ? max_def(vp_unival_max[k], fp_unival_max[k]) : 0;
                     unival_shad_count += unival_shad_curr * unival_max;
@@ -780,7 +788,7 @@ void shader_set_data::unload() {
 
             if (sub->shaders) {
                 shader_sub_shader* shaders = sub->shaders;
-                for (size_t k = 0; k < unival_shad_count; k++)
+                for (int32_t k = 0; k < unival_shad_count; k++)
                     glDeleteProgram(shaders[k].program);
                 free(shaders);
                 sub->shaders = 0;
@@ -806,8 +814,10 @@ static GLuint shader_compile_shader(GLenum type, const char* data, const char* f
     GLint success = 0;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        GLchar* info_log = force_malloc<GLchar>(0x10000);
-        glGetShaderInfoLog(shader, 0x10000, 0, info_log);
+        GLint length = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+        GLchar* info_log = force_malloc<GLchar>(length);
+        glGetShaderInfoLog(shader, length, 0, info_log);
         const char* type_str = "Unknown";
         switch (type) {
         case GL_FRAGMENT_SHADER:
@@ -818,21 +828,18 @@ static GLuint shader_compile_shader(GLenum type, const char* data, const char* f
             break;
         }
         printf_debug("%s shader compile error:\nfile: %s\n%s\n", type_str, file, info_log);
-        free_def(info_log);
-        glDeleteShader(shader);
 
-#if defined(CRE_DEV)
         wchar_t temp_buf[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPathW(0, CSIDL_LOCAL_APPDATA, 0, 0, temp_buf))) {
-            wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\ReDIVA");
+            wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\PDAFT");
             temp_buf[sizeof(temp_buf) / sizeof(wchar_t) - 1] = 0;
-            CreateDirectoryW(temp_buf, 0);
+            path_create_directory(temp_buf);
 
             wchar_t buf[MAX_PATH];
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
                 L"%ls\\shader_error", temp_buf);
             buf[sizeof(buf) / sizeof(wchar_t) - 1] = 0;
-            CreateDirectoryW(buf, 0);
+            path_create_directory(buf);
 
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
                 L"%ls\\shader_error\\%hs", temp_buf, file);
@@ -840,9 +847,14 @@ static GLuint shader_compile_shader(GLenum type, const char* data, const char* f
 
             file_stream s;
             s.open(buf, L"wb");
-            s.write(data, utf8_length(data));
+            s.write_utf8_string(data);
+            s.write_utf8_string("\n/*\n");
+            s.write_utf8_string(info_log);
+            s.write_utf8_string("*/\n");
         }
-#endif
+
+        free_def(info_log);
+        glDeleteShader(shader);
         return 0;
     }
     return shader;
@@ -867,24 +879,23 @@ static GLuint shader_compile(const char* vert, const char* frag, const char* vp,
     GLint success = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
-        GLchar* info_log = force_malloc<GLchar>(0x10000);
-        glGetProgramInfoLog(program, 0x10000, 0, info_log);
+        GLint length = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+        GLchar* info_log = force_malloc<GLchar>(length);
+        glGetProgramInfoLog(program, length, 0, info_log);
         printf_debug("Program Shader Permut linking error:\nvp: %s; fp: %s\n%s\n", vp, fp, info_log);
-        free_def(info_log);
-        glDeleteProgram(program);
 
-#if defined(CRE_DEV)
         wchar_t temp_buf[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPathW(0, CSIDL_LOCAL_APPDATA, 0, 0, temp_buf))) {
             wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\ReDIVA");
             temp_buf[sizeof(temp_buf) / sizeof(wchar_t) - 1] = 0;
-            CreateDirectoryW(temp_buf, 0);
+            path_create_directory(temp_buf);
 
             wchar_t buf[MAX_PATH];
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
                 L"%ls\\shader_error", temp_buf);
             buf[sizeof(buf) / sizeof(wchar_t) - 1] = 0;
-            CreateDirectoryW(buf, 0);
+            path_create_directory(buf);
 
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
                 L"%ls\\shader_error\\%hs", temp_buf, vp);
@@ -892,7 +903,10 @@ static GLuint shader_compile(const char* vert, const char* frag, const char* vp,
 
             file_stream s;
             s.open(buf, L"wb");
-            s.write(vert, utf8_length(vert));
+            s.write_utf8_string(vert);
+            s.write_utf8_string("\n/*\n");
+            s.write_utf8_string(info_log);
+            s.write_utf8_string("*/\n");
             s.close();
 
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
@@ -900,10 +914,15 @@ static GLuint shader_compile(const char* vert, const char* frag, const char* vp,
             buf[sizeof(buf) / sizeof(wchar_t) - 1] = 0;
 
             s.open(buf, L"wb");
-            s.write(frag, utf8_length(frag));
+            s.write_utf8_string(frag);
+            s.write_utf8_string("\n/*\n");
+            s.write_utf8_string(info_log);
+            s.write_utf8_string("*/\n");
             s.close();
         }
-#endif
+
+        free_def(info_log);
+        glDeleteProgram(program);
         return 0;
     }
     else {
@@ -934,24 +953,23 @@ static GLuint shader_compile_binary(const char* vert, const char* frag, const ch
     GLint success = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
-        GLchar* info_log = force_malloc<GLchar>(0x10000);
-        glGetProgramInfoLog(program, 0x10000, 0, info_log);
+        GLint length = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+        GLchar* info_log = force_malloc<GLchar>(length);
+        glGetProgramInfoLog(program, length, 0, info_log);
         printf_debug("Program Shader Permut linking error:\nvp: %s; fp: %s\n%s\n", vp, fp, info_log);
-        free_def(info_log);
-        glDeleteProgram(program);
 
-#if defined(CRE_DEV)
         wchar_t temp_buf[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPathW(0, CSIDL_LOCAL_APPDATA, 0, 0, temp_buf))) {
             wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\ReDIVA");
             temp_buf[sizeof(temp_buf) / sizeof(wchar_t) - 1] = 0;
-            CreateDirectoryW(temp_buf, 0);
+            path_create_directory(temp_buf);
 
             wchar_t buf[MAX_PATH];
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
                 L"%ls\\shader_error", temp_buf);
             buf[sizeof(buf) / sizeof(wchar_t) - 1] = 0;
-            CreateDirectoryW(buf, 0);
+            path_create_directory(buf);
 
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
                 L"%ls\\shader_error\\%hs", temp_buf, vp);
@@ -959,7 +977,10 @@ static GLuint shader_compile_binary(const char* vert, const char* frag, const ch
 
             file_stream s;
             s.open(buf, L"wb");
-            s.write(vert, utf8_length(vert));
+            s.write_utf8_string(vert);
+            s.write_utf8_string("\n/*\n");
+            s.write_utf8_string(info_log);
+            s.write_utf8_string("*/\n");
             s.close();
 
             swprintf_s(buf, sizeof(buf) / sizeof(wchar_t),
@@ -967,10 +988,15 @@ static GLuint shader_compile_binary(const char* vert, const char* frag, const ch
             buf[sizeof(buf) / sizeof(wchar_t) - 1] = 0;
 
             s.open(buf, L"wb");
-            s.write(frag, utf8_length(frag));
+            s.write_utf8_string(frag);
+            s.write_utf8_string("\n/*\n");
+            s.write_utf8_string(info_log);
+            s.write_utf8_string("*/\n");
             s.close();
         }
-#endif
+
+        free_def(info_log);
+        glDeleteProgram(program);
         return 0;
     }
     else {
@@ -997,7 +1023,12 @@ static GLuint shader_compile_binary(const char* vert, const char* frag, const ch
     }
 }
 
-static bool shader_load_binary_shader(program_binary* bin, GLuint* program) {
+static bool shader_load_binary_shader(program_binary* bin, GLuint* program, const char* vp, const char* fp) {
+    if (bin->hash != hash_xxh3_64bits((void*)((size_t)bin + bin->binary), bin->length)) {
+        printf_debug("Compiled binary hash could not be validated: %s %s\n", vp, fp);
+        return false;
+    }
+
     *program = glCreateProgram();
     glProgramBinary(*program, bin->binary_format, (void*)((size_t)bin + bin->binary), bin->length);
     GLint success = 0;

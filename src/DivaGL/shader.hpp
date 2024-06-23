@@ -44,13 +44,13 @@ struct shader_table {
 struct shader;
 struct shader_set_data;
 
-typedef int32_t (*PFNSHADERGLSLGETINDEXFUNCPROC)(const char* name);
+typedef int32_t (*PFNSHADERGETINDEXFUNCPROC)(const char* name);
 
-typedef void (*PFNSHADERGLSLBINDFUNCPROC)(shader_set_data* set, shader* shad);
+typedef void (*PFNSHADERBINDFUNCPROC)(shader_set_data* set, shader* shad);
 
 struct shader_bind_func {
     uint32_t name_index;
-    PFNSHADERGLSLBINDFUNCPROC bind_func;
+    PFNSHADERBINDFUNCPROC bind_func;
 };
 
 struct shader_sub_shader {
@@ -74,7 +74,7 @@ struct shader {
     shader_sub* sub;
     int32_t num_uniform;
     const std::pair<uniform_name, bool>* use_uniform;
-    PFNSHADERGLSLBINDFUNCPROC bind_func;
+    PFNSHADERBINDFUNCPROC bind_func;
 
     int32_t bind(shader_set_data* set, uint32_t sub_index);
 
@@ -92,7 +92,7 @@ struct shader_set_data {
     GLboolean primitive_restart;
     GLuint primitive_restart_index;
 
-    PFNSHADERGLSLGETINDEXFUNCPROC get_index_by_name_func;
+    PFNSHADERGETINDEXFUNCPROC get_index_by_name_func;
 
     shader_set_data();
 
@@ -107,7 +107,7 @@ struct shader_set_data {
     void load(farc* f, bool ignore_cache, const char* name,
         const shader_table* shaders_table, const size_t size,
         const shader_bind_func* bind_func_table, const size_t bind_func_table_size,
-        PFNSHADERGLSLGETINDEXFUNCPROC get_index_by_name);
+        PFNSHADERGETINDEXFUNCPROC get_index_by_name);
     void set(uint32_t index);
     void unload();
 };
