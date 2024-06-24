@@ -1966,7 +1966,7 @@ static const std::pair<uniform_name, bool> ITEM_uniform[] = {
     { U_NORMAL       , false },
     { U_TEXTURE_COUNT, false },
     { U_ENV_MAP      , false },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_FOG          , false },
     { U_ALPHA_TEST   , true  },
     { U_SHADOW       , false },
@@ -1993,7 +1993,7 @@ static const std::pair<uniform_name, bool> SKIN_uniform[] = {
     //{ U16            , true  }, // 0th removed
     { U_SKINNING     , true  },
     { U_NORMAL       , false },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_FOG          , false },
     { U_ALPHA_TEST   , true  },
     { U_SHADOW       , false },
@@ -2005,12 +2005,12 @@ static const std::pair<uniform_name, bool> SKIN_uniform[] = {
 static const std::pair<uniform_name, bool> SSS_SKIN_uniform[] = {
     //{ U16            , true  }, // 0th removed
     { U_SKINNING     , true  },
-    { U37            , false },
+    { U_SSS_CHARA    , true  },
     { U_ALPHA_TEST   , true  },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_SHADOW       , false },
     { U_NPR          , true  },
-    { U26            , false },
+    { U_NPR_NORMAL   , false },
 };
 
 static const std::pair<uniform_name, bool> SSS_FILT_uniform[] = {
@@ -2028,7 +2028,7 @@ static const std::pair<uniform_name, bool> HAIR_uniform[] = {
     { U_TRANSPARENCY , false },
     { U_TRANSLUCENCY , false },
     { U_ANISO        , false },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_FOG          , false },
     { U_SHADOW       , false },
     { U_NPR          , false },
@@ -2045,7 +2045,7 @@ static const std::pair<uniform_name, bool> CLOTH_uniform[] = {
     { U_NORMAL       , false },
     { U_TRANSPARENCY , false },
     { U_ENV_MAP      , false },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_FOG          , false },
     { U_ALPHA_TEST   , true  },
     { U_ANISO        , false },
@@ -2060,7 +2060,7 @@ static const std::pair<uniform_name, bool> TIGHTS_uniform[] = {
     { U_SKINNING     , true  },
     { U_SPECULAR     , false },
     { U_ENV_MAP      , false },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_FOG          , false },
     { U_ALPHA_TEST   , true  },
     { U_SHADOW       , false },
@@ -2093,9 +2093,9 @@ static const std::pair<uniform_name, bool> SKY_uniform[] = {
 static const std::pair<uniform_name, bool> GLASEYE_uniform[] = {
     //{ U16            , true  }, // 0th removed
     { U_SKINNING     , true  },
-    { U_SELF_SHADOW  , false },
+    { U_SELF_SHADOW  , true  },
     { U_FOG          , false },
-    { U18            , false },
+    { U_EYEBALL      , false },
     { U_SHADOW       , false },
     { U_CHARA_COLOR  , false },
     { U_TONE_CURVE   , false },
@@ -2743,7 +2743,7 @@ static void shader_bind_hair(shader_set_data* set, shader* shad) {
 }
 
 static void shader_bind_eye_ball(shader_set_data* set, shader* shad) {
-    uniform->arr[U18] = 0;
+    uniform->arr[U_EYEBALL] = 0;
     if (set->shaders[SHADER_FT_GLASEYE].bind(set, SHADER_FT_SUB_GLASS_EYE) >= 0) {
         glass_eye_calc(&glass_eye);
         glass_eye_set(&glass_eye);
