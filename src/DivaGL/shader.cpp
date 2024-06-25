@@ -10,7 +10,6 @@
 #include "../KKdLib/str_utils.hpp"
 #include "gl_state.hpp"
 #include "print.hpp"
-#include "uniform.hpp"
 #include "wrap.hpp"
 #include <shlobj_core.h>
 
@@ -21,13 +20,6 @@ struct program_binary {
     uint64_t hash;
 };
 
-struct program_spv {
-    size_t size;
-    size_t spv;
-};
-
-extern bool vulkan_render;
-
 static GLuint shader_compile_shader(GLenum type, const char* data, const char* file);
 static GLuint shader_compile(const char* vert, const char* frag, const char* vp, const char* fp);
 static GLuint shader_compile_binary(const char* vert, const char* frag, const char* vp, const char* fp,
@@ -36,7 +28,7 @@ static bool shader_load_binary_shader(program_binary* bin, GLuint* program, cons
 static void shader_update_data(shader_set_data* set);
 
 int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
-    set->curr_shader = 0;
+    set->curr_program = 0;
 
     if (num_sub < 1)
         return -1;
@@ -50,33 +42,23 @@ int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
 
     int32_t unival_shad_curr = 1;
     int32_t unival_shad = 0;
-    int32_t uniform_val[SHADER_MAX_UNIFORM_VALUES] = {};
     if (num_uniform > 0) {
         const int32_t* vp_unival_max = sub_shader->vp_unival_max;
         const int32_t* fp_unival_max = sub_shader->fp_unival_max;
 
         int32_t i = 0;
-        for (i = 0; i < num_uniform && i < sizeof(uniform_val) / sizeof(int32_t); i++) {
-            const int32_t unival = uniform->arr[use_uniform[i].first];
-            const int32_t unival_max = use_uniform[i].second
-                ? max_def(vp_unival_max[i], fp_unival_max[i]) : 0;
+        for (i = 0; i < num_uniform; i++) {
+            const int32_t unival = uniform->arr[use_uniform[i]];
+            const int32_t unival_max = max_def(vp_unival_max[i], fp_unival_max[i]);
             unival_shad += unival_shad_curr * min_def(unival, unival_max);
             unival_shad_curr *= unival_max + 1;
-
-            int32_t unival_max_glsl = max_def(vp_unival_max[i], fp_unival_max[i]);
-            uniform_val[i] = min_def(unival, unival_max_glsl);
         }
     }
 
-    shader_sub_shader* shader = &sub_shader->shaders[unival_shad];
-    set->curr_shader = shader;
+    GLuint program = sub_shader->programs[unival_shad];
+    set->curr_program = program;
 
-    gl_state_use_program(shader->program);
-    if (shader->has_uniform_val
-        && memcmp(shader->uniform_val, uniform_val, sizeof(uniform_val))) {
-        memcpy(shader->uniform_val, uniform_val, sizeof(uniform_val));
-        shader->uniform_val_update = true;
-    }
+    gl_state_use_program(program);
     return 0;
 }
 
@@ -296,7 +278,7 @@ void shader::unbind() {
     gl_state_use_program(0);
 }
 
-shader_set_data::shader_set_data() : size(), shaders(), curr_shader(),
+shader_set_data::shader_set_data() : size(), shaders(), curr_program(),
 primitive_restart(), primitive_restart_index(), get_index_by_name_func() {
 
 }
@@ -494,13 +476,12 @@ void shader_set_data::load(farc* f, bool ignore_cache,
 
             uint32_t uniform_vert_flags = 0;
             uint32_t uniform_frag_flags = 0;
-            for (int32_t k = 0; k < shader->num_uniform; k++)
-                if (shader->use_uniform[k].second) {
-                    if (sub_table->vp_unival_max[k] > 0)
-                        uniform_vert_flags |= 1 << k;
-                    if (sub_table->fp_unival_max[k] > 0)
-                        uniform_frag_flags |= 1 << k;
-                }
+            for (int32_t k = 0; k < shader->num_uniform; k++) {
+                if (sub_table->vp_unival_max[k] > 0)
+                    uniform_vert_flags |= 1 << k;
+                if (sub_table->fp_unival_max[k] > 0)
+                    uniform_frag_flags |= 1 << k;
+            }
 
             char uniform_vert_flags_buf[9];
             char uniform_frag_flags_buf[9];
@@ -565,17 +546,16 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                 const int32_t* vp_unival_max = sub_table->vp_unival_max;
                 const int32_t* fp_unival_max = sub_table->fp_unival_max;
                 for (int32_t k = 0; k < num_uniform; k++) {
-                    const int32_t unival_max = shader->use_uniform[k].second
-                        ? max_def(vp_unival_max[k], fp_unival_max[k]) : 0;
+                    const int32_t unival_max = max_def(vp_unival_max[k], fp_unival_max[k]);
                     unival_shad_count += unival_shad_curr * unival_max;
                     unival_shad_curr *= unival_max + 1;
                 }
 
                 if (!ignore_cache)
                     program_data_binary.reserve(unival_shad_count);
-                shader_sub_shader* shaders = force_malloc<shader_sub_shader>(unival_shad_count);
-                sub->shaders = shaders;
-                if (shaders) {
+                GLuint* programs = force_malloc<GLuint>(unival_shad_count);
+                sub->programs = programs;
+                if (programs) {
                     strcpy_s(vert_buf, sizeof(vert_buf), sub_table->vp);
                     size_t vert_buf_pos = utf8_length(vert_buf);
                     vert_buf[vert_buf_pos++] = '.';
@@ -594,38 +574,36 @@ void shader_set_data::load(farc* f, bool ignore_cache,
 
                     for (int32_t k = 0; k < unival_shad_count; k++) {
                         for (int32_t l = 0, m = k; l < num_uniform; l++) {
-                            int32_t unival_max = (shader->use_uniform[l].second
-                                ? max_def(vp_unival_max[l], fp_unival_max[l]) : 0) + 1;
+                            int32_t unival_max = max_def(vp_unival_max[l], fp_unival_max[l]) + 1;
                             vec_vert_data[l] = min_def(m % unival_max, vp_unival_max[l]);
                             m /= unival_max;
                             vert_buf[vert_buf_pos + l] = (char)('0' + vec_vert_data[l]);
                         }
 
                         for (int32_t l = 0, m = k; l < num_uniform; l++) {
-                            int32_t unival_max = (shader->use_uniform[l].second
-                                ? max_def(vp_unival_max[l], fp_unival_max[l]) : 0) + 1;
+                            int32_t unival_max = max_def(vp_unival_max[l], fp_unival_max[l]) + 1;
                             vec_frag_data[l] = min_def(m % unival_max, fp_unival_max[l]);
                             m /= unival_max;
                             frag_buf[frag_buf_pos + l] = (char)('0' + vec_frag_data[l]);
                         }
 
                         if (!bin || !bin->binary_format || !bin->length
-                            || !shader_load_binary_shader(bin, &shaders[k].program, vert_buf, frag_buf)) {
+                            || !shader_load_binary_shader(bin, &programs[k], vert_buf, frag_buf)) {
                             bool vert_succ = shader::parse_define(vert_data, num_uniform,
                                 vec_vert_data, &temp_vert, &temp_vert_size);
                             bool frag_succ = shader::parse_define(frag_data, num_uniform,
                                 vec_frag_data, &temp_frag, &temp_frag_size);
 
                             if (ignore_cache)
-                                shaders[k].program = shader_compile(vert_succ ? temp_vert : 0,
+                                programs[k] = shader_compile(vert_succ ? temp_vert : 0,
                                     frag_succ ? temp_frag : 0, vert_buf, frag_buf);
                             else {
                                 program_data_binary.push_back({});
-                                shaders[k].program = shader_compile_binary(vert_succ ? temp_vert : 0,
+                                programs[k] = shader_compile_binary(vert_succ ? temp_vert : 0,
                                     frag_succ ? temp_frag : 0, vert_buf, frag_buf,
                                     &program_data_binary.back(), &buffer_size, &binary);
                             }
-                            shader_cache_changed |= shaders[k].program ? true : false;
+                            shader_cache_changed |= programs[k] ? true : false;
                         }
                         else {
                             program_data_binary.push_back({});
@@ -636,10 +614,6 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                             memcpy((void*)b->binary, (void*)((size_t)bin + bin->binary), bin->length);
                         }
 
-                        shaders[k].has_uniform_val = false;
-                        if (shaders[k].program)
-                            shaders[k].has_uniform_val = glGetUniformLocation(shaders[k].program, "uniform_val") >= 0;
-
                         if (!ignore_cache && bin)
                             bin++;
                     }
@@ -647,29 +621,29 @@ void shader_set_data::load(farc* f, bool ignore_cache,
             }
             else {
                 program_data_binary.reserve(1);
-                shader_sub_shader* shaders = force_malloc<shader_sub_shader>();
-                sub->shaders = shaders;
-                if (shaders) {
+                GLuint* programs = force_malloc<GLuint>();
+                sub->programs = programs;
+                if (programs) {
                     strcpy_s(vert_buf, sizeof(vert_buf), sub_table->vp);
                     strcpy_s(frag_buf, sizeof(vert_buf), sub_table->fp);
                     strcat_s(vert_buf, sizeof(vert_buf), "..vert");
                     strcat_s(frag_buf, sizeof(vert_buf), "..frag");
 
                     if (!bin || !bin->binary_format || !bin->length
-                        || !shader_load_binary_shader(bin, &shaders[0].program, vert_buf, frag_buf)) {
+                        || !shader_load_binary_shader(bin, &programs[0], vert_buf, frag_buf)) {
                         bool vert_succ = shader::parse_define(vert_data, &temp_vert, &temp_vert_size);
                         bool frag_succ = shader::parse_define(frag_data, &temp_frag, &temp_frag_size);
 
                         if (ignore_cache)
-                            shaders[0].program = shader_compile(vert_succ ? temp_vert : 0,
+                            programs[0] = shader_compile(vert_succ ? temp_vert : 0,
                                 frag_succ ? temp_frag : 0, vert_buf, frag_buf);
                         else {
                             program_data_binary.push_back({});
-                            shaders[0].program = shader_compile_binary(vert_succ ? temp_vert : 0,
+                            programs[0] = shader_compile_binary(vert_succ ? temp_vert : 0,
                                 frag_succ ? temp_frag : 0, vert_buf, frag_buf,
                                 &program_data_binary.back(), &buffer_size, &binary);
                         }
-                        shader_cache_changed |= shaders[0].program ? true : false;
+                        shader_cache_changed |= programs[0] ? true : false;
                     }
                     else {
                         program_data_binary.push_back({});
@@ -679,10 +653,6 @@ void shader_set_data::load(farc* f, bool ignore_cache,
                         b->binary = (size_t)force_malloc(bin->length);
                         memcpy((void*)b->binary, (void*)((size_t)bin + bin->binary), bin->length);
                     }
-
-                    shaders[0].has_uniform_val = false;
-                    if (shaders[0].program)
-                        shaders[0].has_uniform_val = glGetUniformLocation(shaders[0].program, "uniform_val") >= 0;
 
                     if (!ignore_cache && bin)
                         bin++;
@@ -779,19 +749,18 @@ void shader_set_data::unload() {
                 const int32_t* vp_unival_max = sub->vp_unival_max;
                 const int32_t* fp_unival_max = sub->fp_unival_max;
                 for (int32_t k = 0; k < num_uniform; k++) {
-                    const int32_t unival_max = shader->use_uniform[k].second
-                        ? max_def(vp_unival_max[k], fp_unival_max[k]) : 0;
+                    const int32_t unival_max = max_def(vp_unival_max[k], fp_unival_max[k]);
                     unival_shad_count += unival_shad_curr * unival_max;
                     unival_shad_curr *= unival_max + 1;
                 }
             }
 
-            if (sub->shaders) {
-                shader_sub_shader* shaders = sub->shaders;
+            if (sub->programs) {
+                GLuint* programs = sub->programs;
                 for (int32_t k = 0; k < unival_shad_count; k++)
-                    glDeleteProgram(shaders[k].program);
-                free(shaders);
-                sub->shaders = 0;
+                    glDeleteProgram(programs[k]);
+                free(programs);
+                sub->programs = 0;
             }
         }
         free(shader->sub);
@@ -887,7 +856,7 @@ static GLuint shader_compile(const char* vert, const char* frag, const char* vp,
 
         wchar_t temp_buf[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPathW(0, CSIDL_LOCAL_APPDATA, 0, 0, temp_buf))) {
-            wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\ReDIVA");
+            wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\PDAFT");
             temp_buf[sizeof(temp_buf) / sizeof(wchar_t) - 1] = 0;
             path_create_directory(temp_buf);
 
@@ -961,7 +930,7 @@ static GLuint shader_compile_binary(const char* vert, const char* frag, const ch
 
         wchar_t temp_buf[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPathW(0, CSIDL_LOCAL_APPDATA, 0, 0, temp_buf))) {
-            wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\ReDIVA");
+            wcscat_s(temp_buf, sizeof(temp_buf) / sizeof(wchar_t), L"\\PDAFT");
             temp_buf[sizeof(temp_buf) / sizeof(wchar_t) - 1] = 0;
             path_create_directory(temp_buf);
 
@@ -1044,14 +1013,6 @@ static bool shader_load_binary_shader(program_binary* bin, GLuint* program, cons
 static void shader_update_data(shader_set_data* set) {
     if (!set)
         return;
-
-    if (set->curr_shader) {
-        shader_sub_shader* shader = set->curr_shader;
-        if (shader->has_uniform_val && shader->uniform_val_update) {
-            glUniform1iv(0, SHADER_MAX_UNIFORM_VALUES, (GLint*)shader->uniform_val);
-            shader->uniform_val_update = false;
-        }
-    }
 
     if (set->primitive_restart) {
         gl_state_enable_primitive_restart();

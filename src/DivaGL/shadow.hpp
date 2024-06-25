@@ -51,8 +51,8 @@ struct Shadow {
     float_t field_2E0;
     float_t shadow_ambient;
     bool show_texture;
-    int32_t num_light;
-    bool light_enable[2];
+    int32_t num_shadow;
+    bool shadow_enable[2];
     bool self_shadow;
     bool blur_filter_enable[2];
     bool separate;

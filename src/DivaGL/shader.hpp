@@ -30,7 +30,7 @@ struct shader_table {
     int32_t num_sub;
     const shader_sub_table* sub;
     int32_t num_uniform;
-    const std::pair<uniform_name, bool>* use_uniform;
+    const uniform_name* use_uniform;
 };
 
 struct shader;
@@ -45,18 +45,11 @@ struct shader_bind_func {
     PFNSHADERBINDFUNCPROC bind_func;
 };
 
-struct shader_sub_shader {
-    GLuint program;
-    bool has_uniform_val;
-    int32_t uniform_val[SHADER_MAX_UNIFORM_VALUES];
-    bool uniform_val_update;
-};
-
 struct shader_sub {
     uint32_t sub_index;
     const int32_t* vp_unival_max;
     const int32_t* fp_unival_max;
-    shader_sub_shader* shaders;
+    GLuint* programs;
 };
 
 struct shader {
@@ -65,7 +58,7 @@ struct shader {
     int32_t num_sub;
     shader_sub* sub;
     int32_t num_uniform;
-    const std::pair<uniform_name, bool>* use_uniform;
+    const uniform_name* use_uniform;
     PFNSHADERBINDFUNCPROC bind_func;
 
     int32_t bind(shader_set_data* set, uint32_t sub_index);
@@ -80,7 +73,7 @@ struct shader {
 struct shader_set_data {
     size_t size;
     shader* shaders;
-    shader_sub_shader* curr_shader;
+    GLuint curr_program;
     GLboolean primitive_restart;
     GLuint primitive_restart_index;
 

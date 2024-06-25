@@ -107,7 +107,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
-      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>
       <UseFullPaths>false</UseFullPaths>

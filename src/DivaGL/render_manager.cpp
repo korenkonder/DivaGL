@@ -961,7 +961,9 @@ namespace rndr {
 
     void RenderManager::pass_post_process() {
         gl_state_begin_event("pass_post_process");
-        render->apply_post_process();
+
+        static texture* (FASTCALL * litproj_texture_get)() = (texture * (FASTCALL*)())0x0000000140350600;
+        render->apply_post_process(litproj_texture_get(), npr_param);
         gl_state_end_event();
     }
 
@@ -1286,7 +1288,7 @@ static void draw_pass_shadow_end_make_shadowmap(Shadow* shad, int32_t index, int
     gl_state_disable_scissor_test();
 
     draw_state.shader_index = -1;
-    if (a3 == shad->num_light - 1) {
+    if (a3 == shad->num_shadow - 1) {
         draw_pass_shadow_filter(&shad->render_textures[3],
             &shad->render_textures[4], shad->curr_render_textures[0],
             shad->field_2DC, shad->field_2E0 / (shad->field_208 * 2.0f), false);
@@ -1721,11 +1723,11 @@ static void draw_pass_3d_shadow_reset() {
     rctx->obj_scene.set_g_self_shadow_receivers(0, mat4_identity);
     rctx->obj_scene.set_g_self_shadow_receivers(1, mat4_identity);
     draw_state.self_shadow = false;
-    draw_state.light = false;
+    draw_state.shadow = false;
 }
 
 static void draw_pass_3d_shadow_set(Shadow* shad) {
-    if (shad->self_shadow && shad->num_light > 0) {
+    if (shad->self_shadow && shad->num_shadow > 0) {
         gl_state_active_bind_texture_2d(19, shad->render_textures[3].GetColorTex());
         gl_state_active_bind_texture_2d(20, shad->render_textures[5].GetColorTex());
         gl_state_active_texture(0);
@@ -1743,9 +1745,9 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
     gl_state_bind_sampler(19, rctx->render_samplers[0]);
     gl_state_bind_sampler(20, rctx->render_samplers[0]);
 
-    if (shad->num_light > 0) {
-        draw_state.light = true;
-        uniform->arr[U_LIGHT_1] = shad->num_light > 1 ? 1 : 0;
+    if (shad->num_shadow > 0) {
+        draw_state.shadow = true;
+        uniform->arr[U_STAGE_SHADOW2] = shad->num_shadow > 1 ? 1 : 0;
 
         float_t shadow_range = shad->get_shadow_range();
         for (int32_t i = 0; i < 2; i++) {
@@ -1782,7 +1784,7 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
 
         int32_t j = 0;
         for (int32_t i = 0; i < 2; i++)
-            if (shad->light_enable[i]) {
+            if (shad->shadow_enable[i]) {
                 gl_state_active_bind_texture_2d(6 + j, shad->curr_render_textures[1 + i]->GetColorTex());
                 glTexParameterfDLL(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
                 j++;
@@ -1805,7 +1807,7 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
         rctx->obj_scene.g_shadow_ambient1 = { 1.0f - ambient.x, 1.0f - ambient.y, 1.0f - ambient.z, 0.0f };
     }
     else {
-        draw_state.light = false;
+        draw_state.shadow = false;
 
         for (int32_t i = 0; i < 2; i++)
             gl_state_active_bind_texture_2d(6 + i, shad->curr_render_textures[1 + i]->GetColorTex());

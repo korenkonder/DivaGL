@@ -52,7 +52,10 @@ namespace mdl {
             GL_UNSIGNED_INT,
         };
 
+        rctx->obj_shader.set_shader_flags(uniform->arr);
+        rctx->obj_shader_ubo.WriteMemory(rctx->obj_shader);
         rctx->obj_batch_ubo.WriteMemory(rctx->obj_batch);
+
         if (primitive_type == OBJ_PRIMITIVE_TRIANGLE_STRIP && index_format == OBJ_INDEX_U16)
             shaders_ft.draw_range_elements(GL_TRIANGLE_STRIP,
                 start, end, count, GL_UNSIGNED_SHORT, (void*)indices);
@@ -419,7 +422,6 @@ namespace mdl {
             draw_object_material_set_uniform(material, false);
             if (material->material.attrib.m.alpha_texture)
                 uniform->arr[U_TEXTURE_COUNT] = 0;
-            rctx->obj_batch.g_texture_blend = { (float_t)uniform->arr[U_TEXTURE_BLEND], 0.0f, 0.0f, 0.0f };
             shaders_ft.set(draw_state.shader_index);
         }
 
@@ -604,11 +606,10 @@ static bool draw_object_blend_set(
 static bool draw_object_blend_set_check_use_default_blend(int32_t index) {
     bool use_default_blend[] = {
         false, false,  true, false,  true, false, false,  true,  true,  true, false, false,
-        false,  true, false, false, false, false, false, false, false, false, false, false,
         false, false, false, false, false, false, false, false, false, false, false, false,
         false, false, false, false, false, false, false, false, false, false, false, false,
         false, false, false, false, false, false, false, false, false, false, false, false,
-        false, false, false
+        false,
     };
 
     if (index >= 0 && index < SHADER_FT_MAX)
@@ -629,11 +630,8 @@ static void draw_object_chara_color_fog_set(const mdl::ObjSubMeshArgs* args, boo
 
     obj_material_attrib_member attrib = args->material->material.attrib.m;
     if (!attrib.no_fog && !disable_fog) {
-        if (attrib.has_fog_height)
-            uniform->arr[U_FOG_HEIGHT] = 2 + attrib.fog_height;
-        else
-            uniform->arr[U_FOG_HEIGHT] = 1;
-        uniform->arr[U_FOG] = draw_state.fog_height ? 2 : 1;
+        uniform->arr[U_FOG_STAGE] = attrib.has_fog_height ? (attrib.fog_height ? 3 : 2) : 1;
+        uniform->arr[U_FOG_CHARA] = draw_state.fog_height ? 2 : 1;
     }
 }
 
@@ -660,17 +658,17 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
         material->material.shader_info.get_lighting_type();
     bool disable_fog = draw_object_blend_set(args, lighting_type);
     draw_object_material_set_uniform(material, false);
-    if (!draw_state.light)
-        uniform->arr[U_LIGHT_0] = 0;
+    if (!draw_state.shadow)
+        uniform->arr[U_STAGE_SHADOW] = 0;
     else if (args->self_shadow)
-        uniform->arr[U_LIGHT_0] = 1;
+        uniform->arr[U_STAGE_SHADOW] = 1;
     else
-        uniform->arr[U_LIGHT_0] = args->sub_mesh->attrib.m.recieve_shadow ? 1 : 0;
-    uniform->arr[U_SHADOW] = 0;
-    uniform->arr[U_SELF_SHADOW] = draw_state.self_shadow ? 1 : 0;
+        uniform->arr[U_STAGE_SHADOW] = args->sub_mesh->attrib.m.recieve_shadow ? 1 : 0;
+    uniform->arr[U_CHARA_SHADOW2] = 0;
+    uniform->arr[U_CHARA_SHADOW] = draw_state.self_shadow ? 1 : 0;
 
     const obj_material_texture_data* texdata = material->material.texdata;
-    uniform->arr[U_SHADOW] = args->shadow > SHADOW_CHARA;
+    uniform->arr[U_CHARA_SHADOW2] = args->shadow > SHADOW_CHARA;
     for (int32_t i = 0, j = 0; i < 8; i++, texdata++) {
         if (texdata->tex_index == -1)
             continue;
@@ -815,10 +813,9 @@ static void draw_object_material_set_default(const mdl::ObjSubMeshArgs* args, bo
     else
         shaders_ft.set(SHADER_FT_CONSTANT);
 
-    rctx->obj_batch.g_texture_blend = { (float_t)uniform->arr[U_TEXTURE_BLEND], 0.0f, 0.0f, 0.0f };
     if (lighting_type != OBJ_MATERIAL_SHADER_LIGHTING_CONSTANT) {
         float_t material_shininess;
-        if (material->material.shader.index == SHADER_FT_GLASEYE/*SHADER_FT_EYEBALL*/)
+        if (material->material.shader.index == SHADER_FT_GLASEYE)
             material_shininess = 10.0f;
         else {
             material_shininess = (material->material.color.shininess - 16.0f) * (float_t)(1.0 / 112.0);
@@ -965,7 +962,6 @@ static void draw_object_material_set_reflect(const mdl::ObjSubMeshArgs* args) {
     }
 
     draw_object_material_set_uniform(material, true);
-    rctx->obj_batch.g_texture_blend = { (float_t)uniform->arr[U_TEXTURE_BLEND], 0.0f, 0.0f, 0.0f };
     shaders_ft.set(draw_state.shader_index);
     rctx->obj_batch.g_material_state_ambient = ambient;
     rctx->obj_batch.g_material_state_diffuse = diffuse;

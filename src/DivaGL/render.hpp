@@ -173,7 +173,7 @@ namespace rndr {
         int32_t update;
         FrameTexture frame_texture[6];
 
-        void apply_post_process();
+        void apply_post_process(texture* light_proj_tex, int32_t npr_param);
         void bind_render_texture(bool aet_back = false);
         void calc_exposure_chara_data();
         void calc_projection_matrix(mat4* mat, float_t fov, float_t aspect, float_t z_near, float_t z_far,
@@ -199,7 +199,7 @@ namespace rndr {
 
     private:
         void apply_mlaa(int32_t destination, int32_t source, int32_t mlaa);
-        void apply_tone_map();
+        void apply_tone_map(texture* light_proj_tex, int32_t npr_param);
         void calc_exposure();
         void calc_gaussian_blur(float_t start, float_t step,
             int32_t kernel_size, float_t radius_scale, float_t intensity_scale);

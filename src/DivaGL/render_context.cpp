@@ -5,6 +5,7 @@
 
 #include "render_context.hpp"
 #include "render_manager.hpp"
+#include "uniform.hpp"
 
 draw_state_struct& draw_state = *(draw_state_struct*)0x00000001411A32B0;
 
@@ -49,6 +50,81 @@ void sss_data::set_texture(int32_t texture_index) {
 
 void draw_state_struct::set_fog_height(bool value) {
     fog_height = value;
+}
+
+void obj_shader_shader_data::set_shader_flags(int32_t* shader_flags) {
+    g_shader_flags.x.m.alpha_mask    = shader_flags[U_ALPHA_MASK];
+    g_shader_flags.x.m.alpha_test    = shader_flags[U_ALPHA_TEST];
+    g_shader_flags.x.m.aniso         = shader_flags[U_ANISO];
+    g_shader_flags.x.m.aet_back      = shader_flags[U_AET_BACK];
+    g_shader_flags.x.m.texture_blend = shader_flags[U_TEXTURE_BLEND];
+    g_shader_flags.x.m.unk           = 0; //shader_flags[U_UNK_NEW_IN_MM_IDK_WHAT_TO_DO_WITH_IT];
+    g_shader_flags.x.m.chara_color   = shader_flags[U_CHARA_COLOR];
+    g_shader_flags.x.m.clip_plane    = shader_flags[U_CLIP_PLANE];
+    g_shader_flags.x.m.u08           = shader_flags[U08];
+    g_shader_flags.x.m.depth_peel    = shader_flags[U_DEPTH_PEEL];
+    g_shader_flags.x.m.depth         = shader_flags[U_DEPTH];
+    g_shader_flags.x.m.u0b           = shader_flags[U0B];
+    g_shader_flags.x.m.alpha_blend   = shader_flags[U_ALPHA_BLEND];
+    g_shader_flags.x.m.ripple_emit   = shader_flags[U_RIPPLE_EMIT];
+    g_shader_flags.x.m.esm_filter    = shader_flags[U_ESM_FILTER];
+    g_shader_flags.x.m.exposure      = shader_flags[U_EXPOSURE];
+    g_shader_flags.x.m.scene_fade    = shader_flags[U_SCENE_FADE];
+    g_shader_flags.x.m.fade          = shader_flags[U_FADE];
+    g_shader_flags.x.m.stage_ambient = shader_flags[U_STAGE_AMBIENT];
+    g_shader_flags.x.m.flare         = shader_flags[U_FLARE];
+    g_shader_flags.y.m.fog_stage     = shader_flags[U_FOG_STAGE];
+    g_shader_flags.y.m.fog_chara     = shader_flags[U_FOG_CHARA];
+    g_shader_flags.y.m.u16           = shader_flags[U16];
+    g_shader_flags.y.m.gauss         = shader_flags[U_GAUSS];
+    g_shader_flags.y.m.eyeball       = shader_flags[U_EYEBALL];
+    g_shader_flags.y.m.image_filter  = shader_flags[U_IMAGE_FILTER];
+    g_shader_flags.y.m.instance      = shader_flags[U_INSTANCE];
+    g_shader_flags.y.m.tone_curve    = shader_flags[U_TONE_CURVE];
+    g_shader_flags.y.m.light_proj    = shader_flags[U_LIGHT_PROJ];
+    g_shader_flags.y.m.magnify       = shader_flags[U_MAGNIFY];
+    g_shader_flags.y.m.membrane      = shader_flags[U_MEMBRANE];
+    g_shader_flags.y.m.mlaa          = shader_flags[U_MLAA];
+    g_shader_flags.y.m.mlaa_search   = shader_flags[U_MLAA_SEARCH];
+    g_shader_flags.y.m.morph_color   = shader_flags[U_MORPH_COLOR];
+    g_shader_flags.y.m.morph         = shader_flags[U_MORPH];
+    g_shader_flags.y.m.movie         = shader_flags[U_MOVIE];
+    g_shader_flags.y.m.u24           = shader_flags[U24];
+    g_shader_flags.y.m.u25           = shader_flags[U25];
+    g_shader_flags.y.m.npr_normal    = shader_flags[U_NPR_NORMAL];
+    g_shader_flags.z.m.npr           = shader_flags[U_NPR];
+    g_shader_flags.z.m.stage_shadow2 = shader_flags[U_STAGE_SHADOW2];
+    g_shader_flags.z.m.reflect       = shader_flags[U_REFLECT];
+    g_shader_flags.z.m.reduce        = shader_flags[U_REDUCE];
+    g_shader_flags.z.m.chara_shadow  = shader_flags[U_CHARA_SHADOW];
+    g_shader_flags.z.m.chara_shadow2 = shader_flags[U_CHARA_SHADOW2];
+    g_shader_flags.z.m.u2d           = shader_flags[U2D];
+    g_shader_flags.z.m.u2e           = shader_flags[U2E];
+    g_shader_flags.z.m.show_vector   = shader_flags[U_SHOW_VECTOR];
+    g_shader_flags.z.m.skinning      = shader_flags[U_SKINNING];
+    g_shader_flags.z.m.snow_particle = shader_flags[U_SNOW_PARTICLE];
+    g_shader_flags.z.m.specular_ibl  = shader_flags[U_SPECULAR_IBL];
+    g_shader_flags.z.m.combiner      = shader_flags[U_COMBINER];
+    g_shader_flags.z.m.tex_0_type    = shader_flags[U_TEX_0_TYPE];
+    g_shader_flags.z.m.tex_1_type    = shader_flags[U_TEX_1_TYPE];
+    g_shader_flags.z.m.sss_filter    = shader_flags[U_SSS_FILTER];
+    g_shader_flags.w.m.sss_chara     = shader_flags[U_SSS_CHARA];
+    g_shader_flags.w.m.star          = shader_flags[U_STAR];
+    g_shader_flags.w.m.texture_count = shader_flags[U_TEXTURE_COUNT];
+    g_shader_flags.w.m.env_map       = shader_flags[U_ENV_MAP];
+    g_shader_flags.w.m.ripple        = shader_flags[U_RIPPLE];
+    g_shader_flags.w.m.translucency  = shader_flags[U_TRANSLUCENCY];
+    g_shader_flags.w.m.normal        = shader_flags[U_NORMAL];
+    g_shader_flags.w.m.transparency  = shader_flags[U_TRANSPARENCY];
+    g_shader_flags.w.m.water_reflect = shader_flags[U_WATER_REFLECT];
+    g_shader_flags.w.m.u40           = shader_flags[U40];
+    g_shader_flags.w.m.u41           = shader_flags[U41];
+    g_shader_flags.w.m.stage_shadow  = shader_flags[U_STAGE_SHADOW];
+    g_shader_flags.w.m.specular      = shader_flags[U_SPECULAR];
+    g_shader_flags.w.m.tone_map      = shader_flags[U_TONE_MAP];
+    g_shader_flags.w.m.u45           = shader_flags[U45];
+    g_shader_flags.w.m.dof           = 0; //shader_flags[U_DOF]; // Added
+    g_shader_flags.w.m.dof_stage     = 0; //shader_flags[U_DOF_STAGE]; // Added
 }
 
 void obj_scene_shader_data::set_g_irradiance_r_transforms(const mat4& mat) {
@@ -267,9 +343,11 @@ samplers(), render_samplers(), sprite_samplers(), screen_width(), screen_height(
     sun_quad_ubo.Create(sizeof(sun_quad_shader_data));
     tone_map_ubo.Create(sizeof(tone_map_shader_data));
 
+    obj_shader = {};
     obj_scene = {};
     obj_batch = {};
     obj_skinning = {};
+    obj_shader_ubo.Create(sizeof(obj_shader_shader_data));
     obj_scene_ubo.Create(sizeof(obj_scene_shader_data));
     obj_batch_ubo.Create(sizeof(obj_batch_shader_data));
     obj_skinning_ubo.Create(sizeof(obj_skinning_shader_data));
@@ -403,6 +481,7 @@ render_context::~render_context() {
     obj_skinning_ubo.Destroy();
     obj_batch_ubo.Destroy();
     obj_scene_ubo.Destroy();
+    obj_shader_ubo.Destroy();
 
     tone_map_ubo.Destroy();
     transparency_batch_ubo.Destroy();

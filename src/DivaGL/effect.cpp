@@ -1958,7 +1958,7 @@ void water_particle::draw(mat4* mat) {
     shaders_ft.set(SHADER_FT_W_PTCL);
 
     gl_state_bind_vertex_array(rctx->common_vao);
-    water_particle_scene_ubo.Bind(4);
+    water_particle_scene_ubo.Bind(5);
     ssbo.Bind(0);
     texture* tex = texture_manager_get_texture(splash_tex_id);
     if (tex)
