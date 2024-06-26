@@ -1233,12 +1233,8 @@ namespace rndr {
         gl_state_bind_sampler(0, rctx->render_samplers[1]);
         gl_state_active_bind_texture_2d(1, reduce_tex_draw);
         gl_state_bind_sampler(1, rctx->render_samplers[2]);
-
-        if (tone_map == TONE_MAP_YCC_EXPONENT) {
-            gl_state_active_bind_texture_2d(2, tonemap_lut_texture);
-            gl_state_bind_sampler(2, rctx->render_samplers[0]);
-        }
-
+        gl_state_active_bind_texture_2d(2, tonemap_lut_texture);
+        gl_state_bind_sampler(2, rctx->render_samplers[0]);
         gl_state_active_bind_texture_2d(3, exposure_tex);
         gl_state_bind_sampler(3, rctx->render_samplers[3]);
 
