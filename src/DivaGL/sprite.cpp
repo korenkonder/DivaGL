@@ -377,11 +377,8 @@ namespace spr {
         glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, buffer_size,
             (void*)offsetof(sprite_draw_vertex, color));
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, buffer_size,
-            (void*)offsetof(sprite_draw_vertex, uv[0]));
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, buffer_size,
-            (void*)offsetof(sprite_draw_vertex, uv[1]));
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, buffer_size,
+            (void*)offsetof(sprite_draw_vertex, uv));
 
         ebo_index_count = 4096;
 
@@ -433,11 +430,8 @@ namespace spr {
             glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, buffer_size,
                 (void*)offsetof(sprite_draw_vertex, color));
             glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, buffer_size,
-                (void*)offsetof(sprite_draw_vertex, uv[0]));
-            glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, buffer_size,
-                (void*)offsetof(sprite_draw_vertex, uv[1]));
+            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, buffer_size,
+                (void*)offsetof(sprite_draw_vertex, uv));
 
             gl_state_bind_array_buffer(0);
             gl_state_bind_vertex_array(0);
