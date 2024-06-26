@@ -81,7 +81,6 @@ enum shader_ft_sub_enum {
     SHADER_FT_SUB_PARTICLE,
     SHADER_FT_SUB_GLITTER_PARTICLE,
     SHADER_FT_SUB_FONT,
-    SHADER_FT_SUB_MOVIE,
     SHADER_FT_SUB_BOX4,
     SHADER_FT_SUB_BOX8,
     SHADER_FT_SUB_COPY,
@@ -631,14 +630,6 @@ static const int32_t font_vpt_unival_max[] = {
 
 static const int32_t font_fpt_unival_max[] = {
     -1,
-};
-
-static const int32_t movie_vpt_unival_max[] = {
-    0,
-};
-
-static const int32_t movie_fpt_unival_max[] = {
-    1,
 };
 
 static const int32_t box4_vpt_unival_max[] = {
@@ -1295,16 +1286,6 @@ static const shader_sub_table FONT_table[] = {
     },
 };
 
-static const shader_sub_table MOVIE_table[] = {
-    {
-        SHADER_FT_SUB_MOVIE,
-        movie_vpt_unival_max,
-        movie_fpt_unival_max,
-        "movie",
-        "movie",
-    },
-};
-
 static const shader_sub_table IMGFILT_table[] = {
     {
         SHADER_FT_SUB_BOX4,
@@ -1539,10 +1520,6 @@ static const uniform_name FONT_uniform[] = {
     U_INVALID,
 };
 
-static const uniform_name MOVIE_uniform[] = {
-    U_MOVIE,
-};
-
 static const uniform_name IMGFILT_uniform[] = {
     U_INVALID,
 };
@@ -1645,7 +1622,6 @@ const shader_table shader_ft_table[] = {
     shader_table_struct(PARTICL),
     shader_table_struct(GLITTER_PT),
     shader_table_struct(FONT),
-    shader_table_struct(MOVIE),
     shader_table_struct(IMGFILT),
     shader_table_struct(SPRITE),
 };
