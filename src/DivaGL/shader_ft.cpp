@@ -145,10 +145,6 @@ static const int32_t sss_filter_min_fpt_unival_max[] = {
     -1,
 };
 
-static const int32_t sss_filter_min_npr_vpt_unival_max[] = {
-    -1,
-};
-
 static const int32_t sss_filter_min_npr_fpt_unival_max[] = {
     -1,
 };
@@ -744,7 +740,7 @@ static const shader_sub_table SSS_FILT_table[] = {
     },
     {
         SHADER_FT_SUB_SSS_FILTER_MIN_NPR,
-        sss_filter_min_npr_vpt_unival_max,
+        sss_filter_min_vpt_unival_max,
         sss_filter_min_npr_fpt_unival_max,
         "sss_filter_min",
         "sss_filter_min_npr",
