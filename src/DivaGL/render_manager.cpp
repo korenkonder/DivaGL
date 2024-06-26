@@ -765,7 +765,7 @@ namespace rndr {
         if (effect_texture)
             gl_state_active_bind_texture_2d(14, effect_texture->glid);
         else
-            gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d->glid);
 
         if (pass_sw[RND_PASSID_REFLECT] && reflect) {
             RenderTexture& refl_tex = get_render_texture(0);
@@ -773,7 +773,7 @@ namespace rndr {
             uniform->arr[U_WATER_REFLECT] = 1;
         }
         else {
-            gl_state_active_bind_texture_2d(15, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(15, rctx->empty_texture_2d->glid);
             uniform->arr[U_WATER_REFLECT] = 0;
         }
 
@@ -1048,7 +1048,7 @@ namespace rndr {
         if (effect_texture)
             gl_state_active_bind_texture_2d(14, effect_texture->glid);
         else
-            gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(14, rctx->empty_texture_2d->glid);
         gl_state_bind_sampler(14, rctx->render_samplers[0]);
         gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         gl_state_enable_depth_test();
@@ -1736,8 +1736,8 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
         draw_state.self_shadow = true;
     }
     else {
-        gl_state_active_bind_texture_2d(19, rctx->empty_texture_2d);
-        gl_state_active_bind_texture_2d(20, rctx->empty_texture_2d);
+        gl_state_active_bind_texture_2d(19, rctx->empty_texture_2d->glid);
+        gl_state_active_bind_texture_2d(20, rctx->empty_texture_2d->glid);
         gl_state_active_texture(0);
         draw_state.self_shadow = false;
     }
@@ -1791,7 +1791,7 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
             }
 
         for (; j < 2; j++)
-            gl_state_active_bind_texture_2d(6 + j, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(6 + j, rctx->empty_texture_2d->glid);
         gl_state_active_texture(0);
 
         light_set* set = &light_set_data[LIGHT_SET_MAIN];

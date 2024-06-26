@@ -356,26 +356,24 @@ samplers(), render_samplers(), sprite_samplers(), screen_width(), screen_height(
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
 
-    static const GLenum target_cube_map_array[] = {
-        GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+    static const void* empty_texture_2d_array[] = {
+        empty_texture_data,
     };
 
-    glGenTextures(1, &empty_texture_2d);
-    gl_state_bind_texture_2d(empty_texture_2d);
-    texture_set_params(GL_TEXTURE_2D, 0, false);
-    glCompressedTexImage2D(GL_TEXTURE_2D, 0,
-        GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, 4, 4, 0, 8, empty_texture_data);
-    gl_state_bind_texture_2d(0);
+    empty_texture_2d = texture_load_tex_2d(texture_id(0x2F, 0),
+        GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, 4, 4, 0, empty_texture_2d_array, false);
 
-    glGenTextures(1, &empty_texture_cube_map);
-    gl_state_bind_texture_cube_map(empty_texture_cube_map);
-    texture_set_params(GL_TEXTURE_CUBE_MAP, 0, false);
-    for (int32_t side = 0; side < 6; side++)
-        glCompressedTexImage2D(target_cube_map_array[side], 0,
-            GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, 4, 4, 0, 8, empty_texture_data);
-    gl_state_bind_texture_cube_map(0);
+    static const void* empty_texture_cube_map_array[] = {
+        empty_texture_data,
+        empty_texture_data,
+        empty_texture_data,
+        empty_texture_data,
+        empty_texture_data,
+        empty_texture_data,
+    };
+
+    empty_texture_cube_map = texture_load_tex_cube_map(texture_id(0x2F, 1),
+        GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, 4, 4, 0, empty_texture_cube_map_array);
 
     static const vec4 border_color = 0.0f;
 
@@ -475,8 +473,8 @@ render_context::~render_context() {
     glDeleteSamplers(4, render_samplers);
     glDeleteSamplers(18, samplers);
 
-    glDeleteTextures(1, &empty_texture_cube_map);
-    glDeleteTextures(1, &empty_texture_2d);
+    texture_release(empty_texture_cube_map);
+    texture_release(empty_texture_2d);
 
     obj_skinning_ubo.Destroy();
     obj_batch_ubo.Destroy();

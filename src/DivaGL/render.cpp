@@ -1278,7 +1278,7 @@ namespace rndr {
                 shader_data.g_texcoord_transforms[7] = mat.row1;
             }
             else {
-                gl_state_active_bind_texture_2d(5, rctx->empty_texture_2d);
+                gl_state_active_bind_texture_2d(5, rctx->empty_texture_2d->glid);
                 gl_state_bind_sampler(5, rctx->render_samplers[2]);
 
                 shader_data.g_texcoord_transforms[6] = { 1.0f, 0.0f, 0.0f, 0.0f };
@@ -1286,9 +1286,9 @@ namespace rndr {
             }
         }
         else {
-            gl_state_active_bind_texture_2d(4, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(4, rctx->empty_texture_2d->glid);
             gl_state_bind_sampler(4, rctx->render_samplers[2]);
-            gl_state_active_bind_texture_2d(5, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(5, rctx->empty_texture_2d->glid);
             gl_state_bind_sampler(5, rctx->render_samplers[2]);
 
             shader_data.g_texcoord_transforms[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
@@ -1311,7 +1311,7 @@ namespace rndr {
             shader_data.g_flare_coef.z = 1.0f;
         }
         else {
-            gl_state_active_bind_texture_2d(7, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(7, rctx->empty_texture_2d->glid);
             gl_state_bind_sampler(7, rctx->render_samplers[2]);
         }
 

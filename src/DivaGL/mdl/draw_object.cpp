@@ -466,7 +466,7 @@ namespace mdl {
                     tex_id = (*textures)[texdata->tex_index >> 20];
 
                 if (tex_id == -1)
-                    tex_id = rctx->empty_texture_2d;;
+                    tex_id = rctx->empty_texture_2d->glid;;
 
                 gl_state_active_bind_texture_2d(tex_index, tex_id);
 
@@ -503,7 +503,7 @@ namespace mdl {
                 sub_mesh->index_offset);
 
         if (tex_id != -1)
-            gl_state_active_bind_texture_2d(tex_index, rctx->empty_texture_2d);
+            gl_state_active_bind_texture_2d(tex_index, rctx->empty_texture_2d->glid);
 
         gl_state_enable_cull_face();
         draw_object_vertex_attrib_reset_default(args);
@@ -646,7 +646,7 @@ static void draw_object_material_reset_default(const obj_material_data* mat_data
 }
 
 static void draw_object_material_reset_reflect() {
-    gl_state_active_bind_texture_2d(0, rctx->empty_texture_2d);
+    gl_state_active_bind_texture_2d(0, rctx->empty_texture_2d->glid);
     gl_state_enable_cull_face();
     uniform_value_reset();
 }
@@ -919,7 +919,7 @@ static void draw_object_material_set_reflect(const mdl::ObjSubMeshArgs* args) {
             tex_id = (*textures)[texdata->tex_index >> 20];
 
         if (tex_id == -1)
-            tex_id = rctx->empty_texture_2d;;
+            tex_id = rctx->empty_texture_2d->glid;;
 
         gl_state_active_bind_texture_2d(i, tex_id);
 

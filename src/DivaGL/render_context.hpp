@@ -411,8 +411,8 @@ struct render_context {
     GL::UniformBuffer obj_batch_ubo;
     GL::UniformBuffer obj_skinning_ubo;
 
-    GLuint empty_texture_2d;
-    GLuint empty_texture_cube_map;
+    texture* empty_texture_2d;
+    texture* empty_texture_cube_map;
 
     GLuint samplers[18];
     GLuint render_samplers[4];

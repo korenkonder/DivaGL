@@ -347,7 +347,6 @@ namespace Glitter {
     struct RenderScene;
     struct RenderSceneX;
 
-    struct BatchShaderData;
     struct Scene;
     struct SceneX;
     class GltParticleManager;

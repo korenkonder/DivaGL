@@ -1982,8 +1982,8 @@ namespace mdl {
         void(*func)(const ObjSubMeshArgs * args) = draw_sub_mesh_default;
 
         for (int32_t i = 0; i < 5; i++)
-            gl_state_active_bind_texture_2d(i, rctx->empty_texture_2d);
-        gl_state_active_bind_texture_cube_map(5, rctx->empty_texture_cube_map);
+            gl_state_active_bind_texture_2d(i, rctx->empty_texture_2d->glid);
+        gl_state_active_bind_texture_cube_map(5, rctx->empty_texture_cube_map->glid);
         gl_state_active_texture(0);
         gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         uniform_value_reset();
@@ -2142,8 +2142,8 @@ namespace mdl {
         void(*func)(const ObjSubMeshArgs * args) = draw_sub_mesh_default;
 
         for (int32_t i = 0; i < 5; i++)
-            gl_state_active_bind_texture_2d(i, rctx->empty_texture_2d);
-        gl_state_active_bind_texture_cube_map(5, rctx->empty_texture_cube_map);
+            gl_state_active_bind_texture_2d(i, rctx->empty_texture_2d->glid);
+        gl_state_active_bind_texture_cube_map(5, rctx->empty_texture_cube_map->glid);
         gl_state_active_texture(0);
         gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         uniform_value_reset();
@@ -2221,8 +2221,8 @@ namespace mdl {
         render_context* rctx = rctx_ptr;
 
         for (int32_t i = 0; i < 5; i++)
-            gl_state_active_bind_texture_2d(i, rctx->empty_texture_2d);
-        gl_state_active_bind_texture_cube_map(5, rctx->empty_texture_cube_map);
+            gl_state_active_bind_texture_2d(i, rctx->empty_texture_2d->glid);
+        gl_state_active_bind_texture_cube_map(5, rctx->empty_texture_cube_map->glid);
         gl_state_active_texture(0);
         gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         uniform_value_reset();
