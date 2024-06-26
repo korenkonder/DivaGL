@@ -43,10 +43,10 @@ static void texture_get_format_type_by_internal_format(GLenum internal_format, G
 static GLuint texture_get_working_internal_format(GLuint internal_format);
 static int32_t texture_get_size(GLenum internal_format, int32_t width, int32_t height);
 static int32_t texture_load_pixels(GLenum target, GLenum internal_format,
-    int32_t width, int32_t height, int32_t level, void* data);
+    int32_t width, int32_t height, int32_t level, const void* data);
 static texture* texture_load_tex(texture_id id, GLenum target,
     GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy);
+    int32_t max_mipmap_level, const void** data_ptr, bool use_high_anisotropy);
 static GLenum texture_txp_get_gl_internal_format(txp* t);
 
 texture::texture() : ref_count(), flags(), width(), height(),
@@ -176,7 +176,7 @@ texture* texture_create_copy_texture(texture_id id, texture* org_tex) {
     texture_bind(org_tex->target, 0);
 
     texture* tex = texture_load_tex_2d(id, org_tex->internal_format,
-        org_tex->width, org_tex->height, org_tex->max_mipmap_level, vec_data.data(), true);
+        org_tex->width, org_tex->height, org_tex->max_mipmap_level, (const void**)vec_data.data(), true);
 
     for (void*& i : vec_data)
         prj::HeapCMallocFree(prj::HeapCMallocTemp, i);
@@ -230,7 +230,7 @@ texture* texture_create_copy_texture_apply_color_tone(
     texture_bind(org_tex->target, 0);
 
     texture* tex = texture_load_tex_2d(id, org_tex->internal_format,
-        org_tex->width, org_tex->height, org_tex->max_mipmap_level, vec_data.data(), true);
+        org_tex->width, org_tex->height, org_tex->max_mipmap_level, (const void**)vec_data.data(), true);
 
     for (void*& i : vec_data)
         prj::HeapCMallocFree(prj::HeapCMallocTemp, i);
@@ -239,13 +239,13 @@ texture* texture_create_copy_texture_apply_color_tone(
 }
 
 texture* texture_load_tex_2d(texture_id id, GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy) {
+    int32_t max_mipmap_level, const void** data_ptr, bool use_high_anisotropy) {
     return texture_load_tex(id, GL_TEXTURE_2D, internal_format,
         width, height, max_mipmap_level, data_ptr, use_high_anisotropy);
 }
 
 texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr) {
+    int32_t max_mipmap_level, const void** data_ptr) {
     return texture_load_tex(id, GL_TEXTURE_CUBE_MAP, internal_format,
         width, height, max_mipmap_level, data_ptr, false);
 }
@@ -254,8 +254,8 @@ texture* texture_txp_load(txp* t, texture_id id) {
     if (!t || !t->mipmaps.size())
         return 0;
 
-    prj::vector<void*> data((size_t)t->array_size * t->mipmaps_count);
-    void** data_ptr = data.data();
+    prj::vector<const void*> data((size_t)t->array_size * t->mipmaps_count);
+    const void** data_ptr = data.data();
     for (int32_t i = 0, k = 0; i < t->array_size; i++)
         for (int32_t j = 0; j < t->mipmaps_count; j++, k++)
             data_ptr[k] = t->mipmaps[k].data.data();
@@ -387,14 +387,14 @@ HOOK(texture*, FASTCALL, texture_create_copy_texture, 0x000000014069B550,
 
 HOOK(texture*, FASTCALL, texture_load_tex_cube_map, 0x000000014069B860,
     texture_id id, GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr) {
+    int32_t max_mipmap_level, const void** data_ptr) {
     return texture_load_tex(id, GL_TEXTURE_CUBE_MAP, internal_format,
         width, height, max_mipmap_level, data_ptr, false);
 }
 
 HOOK(texture*, FASTCALL, texture_load_tex_2d, 0x000000014069B8E0, 
     texture_id id, GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy) {
+    int32_t max_mipmap_level, const void** data_ptr, bool use_high_anisotropy) {
     return texture_load_tex(id, GL_TEXTURE_2D, internal_format,
         width, height, max_mipmap_level, data_ptr, use_high_anisotropy);
 }
@@ -603,7 +603,7 @@ static int32_t texture_get_size(GLenum internal_format, int32_t width, int32_t h
 }
 
 static int32_t texture_load_pixels(GLenum target, GLenum internal_format,
-    int32_t width, int32_t height, int32_t level, void* data) {
+    int32_t width, int32_t height, int32_t level, const void* data) {
     glPixelStoreiDLL(GL_UNPACK_ALIGNMENT, 1);
     switch (internal_format) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -627,7 +627,7 @@ static int32_t texture_load_pixels(GLenum target, GLenum internal_format,
 
 static texture* texture_load_tex(texture_id id, GLenum target,
     GLenum internal_format, int32_t width, int32_t height,
-    int32_t max_mipmap_level, void** data_ptr, bool use_high_anisotropy) {
+    int32_t max_mipmap_level, const void** data_ptr, bool use_high_anisotropy) {
     texture* tex = texture_alloc(id);
     if (tex->ref_count > 1)
         return tex;
@@ -690,7 +690,7 @@ static texture* texture_load_tex(texture_id id, GLenum target,
             for (int32_t j = 0; j <= max_mipmap_level; j++) {
                 int32_t mip_width = max_def(width >> j, 1);
                 int32_t mip_height = max_def(height >> j, 1);
-                void* data;
+                const void* data;
                 if (data_ptr)
                     data = data_ptr[i * (max_mipmap_level + 1) + j];
                 else
@@ -711,7 +711,7 @@ static texture* texture_load_tex(texture_id id, GLenum target,
         for (int32_t i = 0; i <= max_mipmap_level; i++) {
             int32_t mip_width = max_def(width >> i, 1);
             int32_t mip_height = max_def(height >> i, 1);
-            void* data;
+            const void* data;
             if (data_ptr)
                 data = data_ptr[i];
             else

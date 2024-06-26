@@ -277,7 +277,7 @@ bool ColorChangeDw::LoadTexture() {
             }
 
             chg_tex = texture_load_tex_2d(texture_id(0x22, i), org_tex->internal_format,
-                org_tex->width, org_tex->height, org_tex->max_mipmap_level, vec_data.data(), true);
+                org_tex->width, org_tex->height, org_tex->max_mipmap_level, (const void**)vec_data.data(), true);
 
             if (!chg_tex)
                 break;
