@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../../KKdLib/default.hpp"
-#include "../gl_uniform_buffer.hpp"
+#include "../GL/uniform_buffer.hpp"
 #include "../render_texture.hpp"
 #include "fbo.hpp"
 #include "gl_program.hpp"
@@ -53,8 +53,8 @@ namespace renderer {
         GLuint samplers[2];
         GLuint vao;
         GLProgram program[9];
-        GLUniformBuffer common_ubo;
-        GLUniformBuffer texcoords_ubo;
+        GL::UniformBuffer common_ubo;
+        GL::UniformBuffer texcoords_ubo;
 
         DOF3(int32_t width, int32_t height);
         ~DOF3();

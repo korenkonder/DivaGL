@@ -69,7 +69,7 @@ namespace Glitter {
         else {
             size_t particle = *(size_t*)((size_t)rend_group->particle_inst + 0x98 + 0x178);
             rend_group->vao = *((GLuint*)(particle + 0x40 + 0x170));
-            rend_group->ebo = *((GLElementArrayBuffer*)(particle + 0x40 + 0x174));
+            rend_group->ebo = *((GL::ElementArrayBuffer*)(particle + 0x40 + 0x174));
             rend_group->draw_list = *(DrawListData**)(particle
                 + 0x40 + 0x170 + sizeof(GLuint) * 2);
         }

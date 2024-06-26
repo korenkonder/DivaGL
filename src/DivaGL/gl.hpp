@@ -464,7 +464,7 @@ typedef enum SpecialNumbers {
     WGL_FONT_POLYGONS                        = 1,
 } SpecialNumbers;
 
-typedef enum GL {
+typedef enum _GL {
     GL_POINTS                                                                = 0x0000,
     GL_LINES                                                                 = 0x0001,
     GL_LINE_LOOP                                                             = 0x0002,
@@ -5938,7 +5938,7 @@ typedef enum GL {
     WGL_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB                              = 0x8256,
     WGL_NO_RESET_NOTIFICATION_ARB                                            = 0x8261,
     WGL_CONTEXT_PROFILE_MASK_ARB                                             = 0x9126,
-} GL;
+} _GL;
 
 typedef enum RegisterCombinerPname {
     GL_COMBINE               = 0x8570,

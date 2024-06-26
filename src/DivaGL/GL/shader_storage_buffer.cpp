@@ -3,29 +3,15 @@
     GitHub/GitLab: korenkonder
 */
 
-#pragma once
+#include "shader_storage_buffer.hpp"
+#include "../gl_state.hpp"
 
-#include "wrap.hpp"
-#include "gl_state.hpp"
-
-struct GLShaderStorageBuffer {
-private:
-    GLuint buffer;
-
-public:
-    inline GLShaderStorageBuffer() : buffer() {
-
-    }
-
-    inline ~GLShaderStorageBuffer() {
-
-    }
-
-    inline void Bind(int32_t index, bool force = false) {
+namespace GL {
+    void ShaderStorageBuffer::Bind(int32_t index, bool force) {
         gl_state_bind_shader_storage_buffer_base(index, buffer, force);
     }
 
-    inline void Create(size_t size) {
+    void ShaderStorageBuffer::Create(size_t size) {
         if (buffer)
             return;
 
@@ -44,7 +30,7 @@ public:
         }
     }
 
-    inline void Create(size_t size, const void* data, bool dynamic = false) {
+    void ShaderStorageBuffer::Create(size_t size, const void* data, bool dynamic) {
         if (buffer)
             return;
 
@@ -65,18 +51,14 @@ public:
         }
     }
 
-    inline void Destroy() {
+    void ShaderStorageBuffer::Destroy() {
         if (buffer) {
             glDeleteBuffers(1, &buffer);
             buffer = 0;
         }
     }
 
-    inline bool IsNull() {
-        return !buffer;
-    }
-
-    inline void* MapMemory() {
+    void* ShaderStorageBuffer::MapMemory() {
         if (!buffer)
             return 0;
 
@@ -100,7 +82,7 @@ public:
         return 0;
     }
 
-    inline void* MapMemory(size_t offset, size_t length) {
+    void* ShaderStorageBuffer::MapMemory(size_t offset, size_t length) {
         if (!buffer)
             return 0;
 
@@ -124,11 +106,7 @@ public:
         return 0;
     }
 
-    inline bool NotNull() {
-        return !!buffer;
-    }
-
-    inline void UnmapMemory() {
+    void ShaderStorageBuffer::UnmapMemory() {
         if (!buffer)
             return;
 
@@ -140,7 +118,7 @@ public:
         }
     }
 
-    inline void WriteMemory(size_t offset, size_t size, const void* data) {
+    void ShaderStorageBuffer::WriteMemory(size_t offset, size_t size, const void* data) {
         if (!buffer)
             return;
 
@@ -151,17 +129,4 @@ public:
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (GLsizeiptr)offset, (GLsizeiptr)size, data);
         }
     }
-
-    template<typename T>
-    inline void WriteMemory(T& data) {
-        if (!buffer)
-            return;
-
-        if (GL_VERSION_4_5)
-            glNamedBufferSubData(buffer, 0, sizeof(T), &data);
-        else {
-            gl_state_bind_shader_storage_buffer(buffer);
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T), &data);
-        }
-    }
-};
+}

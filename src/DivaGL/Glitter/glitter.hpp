@@ -9,12 +9,12 @@
 #include "../../KKdLib/hash.hpp"
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
+#include "../GL/array_buffer.hpp"
+#include "../GL/element_array_buffer.hpp"
 #include "../color.hpp"
 #include "../file_handler.hpp"
 #include "../frame_rate_control.hpp"
 #include "../gl.hpp"
-#include "../gl_array_buffer.hpp"
-#include "../gl_element_array_buffer.hpp"
 #include "../object.hpp"
 #include "../task.hpp"
 #include "../types.hpp"
@@ -981,12 +981,12 @@ namespace Glitter {
         struct Sub {
             Glitter::Particle::Data data;
             Glitter::Buffer* buffer;
-            GLArrayBuffer vbo;
+            GL::ArrayBuffer vbo;
             int32_t max_count;
             bool field_168;
             int32_t dword16C;
             GLuint vao;
-            GLElementArrayBuffer ebo;
+            GL::ElementArrayBuffer ebo;
             DrawListData* draw_list;
         };
 
@@ -1147,12 +1147,12 @@ namespace Glitter {
         ParticleInst* particle_inst;
         DispType disp_type;
         FogType fog_type;
-        GLArrayBuffer vbo;
+        GL::ArrayBuffer vbo;
         float_t emission;
         bool use_own_buffer;
         int32_t dword12C;
         GLuint vao;
-        GLElementArrayBuffer ebo;
+        GL::ElementArrayBuffer ebo;
         size_t disp;
         mat4 mat_draw;
         DrawListData* draw_list;
@@ -1192,8 +1192,8 @@ namespace Glitter {
         DispType disp_type;
         FogType fog_type;
         GLuint vao;
-        GLArrayBuffer vbo;
-        GLElementArrayBuffer ebo;
+        GL::ArrayBuffer vbo;
+        GL::ElementArrayBuffer ebo;
         float_t emission;
         DrawListData draw_list;
 
@@ -1462,8 +1462,8 @@ namespace Glitter {
     extern void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec0, const vec3* vec1);
 
     extern void CreateBuffer(int32_t max_count, bool is_quad,
-        GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo);
-    extern void DeleteBuffer(GLuint& vao, GLArrayBuffer& vbo, GLElementArrayBuffer& ebo);
+        GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
+    extern void DeleteBuffer(GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
 
     extern void Patch();
 }

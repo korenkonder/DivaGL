@@ -7,14 +7,19 @@
 #include "../KKdLib/prj/algorithm.hpp"
 #include "../KKdLib/prj/vector_pair.hpp"
 #include "../KKdLib/hash.hpp"
+#include "GL/element_array_buffer.hpp"
+#include "GL/shader_storage_buffer.hpp"
+#include "GL/uniform_buffer.hpp"
+#include "rob/rob.hpp"
 #include "auth_3d.hpp"
 #include "file_handler.hpp"
 #include "frame_rate_control.hpp"
 #include "gl_state.hpp"
-#include "gl_element_array_buffer.hpp"
 #include "render_context.hpp"
 #include "render_manager.hpp"
+#include "render_texture.hpp"
 #include "shader_ft.hpp"
+#include "stage.hpp"
 #include "stage_param.hpp"
 #include "texture.hpp"
 #include <Helpers.h>
@@ -228,8 +233,8 @@ struct particle_vertex_data {
 };
 
 struct star_catalog_milky_way {
-    GLArrayBuffer vbo;
-    GLElementArrayBuffer ebo;
+    GL::ArrayBuffer vbo;
+    GL::ElementArrayBuffer ebo;
     GLuint vao;
     uint16_t restart_index;
     int32_t idx_count;
@@ -247,7 +252,7 @@ struct star_catalog_milky_way {
         float_t longitude_offset_degs_10, float_t latitude_offset_degs_10);
     void create_default_sphere();
     void delete_buffers();
-    void draw(const mat4& vp, const mat4& model, texture* tex, GLUniformBuffer& scene_ubo);
+    void draw(const mat4& vp, const mat4& model, texture* tex, GL::UniformBuffer& scene_ubo);
 };
 
 static_assert(sizeof(star_catalog_milky_way) == 0x34, "\"star_catalog_milky_way\" struct should have a size of 0x34");
@@ -414,48 +419,48 @@ struct water_particle_scene_shader_data {
     vec4 g_state_point_attenuation;
 };
 
-static prj::vector_pair<EffectFogRing*, GLShaderStorageBuffer> fog_ring_ssbo;
+static prj::vector_pair<EffectFogRing*, GL::ShaderStorageBuffer> fog_ring_ssbo;
 
 static GLuint leaf_ptcl_vao;
-static GLArrayBuffer leaf_ptcl_vbo;
-static GLElementArrayBuffer leaf_ptcl_ebo;
-static GLUniformBuffer leaf_particle_scene_ubo;
+static GL::ArrayBuffer leaf_ptcl_vbo;
+static GL::ElementArrayBuffer leaf_ptcl_ebo;
+static GL::UniformBuffer leaf_particle_scene_ubo;
 static const size_t leaf_ptcl_count = 0x800;
 
 static GLuint ptcl_vao;
-static GLArrayBuffer ptcl_vbo;
-static GLUniformBuffer particle_scene_ubo;
+static GL::ArrayBuffer ptcl_vbo;
+static GL::UniformBuffer particle_scene_ubo;
 static const size_t ptcl_count = 0x400;
 
-static GLShaderStorageBuffer rain_ssbo;
-static GLUniformBuffer rain_particle_scene_ubo;
-static GLUniformBuffer rain_particle_batch_ubo;
+static GL::ShaderStorageBuffer rain_ssbo;
+static GL::UniformBuffer rain_particle_scene_ubo;
+static GL::UniformBuffer rain_particle_batch_ubo;
 static const size_t rain_ptcl_count = 0x8000;
 
-static GLUniformBuffer ripple_batch_ubo;
-static GLUniformBuffer ripple_scene_ubo;
+static GL::UniformBuffer ripple_batch_ubo;
+static GL::UniformBuffer ripple_scene_ubo;
 
-static GLShaderStorageBuffer ripple_emit_ssbo;
-static GLUniformBuffer ripple_emit_scene_ubo;
+static GL::ShaderStorageBuffer ripple_emit_ssbo;
+static GL::UniformBuffer ripple_emit_scene_ubo;
 static const size_t ripple_emit_count = 5000;
 
-static GLShaderStorageBuffer snow_ssbo;
-static GLShaderStorageBuffer snow_gpu_ssbo;
-static GLShaderStorageBuffer snow_fallen_ssbo;
-static GLUniformBuffer snow_particle_scene_ubo;
-static GLUniformBuffer snow_particle_batch_ubo;
+static GL::ShaderStorageBuffer snow_ssbo;
+static GL::ShaderStorageBuffer snow_gpu_ssbo;
+static GL::ShaderStorageBuffer snow_fallen_ssbo;
+static GL::UniformBuffer snow_particle_scene_ubo;
+static GL::UniformBuffer snow_particle_batch_ubo;
 static const size_t snow_ptcl_count = 0x8000;
 static const size_t snow_ptcl_fallen_count = 0x2000;
 
-static GLShaderStorageBuffer stars_ssbo;
-static GLUniformBuffer stars_scene_ubo;
-static GLUniformBuffer stars_batch_ubo;
+static GL::ShaderStorageBuffer stars_ssbo;
+static GL::UniformBuffer stars_scene_ubo;
+static GL::UniformBuffer stars_batch_ubo;
 static int32_t star_count;
 static int32_t star_b_count;
 static GLuint star_sampler;
 
-static prj::vector_pair<water_particle*, GLShaderStorageBuffer> water_particle_ssbo;
-static GLUniformBuffer water_particle_scene_ubo;
+static prj::vector_pair<water_particle*, GL::ShaderStorageBuffer> water_particle_ssbo;
+static GL::UniformBuffer water_particle_scene_ubo;
 
 static float_t& snow_particle_delta_frame = *(float_t*)0x0000000140C9A4E0;
 
@@ -814,7 +819,7 @@ HOOK(void, FASTCALL, EffectFogRing__calc_vert, 0x000000001403495B0, EffectFogRin
     if (elem == fog_ring_ssbo.end())
         return;
 
-    GLShaderStorageBuffer& ssbo = elem->second;
+    GL::ShaderStorageBuffer& ssbo = elem->second;
 
     float_t density = fog_ring->density;
     fog_ring_data* ptcl_data = fog_ring->ptcl_data;
@@ -1674,7 +1679,7 @@ void star_catalog_milky_way::delete_buffers() {
     }
 }
 
-void star_catalog_milky_way::draw(const mat4& vp, const mat4& mat, texture* tex, GLUniformBuffer& scene_ubo) {
+void star_catalog_milky_way::draw(const mat4& vp, const mat4& mat, texture* tex, GL::UniformBuffer& scene_ubo) {
     if (!vao)
         return;
 
@@ -1920,7 +1925,7 @@ void water_particle::draw(mat4* mat) {
     if (elem == water_particle_ssbo.end())
         return;
 
-    GLShaderStorageBuffer& ssbo = elem->second;
+    GL::ShaderStorageBuffer& ssbo = elem->second;
 
     water_particle_vertex_data* vtx_data = (water_particle_vertex_data*)ssbo.MapMemory();
     if (!vtx_data)
@@ -1978,7 +1983,7 @@ static void draw_fog_particle(EffectFogRing* data, mat4* mat) {
     if (elem == fog_ring_ssbo.end())
         return;
 
-    GLShaderStorageBuffer& ssbo = elem->second;
+    GL::ShaderStorageBuffer& ssbo = elem->second;
 
     shaders_ft.set(SHADER_FT_FOGPTCL);
     gl_state_enable_blend();

@@ -3,29 +3,15 @@
     GitHub/GitLab: korenkonder
 */
 
-#pragma once
+#include "element_array_buffer.hpp"
+#include "../gl_state.hpp"
 
-#include "wrap.hpp"
-#include "gl_state.hpp"
-
-struct GLElementArrayBuffer {
-private:
-    GLuint buffer;
-
-public:
-    inline GLElementArrayBuffer() : buffer() {
-
-    }
-
-    inline ~GLElementArrayBuffer() {
-
-    }
-
-    inline void Bind(bool force = false) {
+namespace GL {
+    void ElementArrayBuffer::Bind(bool force) {
         gl_state_bind_element_array_buffer(buffer, force);
     }
 
-    inline void Create(size_t size) {
+    void ElementArrayBuffer::Create(size_t size) {
         if (buffer)
             return;
 
@@ -44,7 +30,7 @@ public:
         }
     }
 
-    inline void Create(size_t size, const void* data, bool dynamic = false) {
+    void ElementArrayBuffer::Create(size_t size, const void* data, bool dynamic) {
         if (buffer)
             return;
 
@@ -65,18 +51,14 @@ public:
         }
     }
 
-    inline void Destroy() {
+    void ElementArrayBuffer::Destroy() {
         if (buffer) {
             glDeleteBuffers(1, &buffer);
             buffer = 0;
         }
     }
 
-    inline bool IsNull() {
-        return !buffer;
-    }
-
-    inline void* MapMemory() {
+    void* ElementArrayBuffer::MapMemory() {
         if (!buffer)
             return 0;
 
@@ -100,7 +82,7 @@ public:
         return 0;
     }
 
-    inline void* MapMemory(size_t offset, size_t length) {
+    void* ElementArrayBuffer::MapMemory(size_t offset, size_t length) {
         if (!buffer)
             return 0;
 
@@ -124,11 +106,7 @@ public:
         return 0;
     }
 
-    inline bool NotNull() {
-        return !!buffer;
-    }
-
-    inline void UnmapMemory() {
+    void ElementArrayBuffer::UnmapMemory() {
         if (!buffer)
             return;
 
@@ -140,7 +118,7 @@ public:
         }
     }
 
-    inline void WriteMemory(size_t offset, size_t size, const void* data) {
+    void ElementArrayBuffer::WriteMemory(size_t offset, size_t size, const void* data) {
         if (!buffer)
             return;
 
@@ -151,17 +129,4 @@ public:
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)offset, (GLsizeiptr)size, data);
         }
     }
-
-    template<typename T>
-    inline void WriteMemory(T& data) {
-        if (!buffer)
-            return;
-
-        if (GL_VERSION_4_5)
-            glNamedBufferSubData(buffer, 0, sizeof(T), &data);
-        else {
-            gl_state_bind_element_array_buffer(buffer);
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(T), &data);
-        }
-    }
-};
+}

@@ -10,7 +10,7 @@
 #include "renderer/dof.hpp"
 #include "renderer/transparency.hpp"
 #include "camera.hpp"
-#include "gl_uniform_buffer.hpp"
+#include "GL/uniform_buffer.hpp"
 
 enum tone_map_method {
     TONE_MAP_YCC_EXPONENT = 0,

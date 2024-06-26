@@ -8,13 +8,12 @@
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
+#include "GL/array_buffer.hpp"
+#include "GL/uniform_buffer.hpp"
 #include "light_param/fog.hpp"
 #include "light_param/light.hpp"
 #include "mdl/disp_manager.hpp"
 #include "camera.hpp"
-#include "gl_array_buffer.hpp"
-#include "gl_element_array_buffer.hpp"
-#include "gl_uniform_buffer.hpp"
 #include "render.hpp"
 #include "render_manager.hpp"
 #include "render_texture.hpp"
@@ -374,10 +373,10 @@ struct render_context {
     vec4 g_near_far;
 
     GLuint box_vao;
-    GLArrayBuffer box_vbo;
+    GL::ArrayBuffer box_vbo;
 
     GLuint lens_ghost_vao;
-    GLArrayBuffer lens_ghost_vbo;
+    GL::ArrayBuffer lens_ghost_vbo;
 
     GLuint common_vao;
 
@@ -386,31 +385,31 @@ struct render_context {
     RenderTexture screen_buffer;
     RenderTexture shadow_buffer;
 
-    GLUniformBuffer camera_blur_ubo;
-    GLUniformBuffer contour_coef_ubo;
-    GLUniformBuffer contour_params_ubo;
-    GLUniformBuffer filter_scene_ubo;
-    GLUniformBuffer esm_filter_batch_ubo;
-    GLUniformBuffer imgfilter_batch_ubo;
-    GLUniformBuffer exposure_measure_ubo;
-    GLUniformBuffer gaussian_coef_ubo;
-    GLUniformBuffer glass_eye_batch_ubo;
-    GLUniformBuffer glitter_batch_ubo;
-    GLUniformBuffer quad_ubo;
-    GLUniformBuffer sprite_scene_ubo;
-    GLUniformBuffer sss_filter_gaussian_coef_ubo;
-    GLUniformBuffer sun_quad_ubo;
-    GLUniformBuffer transparency_batch_ubo;
-    GLUniformBuffer tone_map_ubo;
+    GL::UniformBuffer camera_blur_ubo;
+    GL::UniformBuffer contour_coef_ubo;
+    GL::UniformBuffer contour_params_ubo;
+    GL::UniformBuffer filter_scene_ubo;
+    GL::UniformBuffer esm_filter_batch_ubo;
+    GL::UniformBuffer imgfilter_batch_ubo;
+    GL::UniformBuffer exposure_measure_ubo;
+    GL::UniformBuffer gaussian_coef_ubo;
+    GL::UniformBuffer glass_eye_batch_ubo;
+    GL::UniformBuffer glitter_batch_ubo;
+    GL::UniformBuffer quad_ubo;
+    GL::UniformBuffer sprite_scene_ubo;
+    GL::UniformBuffer sss_filter_gaussian_coef_ubo;
+    GL::UniformBuffer sun_quad_ubo;
+    GL::UniformBuffer transparency_batch_ubo;
+    GL::UniformBuffer tone_map_ubo;
 
     obj_shader_shader_data obj_shader;
     obj_scene_shader_data obj_scene;
     obj_batch_shader_data obj_batch;
     obj_skinning_shader_data obj_skinning;
-    GLUniformBuffer obj_shader_ubo;
-    GLUniformBuffer obj_scene_ubo;
-    GLUniformBuffer obj_batch_ubo;
-    GLUniformBuffer obj_skinning_ubo;
+    GL::UniformBuffer obj_shader_ubo;
+    GL::UniformBuffer obj_scene_ubo;
+    GL::UniformBuffer obj_batch_ubo;
+    GL::UniformBuffer obj_skinning_ubo;
 
     GLuint empty_texture_2d;
     GLuint empty_texture_cube_map;
@@ -437,7 +436,3 @@ extern draw_state_struct& draw_state;
 extern render_context* rctx;
 
 extern sss_data* sss_data_get();
-
-void fbo_blit(GLuint src_fbo, GLuint dst_fbo,
-    GLint src_x, GLint src_y, GLint src_width, GLint src_height,
-    GLint dst_x, GLint dst_y, GLint dst_width, GLint dst_height, GLbitfield mask, GLenum filter);

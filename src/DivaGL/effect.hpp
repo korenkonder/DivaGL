@@ -6,15 +6,8 @@
 #pragma once
 
 #include "../KKdLib/default.hpp"
-#include "../KKdLib/vec.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
-#include "gl_shader_storage_buffer.hpp"
-#include "gl_uniform_buffer.hpp"
-#include "rob/rob.hpp"
-#include "render_texture.hpp"
-#include "stage.hpp"
-#include "stage_param.hpp"
 
 enum EffectType {
     EFFECT_INVALID  = -1,

@@ -69,9 +69,9 @@ namespace spr {
             std::vector<sprite_draw_vertex> vertex_buffer;
             std::vector<uint32_t> index_buffer;
             GLuint vao;
-            GLArrayBuffer vbo;
+            GL::ArrayBuffer vbo;
             size_t vbo_vertex_count;
-            GLElementArrayBuffer ebo;
+            GL::ElementArrayBuffer ebo;
             size_t ebo_index_count;
 
             RenderData();

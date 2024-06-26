@@ -325,7 +325,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
         return;
 
     vertex_buffer->cycle_index();
-    GLArrayBuffer buffer = vertex_buffer->get_buffer();
+    GL::ArrayBuffer buffer = vertex_buffer->get_buffer();
     size_t data = (size_t)buffer.MapMemory();
     if (!data)
         return;
@@ -920,7 +920,7 @@ void rob_chara_age_age_object::disp(size_t chara_index,
 
     obj_vert_buf.cycle_index();
 
-    GLArrayBuffer buffer = obj_vert_buf.get_buffer();
+    GL::ArrayBuffer buffer = obj_vert_buf.get_buffer();
     size_t vtx_data = (size_t)buffer.MapMemory();
     if (!vtx_data)
         return;
