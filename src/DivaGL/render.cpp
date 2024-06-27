@@ -67,7 +67,7 @@ namespace rndr {
             else
                 uniform->arr[U_REDUCE] = 0;
 
-            glViewportDLL(0, 0, t->width, t->height);
+            gl_state_set_viewport(0, 0, t->width, t->height);
             gl_state_active_bind_texture_2d(0, taa_tex[taa_texture_selector]->glid);
             gl_state_bind_sampler(0, rctx->render_samplers[0]);
             shaders_ft.set(SHADER_FT_REDUCE);
@@ -102,7 +102,7 @@ namespace rndr {
 
             taa_texture = 2;
             taa_buffer[2].Bind();
-            glViewportDLL(0, 0, render_width[0], render_height[0]);
+            gl_state_set_viewport(0, 0, render_width[0], render_height[0]);
             gl_state_active_bind_texture_2d(0, taa_tex[taa_texture_selector]->glid);
             gl_state_bind_sampler(0, sampler);
 
@@ -147,7 +147,7 @@ namespace rndr {
         }
 
         rctx->screen_buffer.Bind();
-        glViewportDLL(0, 0, rctx->screen_width, rctx->screen_height);
+        gl_state_set_viewport(0, 0, rctx->screen_width, rctx->screen_height);
         if (ssaa) {
             gl_state_active_bind_texture_2d(0, taa_tex[taa_texture]->glid);
             gl_state_bind_sampler(0, rctx->render_samplers[0]);
@@ -210,7 +210,7 @@ namespace rndr {
         }
         else
             rend_texture[0].Bind();
-        glViewportDLL(0, 0, render_width[0], render_height[0]);
+        gl_state_set_viewport(0, 0, render_width[0], render_height[0]);
     }
 
     void Render::calc_exposure_chara_data() {
@@ -347,7 +347,7 @@ namespace rndr {
                 texture* movie_texture = sub_14041ED80(task_movie);
                 if (movie_texture) {
                     movie_textures[0].Bind();
-                    glViewportDLL(0, 0, movie_textures_data[0]->width, movie_textures_data[0]->height);
+                    gl_state_set_viewport(0, 0, movie_textures_data[0]->width, movie_textures_data[0]->height);
                     gl_state_active_bind_texture_2d(0, movie_texture->glid);
                     uniform->arr[U_REDUCE] = 0;
                     shaders_ft.set(SHADER_FT_REDUCE);
@@ -971,7 +971,7 @@ namespace rndr {
             rend_texture[i].Bind();
             gl_state_active_bind_texture_2d(0, rend_texture[i - 1].GetColorTex());
             gl_state_bind_sampler(0, rctx->render_samplers[0]);
-            glViewportDLL(0, 0, render_width[i], render_height[i]);
+            gl_state_set_viewport(0, 0, render_width[i], render_height[i]);
             draw_quad(
                 render_post_width[i - 1], render_post_height[i - 1],
                 render_post_width_scale, render_post_height_scale,
@@ -982,7 +982,7 @@ namespace rndr {
         shaders_ft.set(SHADER_FT_REDUCE);
 
         int32_t downsample = max_def(downsample_count - 2, 0);
-        glViewportDLL(0, 0, reduce_width[0], reduce_height[0]);
+        gl_state_set_viewport(0, 0, reduce_width[0], reduce_height[0]);
         reduce_texture[0].Bind();
         gl_state_active_bind_texture_2d(0, rend_texture[downsample].GetColorTex());
         gl_state_bind_sampler(0, rctx->render_samplers[0]);
@@ -1008,7 +1008,7 @@ namespace rndr {
                 shaders_ft.set(SHADER_FT_REDUCE);
             }
 
-            glViewportDLL(0, 0, reduce_width[i], reduce_height[i]);
+            gl_state_set_viewport(0, 0, reduce_width[i], reduce_height[i]);
             draw_quad(reduce_width[i - 1], reduce_height[i - 1],
                 1.0f, 1.0f, 0.0f, 0.0f, scale, 1.0f, 1.0f, 1.0f, 1.0f);
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->glid);
@@ -1045,7 +1045,7 @@ namespace rndr {
         texture* rend_tex = render_textures_data[index];
         uniform->arr[U_REDUCE] = 0;
 
-        glViewportDLL(0, 0, rend_tex->width, rend_tex->height);
+        gl_state_set_viewport(0, 0, rend_tex->width, rend_tex->height);
         gl_state_active_bind_texture_2d(0, rctx->screen_buffer.GetColorTex());
         gl_state_bind_sampler(0, rctx->render_samplers[0]);
         shaders_ft.set(SHADER_FT_REDUCE);
@@ -1318,7 +1318,7 @@ namespace rndr {
 
         rctx->tone_map_ubo.WriteMemory(shader_data);
 
-        glViewportDLL(0, 0, render_width[0], render_height[0]);
+        gl_state_set_viewport(0, 0, render_width[0], render_height[0]);
         taa_buffer[2].Bind();
         shaders_ft.set(SHADER_FT_TONEMAP);
         rctx->tone_map_ubo.Bind(1);
@@ -1440,7 +1440,7 @@ namespace rndr {
                     exposure_measure.g_spot_coefficients[i * 8 + j] = chara_data->spot_coefficients[j];
             rctx->exposure_measure_ubo.WriteMemory(exposure_measure);
 
-            glViewportDLL(0, 0, 32, 1);
+            gl_state_set_viewport(0, 0, 32, 1);
             downsample_texture.Bind();
 
             uniform->arr[U_EXPOSURE] = 1;
@@ -1462,7 +1462,7 @@ namespace rndr {
             exposure_history_counter = (exposure_history_counter + 1) % 32;
         }
 
-        glViewportDLL(0, 0, 1, 1);
+        gl_state_set_viewport(0, 0, 1, 1);
         exposure_texture.Bind();
         uniform->arr[U_EXPOSURE] = 2;
         shaders_ft.set(SHADER_FT_EXPOSURE);
@@ -1572,7 +1572,7 @@ namespace rndr {
 
                 gl_state_active_bind_texture_2d(0, j.type == FRAME_TEXTURE_PRE_PP ? pre_pp_tex : post_pp_tex);
                 gl_state_bind_sampler(0, rctx->render_samplers[0]);
-                glViewportDLL(0, 0, dst_tex->width, dst_tex->height);
+                gl_state_set_viewport(0, 0, dst_tex->width, dst_tex->height);
                 uniform->arr[U_REDUCE] = 0;
                 shaders_ft.set(SHADER_FT_REDUCE);
                 draw_quad(dst_tex->width, dst_tex->height,
@@ -1646,7 +1646,7 @@ namespace rndr {
 
         rctx->lens_ghost_vbo.UnmapMemory();
 
-        glViewportDLL(0, 0, render_width[0], render_height[0]);
+        gl_state_set_viewport(0, 0, render_width[0], render_height[0]);
         rend_texture[0].Bind();
         gl_state_enable_blend();
         gl_state_set_blend_func(GL_ONE, GL_ONE);
@@ -1689,7 +1689,7 @@ namespace rndr {
 
         downsample_texture.Bind();
         for (int32_t i = 1; i < 4; i++) {
-            glViewportDLL(0, 0, reduce_width[i], reduce_height[i]);
+            gl_state_set_viewport(0, 0, reduce_width[i], reduce_height[i]);
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->glid);
             gl_state_bind_sampler(0, rctx->render_samplers[2]);
             draw_quad(reduce_width[i], reduce_height[i],
@@ -1698,7 +1698,7 @@ namespace rndr {
         }
 
         for (int32_t i = 1; i < 4; i++) {
-            glViewportDLL(0, 0, reduce_width[i], reduce_height[i]);
+            gl_state_set_viewport(0, 0, reduce_width[i], reduce_height[i]);
             gl_state_active_bind_texture_2d(0, reduce_tex[i]->glid);
             gl_state_bind_sampler(0, rctx->render_samplers[2]);
             draw_quad(reduce_width[i], reduce_height[i],
@@ -1709,7 +1709,7 @@ namespace rndr {
         uniform->arr[U_GAUSS] = 1;
         shaders_ft.set(SHADER_FT_GAUSS);
 
-        glViewportDLL(0, 0, reduce_width[0], reduce_height[0]);
+        gl_state_set_viewport(0, 0, reduce_width[0], reduce_height[0]);
         gl_state_active_bind_texture_2d(0, reduce_tex[0]->glid);
         gl_state_bind_sampler(0, rctx->render_samplers[2]);
         draw_quad(reduce_width[0], reduce_height[0],
@@ -1719,7 +1719,7 @@ namespace rndr {
         uniform->arr[U_REDUCE] = 7;
         shaders_ft.set(SHADER_FT_REDUCE);
 
-        glViewportDLL(0, 0, reduce_width[0], reduce_height[0]);
+        gl_state_set_viewport(0, 0, reduce_width[0], reduce_height[0]);
         reduce_texture[0].Bind();
         gl_state_active_bind_texture_2d(0, downsample_texture.GetColorTex());
         gl_state_active_bind_texture_2d(1, reduce_tex[1]->glid);

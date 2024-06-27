@@ -80,6 +80,9 @@ enum uniform_name {
     U45             = 0x45,
     U_MAX           = 0x46,
     U_INVALID       = 0xFFFFFFFF,
+
+    U_DOF       = U_TEX_0_TYPE,
+    U_DOF_STAGE = U_TEX_1_TYPE,
 };
 
 struct uniform_value {

@@ -8,6 +8,13 @@
 #include "../KKdLib/default.hpp"
 #include "wrap.hpp"
 
+struct gl_state_rect {
+    GLint x;
+    GLint y;
+    GLsizei width;
+    GLsizei height;
+};
+
 struct gl_state_struct {
     GLint program;
     GLenum active_texture;
@@ -46,9 +53,11 @@ struct gl_state_struct {
     GLboolean multisample;
     GLboolean primitive_restart;
     GLuint primitive_restart_index;
+    gl_state_rect scissor_box;
     GLboolean scissor_test;
     GLboolean stencil_test;
     GLuint stencil_mask;
+    gl_state_rect viewport;
 };
 
 extern gl_state_struct gl_state;
@@ -98,6 +107,10 @@ extern void gl_state_get();
 extern void gl_state_get_all_gl_errors();
 extern GLenum gl_state_get_error();
 extern GLuint gl_state_get_program();
+extern gl_state_rect gl_state_get_scissor();
+extern void gl_state_get_scissor(GLint& x, GLint& y, GLsizei& width, GLsizei& height);
+extern gl_state_rect gl_state_get_viewport();
+extern void gl_state_get_viewport(GLint& x, GLint& y, GLsizei& width, GLsizei& height);
 extern void gl_state_set_blend_func(GLenum src, GLenum dst, bool force = false);
 extern void gl_state_set_blend_func_separate(GLenum src_rgb, GLenum dst_rgb,
     GLenum src_alpha, GLenum dst_alpha, bool force = false);
@@ -111,7 +124,11 @@ extern void gl_state_set_depth_func(GLenum func, bool force = false);
 extern void gl_state_set_depth_mask(GLboolean flag, bool force = false);
 extern void gl_state_set_polygon_mode(GLenum face, GLenum mode, bool force = false);
 extern void gl_state_set_primitive_restart_index(GLuint index, bool force = false);
+extern void gl_state_set_scissor(const gl_state_rect& rect, bool force = false);
+extern void gl_state_set_scissor(GLint x, GLint y, GLsizei width, GLsizei height, bool force = false);
 extern void gl_state_set_stencil_mask(GLuint mask, bool force = false);
+extern void gl_state_set_viewport(const gl_state_rect& rect, bool force = false);
+extern void gl_state_set_viewport(GLint x, GLint y, GLsizei width, GLsizei height, bool force = false);
 extern void gl_state_use_program(GLuint program, bool force = false);
 
 template <size_t size>

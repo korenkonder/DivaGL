@@ -227,8 +227,6 @@ struct obj_shader_shader_data {
                 uint32_t specular      : 1; // bit 96+14
                 uint32_t tone_map      : 2; // bit 96+15
                 uint32_t u45           : 1; // bit 96+16
-                uint32_t dof           : 1; // bit 96+17 // Added
-                uint32_t dof_stage     : 3; // bit 96+18 // Added
             } m;
             uint32_t w;
         } w;
@@ -366,6 +364,10 @@ struct tone_map_shader_data {
     vec4 g_texcoord_transforms[8];
 };
 
+struct transparency_batch_shader_data {
+    vec4 g_opacity;
+};
+
 struct render_context {
     mat4 view_mat;
     mat4 proj_mat;
@@ -399,8 +401,8 @@ struct render_context {
     GL::UniformBuffer sprite_scene_ubo;
     GL::UniformBuffer sss_filter_gaussian_coef_ubo;
     GL::UniformBuffer sun_quad_ubo;
-    GL::UniformBuffer transparency_batch_ubo;
     GL::UniformBuffer tone_map_ubo;
+    GL::UniformBuffer transparency_batch_ubo;
 
     obj_shader_shader_data obj_shader;
     obj_scene_shader_data obj_scene;

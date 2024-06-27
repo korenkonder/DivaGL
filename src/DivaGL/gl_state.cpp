@@ -336,9 +336,11 @@ void gl_state_get() {
     glGetBooleanvDLL(GL_MULTISAMPLE, &gl_state.multisample);
     glGetBooleanvDLL(GL_PRIMITIVE_RESTART, &gl_state.primitive_restart);
     glGetIntegervDLL(GL_PRIMITIVE_RESTART_INDEX, (GLint*)&gl_state.primitive_restart_index);
+    glGetIntegervDLL(GL_SCISSOR_BOX, (GLint*)&gl_state.scissor_box);
     glGetBooleanvDLL(GL_SCISSOR_TEST, &gl_state.scissor_test);
     glGetBooleanvDLL(GL_STENCIL_TEST, &gl_state.stencil_test);
     glGetIntegervDLL(GL_STENCIL_WRITEMASK, (GLint*)&gl_state.stencil_mask);
+    glGetIntegervDLL(GL_VIEWPORT, (GLint*)&gl_state.viewport);
 
     glPolygonModeDLL(GL_FRONT_AND_BACK, GL_FILL);
     gl_state.polygon_front_face_mode = GL_FILL;
@@ -360,6 +362,28 @@ GLenum gl_state_get_error() {
 
 GLuint gl_state_get_program() {
     return gl_state.program;
+}
+
+gl_state_rect gl_state_get_scissor() {
+    return gl_state.scissor_box;
+}
+
+void gl_state_get_scissor(GLint& x, GLint& y, GLsizei& width, GLsizei& height) {
+    x = gl_state.scissor_box.x;
+    y = gl_state.scissor_box.y;
+    width = gl_state.scissor_box.width;
+    height = gl_state.scissor_box.height;
+}
+
+gl_state_rect gl_state_get_viewport() {
+    return gl_state.viewport;
+}
+
+void gl_state_get_viewport(GLint& x, GLint& y, GLsizei& width, GLsizei& height) {
+    x = gl_state.viewport.x;
+    y = gl_state.viewport.y;
+    width = gl_state.viewport.width;
+    height = gl_state.viewport.height;
 }
 
 void gl_state_set_blend_func(GLenum src, GLenum dst, bool force) {
@@ -474,10 +498,48 @@ void gl_state_set_primitive_restart_index(GLuint index, bool force) {
     }
 }
 
+void gl_state_set_scissor(const gl_state_rect& rect, bool force) {
+    if (force || gl_state.scissor_box.x != rect.x || gl_state.scissor_box.y != rect.y
+        || gl_state.scissor_box.width != rect.width || gl_state.scissor_box.height != rect.height) {
+        glScissorDLL(rect.x, rect.y, rect.width, rect.height);
+        gl_state.scissor_box = rect;
+    }
+}
+
+void gl_state_set_scissor(GLint x, GLint y, GLsizei width, GLsizei height, bool force) {
+    if (force || gl_state.scissor_box.x != x || gl_state.scissor_box.y != y
+        || gl_state.scissor_box.width != width || gl_state.scissor_box.height != height) {
+        glScissorDLL(x, y, width, height);
+        gl_state.scissor_box.x = x;
+        gl_state.scissor_box.y = y;
+        gl_state.scissor_box.width = width;
+        gl_state.scissor_box.height = height;
+    }
+}
+
 void gl_state_set_stencil_mask(GLuint mask, bool force) {
     if (force || gl_state.stencil_mask != mask) {
         glStencilMask(mask);
         gl_state.stencil_mask = mask;
+    }
+}
+
+void gl_state_set_viewport(const gl_state_rect& rect, bool force) {
+    if (force || gl_state.viewport.x != rect.x || gl_state.viewport.y != rect.y
+        || gl_state.viewport.width != rect.width || gl_state.viewport.height != rect.height) {
+        glViewportDLL(rect.x, rect.y, rect.width, rect.height);
+        gl_state.viewport = rect;
+    }
+}
+
+void gl_state_set_viewport(GLint x, GLint y, GLsizei width, GLsizei height, bool force) {
+    if (force || gl_state.viewport.x != x || gl_state.viewport.y != y
+        || gl_state.viewport.width != width || gl_state.viewport.height != height) {
+        glViewportDLL(x, y, width, height);
+        gl_state.viewport.x = x;
+        gl_state.viewport.y = y;
+        gl_state.viewport.width = width;
+        gl_state.viewport.height = height;
     }
 }
 

@@ -9,7 +9,6 @@
 #include "../GL/uniform_buffer.hpp"
 #include "../render_texture.hpp"
 #include "fbo.hpp"
-#include "gl_program.hpp"
 
 enum dof_debug_flags {
     DOF_DEBUG_USE_UI_PARAMS   = 0x01,
@@ -52,7 +51,7 @@ namespace renderer {
         FBO fbo[4];
         GLuint samplers[2];
         GLuint vao;
-        GLProgram program[9];
+        GLuint program[9]; // Unused
         GL::UniformBuffer common_ubo;
         GL::UniformBuffer texcoords_ubo;
 
@@ -65,7 +64,6 @@ namespace renderer {
     private:
         void free();
         void init(int32_t width, int32_t height);
-        void load_shaders();
 
         void apply_f2(RenderTexture* rt, GLuint color_texture,
             GLuint depth_texture, float_t min_distance, float_t max_distance, float_t fov,

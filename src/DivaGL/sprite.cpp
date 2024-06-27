@@ -472,8 +472,7 @@ namespace spr {
         if (index == 2 && resolution_mode != RESOLUTION_MODE_MAX)
             res_window_get()->resolution_mode = resolution_mode;
 
-        GLint v43[4];
-        glGetIntegervDLL(GL_VIEWPORT, v43);
+        gl_state_rect viewport_rect = gl_state_get_viewport();
 
         for (int32_t i = 0; i < 2; i++) {
             auto reqlist = this->reqlist[index][i];
@@ -520,15 +519,15 @@ namespace spr {
                 y_min = (int32_t)min.y;
                 x_max = (int32_t)(max.x - min.x);
                 y_max = (int32_t)(max.y - min.y);
-                glViewportDLL(x_min, y_min, x_max, y_max);
+                gl_state_set_viewport(x_min, y_min, x_max, y_max);
             }
             else {
                 view_projection = view_projection_aet;
 
-                x_min = v43[0];
-                y_min = v43[1];
-                x_max = v43[2];
-                y_max = v43[3];
+                x_min = viewport_rect.x;
+                y_min = viewport_rect.y;
+                x_max = viewport_rect.width;
+                y_max = viewport_rect.height;
             }
 
             float_t v23 = (float_t)x_max * 0.5f;

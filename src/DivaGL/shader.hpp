@@ -14,8 +14,6 @@
 #include "gl.hpp"
 #include "uniform.hpp"
 
-#define SHADER_MAX_UNIFORM_VALUES 16
-
 struct shader_sub_table {
     uint32_t sub_index;
     const int32_t* vp_unival_max;

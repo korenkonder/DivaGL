@@ -456,7 +456,7 @@ namespace rndr {
         //}
         //else {
         //    sss->textures[0].Bind();
-        //    glViewportDLL(0, 0, 640, 360);
+        //    gl_state_set_viewport(0, 0, 640, 360);
         //}
 
         glClearColorDLL(sss->param.x, sss->param.y, sss->param.z, 0.0f);
@@ -508,7 +508,7 @@ namespace rndr {
 
         if (!sss->npr_contour) {
             sss->textures[0].Bind();
-            glViewportDLL(0, 0, 640, 360);
+            gl_state_set_viewport(0, 0, 640, 360);
 
             filter_scene_shader_data filter_scene = {};
             filter_scene.g_transform = { 1.0f, 1.0f, 0.0f, 0.0f };
@@ -618,7 +618,7 @@ namespace rndr {
             || disp_manager->get_obj_count(mdl::OBJ_TYPE_REFRACT_TRANSPARENT)
             || disp_manager->get_obj_count(mdl::OBJ_TYPE_REFRACT_TRANSLUCENT)) {
             texture* refr_tex = refract_texture.color_texture;
-            glViewportDLL(0, 0, refr_tex->width, refr_tex->height);
+            gl_state_set_viewport(0, 0, refr_tex->width, refr_tex->height);
 
             draw_pass_set_camera();
 
@@ -971,7 +971,7 @@ namespace rndr {
         gl_state_begin_event("pass_sprite");
         if (sprite_manager_get_reqlist_count(0)) {
             rndr::Render* rend = render;
-            glViewportDLL(0, 0, rend->screen_width, rend->screen_height);
+            gl_state_set_viewport(0, 0, rend->screen_width, rend->screen_height);
 
             if (multisample && multisample_framebuffer) {
                 gl_state_bind_framebuffer(multisample_framebuffer);
@@ -1078,7 +1078,7 @@ void image_filter_scale(RenderTexture* dst, texture* src, const vec4& scale) {
         return;
 
     gl_state_begin_event("`anonymous-namespace'::Impl::apply_no_filter_sub");
-    glViewportDLL(0, 0, dst->color_texture->width, dst->color_texture->height);
+    gl_state_set_viewport(0, 0, dst->color_texture->width, dst->color_texture->height);
 
     dst->Bind();
 
@@ -1245,7 +1245,7 @@ static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, i
     shad->curr_render_textures[0]->Bind();
     shad->curr_render_textures[0]->SetViewport();
     texture* tex = shad->curr_render_textures[0]->color_texture;
-    glScissorDLL(0, 0, tex->width, tex->height);
+    gl_state_set_scissor(0, 0, tex->width, tex->height);
     gl_state_enable_depth_test();
     gl_state_enable_scissor_test();
     glClearColorDLL(1.0, 1.0, 1.0, 1.0);
@@ -1253,7 +1253,7 @@ static void draw_pass_shadow_begin_make_shadowmap(Shadow* shad, int32_t index, i
         glClearDLL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     else if (shad->separate)
         glClearDLL(GL_COLOR_BUFFER_BIT);
-    glScissorDLL(1, 1, tex->width - 2, tex->height - 2);
+    gl_state_set_scissor(1, 1, tex->width - 2, tex->height - 2);
 
     float_t shadow_range = shad->get_shadow_range();
     float_t offset;
@@ -1350,7 +1350,7 @@ static void draw_pass_shadow_filter(RenderTexture* a1, RenderTexture* a2,
     rctx->filter_scene_ubo.Bind(0);
     rctx->esm_filter_batch_ubo.Bind(1);
 
-    glViewportDLL(0, 0, v7->width, v7->height);
+    gl_state_set_viewport(0, 0, v7->width, v7->height);
 
     a2->Bind();
     esm_filter_batch.g_params = { 1.0f / (float_t)v7->width, 0.0f, far_texel_offset, far_texel_offset };
@@ -1405,7 +1405,7 @@ static void draw_pass_shadow_esm_filter(RenderTexture* dst, RenderTexture* buf, 
     rctx->filter_scene_ubo.Bind(0);
     rctx->esm_filter_batch_ubo.Bind(1);
 
-    glViewportDLL(0, 0, dst_tex->width, dst_tex->height);
+    gl_state_set_viewport(0, 0, dst_tex->width, dst_tex->height);
 
     buf->Bind();
     esm_filter_batch.g_params = { 1.0f / (float_t)src_tex->width,
@@ -1473,7 +1473,7 @@ static bool draw_pass_shadow_litproj_set() {
     static const GLfloat depth_clear = 1.0f;
 
     litproj_shadow[0].Bind();
-    glViewportDLL(0, 0, 2048, 512);
+    gl_state_set_viewport(0, 0, 2048, 512);
     gl_state_enable_depth_test();
     gl_state_set_depth_mask(GL_TRUE);
     glClearBufferfv(GL_COLOR, 0, (float_t*)&color_clear);
@@ -1546,7 +1546,7 @@ static void draw_pass_sss_contour(rndr::Render* rend) {
     gl_state_enable_depth_test();
     gl_state_set_depth_func(GL_ALWAYS);
     gl_state_set_depth_mask(GL_TRUE);
-    glViewportDLL(0, 0, rend->render_width[0], rend->render_height[0]);
+    gl_state_set_viewport(0, 0, rend->render_width[0], rend->render_height[0]);
     gl_state_active_bind_texture_2d(0, rend->rend_texture[0].GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[1]);
     gl_state_active_bind_texture_2d(1, rend->rend_texture[0].GetDepthTex());
@@ -1660,7 +1660,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
     gl_state_active_texture(0);
     if (sss->npr_contour) {
         sss->textures[0].Bind();
-        glViewportDLL(0, 0, 640, 360);
+        gl_state_set_viewport(0, 0, 640, 360);
         rndr::Render* rend = render_get();
         uniform->arr[U_REDUCE] = 0;
         shaders_ft.set(SHADER_FT_REDUCE);
@@ -1670,7 +1670,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
             0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
     }
     sss->textures[2].Bind();
-    glViewportDLL(0, 0, 320, 180);
+    gl_state_set_viewport(0, 0, 320, 180);
     uniform->arr[U_SSS_FILTER] = 0;
     shaders_ft.set(SHADER_FT_SSS_FILT);
     gl_state_bind_texture_2d(sss->textures[0].GetColorTex());
@@ -1689,7 +1689,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
 
     rctx->sss_filter_gaussian_coef_ubo.WriteMemory(shader_data);
     sss->textures[1].Bind();
-    glViewportDLL(0, 0, 320, 180);
+    gl_state_set_viewport(0, 0, 320, 180);
     uniform->arr[U_SSS_FILTER] = 3;
     shaders_ft.set(SHADER_FT_SSS_FILT);
     gl_state_bind_texture_2d(sss->textures[2].GetColorTex());

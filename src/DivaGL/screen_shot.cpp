@@ -101,7 +101,7 @@ HOOK(void, FASTCALL, ScreenShotImpl__get_data, 0x0000000140557F50, ScreenShotImp
     gl_state_disable_depth_test();
     gl_state_disable_blend();
     gl_state_disable_cull_face();
-    glViewportDLL(0, 0, impl->curr_width, impl->curr_height);
+    gl_state_set_viewport(0, 0, impl->curr_width, impl->curr_height);
 
     shaders_ft.set(SHADER_FT_REDUCE);
     gl_state_bind_vertex_array(rctx->common_vao);

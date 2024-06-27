@@ -894,10 +894,21 @@ HOOK(void, FASTCALL, leaf_particle_init, 0x000000014034C530, bool change_stage) 
     for (; i < leaf_ptcl_count; i++, data++)
         data->type = 0;
 
-    if (!leaf_ptcl_vao)
-        glGenVertexArrays(1, &leaf_ptcl_vao);
+    size_t ebo_count = leaf_ptcl_vtx_count / 4 * 6;
+    uint32_t* ebo_data = force_malloc<uint32_t>(ebo_count);
+    for (size_t i = 0, j = 0; i < ebo_count; i += 6, j += 4) {
+        ebo_data[i + 0] = (uint32_t)(j + 0);
+        ebo_data[i + 1] = (uint32_t)(j + 1);
+        ebo_data[i + 2] = (uint32_t)(j + 2);
+        ebo_data[i + 3] = (uint32_t)(j + 0);
+        ebo_data[i + 4] = (uint32_t)(j + 2);
+        ebo_data[i + 5] = (uint32_t)(j + 3);
+    }
 
     static const GLsizei buffer_size = sizeof(leaf_particle_vertex_data);
+
+    if (!leaf_ptcl_vao)
+        glGenVertexArrays(1, &leaf_ptcl_vao);
 
     leaf_ptcl_vbo.Create(buffer_size * leaf_ptcl_vtx_count);
     leaf_ptcl_vbo.Bind();
@@ -913,24 +924,13 @@ HOOK(void, FASTCALL, leaf_particle_init, 0x000000014034C530, bool change_stage) 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, buffer_size,
         (void*)offsetof(leaf_particle_vertex_data, normal));
 
-    size_t ebo_count = leaf_ptcl_vtx_count / 4 * 6;
-    uint32_t* ebo_data = force_malloc<uint32_t>(ebo_count);
-    for (size_t i = 0, j = 0; i < ebo_count; i += 6, j += 4) {
-        ebo_data[i + 0] = (uint32_t)(j + 0);
-        ebo_data[i + 1] = (uint32_t)(j + 1);
-        ebo_data[i + 2] = (uint32_t)(j + 2);
-        ebo_data[i + 3] = (uint32_t)(j + 0);
-        ebo_data[i + 4] = (uint32_t)(j + 2);
-        ebo_data[i + 5] = (uint32_t)(j + 3);
-    }
-
     leaf_ptcl_ebo.Create(sizeof(uint32_t) * ebo_count, ebo_data);
     leaf_ptcl_ebo.Bind();
-    free_def(ebo_data);
 
     gl_state_bind_vertex_array(0);
     gl_state_bind_array_buffer(0);
     gl_state_bind_element_array_buffer(0);
+    free_def(ebo_data);
 
     leaf_particle_scene_ubo.Create(sizeof(leaf_particle_scene_shader_data));
 }
@@ -1029,10 +1029,10 @@ HOOK(void, FASTCALL, particle_init, 0x0000000140351C50, vec3* offset) {
     else
         particle_wind = 0.0f;
 
+    static const GLsizei buffer_size = sizeof(particle_vertex_data);
+
     if (!ptcl_vao)
         glGenVertexArrays(1, &ptcl_vao);
-
-    static const GLsizei buffer_size = sizeof(particle_vertex_data);
 
     ptcl_vbo.Create(buffer_size * ptcl_vtx_count);
     ptcl_vbo.Bind();
@@ -1406,7 +1406,7 @@ void EffectFogRing::draw() {
     draw_state.set_fog_height(true);
     RenderTexture& rt = render_manager->get_render_texture(8);
     rt.Bind();
-    glViewportDLL(0, 0,
+    gl_state_set_viewport(0, 0,
         rt.color_texture->get_width_align_mip_level(),
         rt.color_texture->get_height_align_mip_level());
     glClearColorDLL(density_offset, density_offset, density_offset, 1.0f);
@@ -1425,9 +1425,8 @@ static void sub_1403B6F60(texture* a1, texture* a2, texture* a3, EffectRipple::P
     int32_t width = a2->width;
     int32_t height = a2->height;
 
-    GLint v43[4];
-    glGetIntegervDLL(GL_VIEWPORT, v43);
-    glViewportDLL(1, 1, width - 2, height - 2);
+    gl_state_rect viewport_rect = gl_state_get_viewport();
+    gl_state_set_viewport(1, 1, width - 2, height - 2);
 
     ripple_scene_shader_data ripple_scene = {};
     ripple_scene.g_transform = {
@@ -1452,7 +1451,7 @@ static void sub_1403B6F60(texture* a1, texture* a2, texture* a3, EffectRipple::P
     gl_state_active_bind_texture_2d(0, 0);
     gl_state_bind_vertex_array(0);
 
-    glViewportDLL(v43[0], v43[1], v43[2], v43[3]);
+    gl_state_set_viewport(viewport_rect);
 }
 
 static void sub_1403B6ED0(RenderTexture* a1, RenderTexture* a2, RenderTexture* a3, EffectRipple::Params& params) {
@@ -1484,13 +1483,12 @@ void EffectRipple::draw() {
 
         rt[(counter + 1) % 3]->Bind();
 
-        GLint v43[4];
-        glGetIntegervDLL(GL_VIEWPORT, v43);
+        gl_state_rect viewport_rect = gl_state_get_viewport();
 
         int32_t width = rt[0]->GetWidth();
         int32_t height = rt[0]->GetHeight();
 
-        glViewportDLL(1, 1, width - 2, height - 2);
+        gl_state_set_viewport(1, 1, width - 2, height - 2);
 
         draw_pass_set_camera();
         glClearDLL(GL_DEPTH_BUFFER_BIT);
@@ -1511,7 +1509,7 @@ void EffectRipple::draw() {
 
         sub_1403B6ED0(rt[(counter + 2) % 3], rt[(counter + 1) % 3], rt[counter % 3], params);
 
-        glViewportDLL(v43[0], v43[1], v43[2], v43[3]);
+        gl_state_set_viewport(viewport_rect);
 
         sub_1403584A0(rt[(counter + 2) % 3]);
 
@@ -1595,23 +1593,6 @@ void star_catalog_milky_way::create_buffers(int32_t subdivs, float_t uv_rec_scal
     vtx_data[vtx].texcoord.x = 1.0f;
     vtx_data[vtx].texcoord.y = (latitude_offset_degs_10 - (1.0f / uv_rec_scale_v) * 90.0f) * rec_latitude_degs_10;
 
-    if (!vao)
-        glGenVertexArrays(1, &vao);
-
-    vbo.Create(sizeof(star_catalog_vertex) * vtx_count, vtx_data);
-    vbo.Bind();
-    free_def(vtx_data);
-
-    static const GLsizei buffer_size = sizeof(star_catalog_vertex);
-
-    gl_state_bind_vertex_array(vao);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
-        (void*)offsetof(star_catalog_vertex, position));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, buffer_size,
-        (void*)offsetof(star_catalog_vertex, texcoord));
-
     const uint16_t first_vertex = 0;
     const uint16_t last_vertex = (uint16_t)(vtx_count - 1);
     uint16_t restart_index = this->restart_index;
@@ -1643,8 +1624,29 @@ void star_catalog_milky_way::create_buffers(int32_t subdivs, float_t uv_rec_scal
         ebo_data[idx + 3] = restart_index;
     }
 
+    static const GLsizei buffer_size = sizeof(star_catalog_vertex);
+
+    if (!vao)
+        glGenVertexArrays(1, &vao);
+
+    vbo.Create((size_t)buffer_size * vtx_count, vtx_data);
+    vbo.Bind();
+
+    gl_state_bind_vertex_array(vao);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
+        (void*)offsetof(star_catalog_vertex, position));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, buffer_size,
+        (void*)offsetof(star_catalog_vertex, texcoord));
+
     ebo.Create(sizeof(uint16_t) * ebo_count, ebo_data);
     ebo.Bind();
+
+    gl_state_bind_vertex_array(0);
+    gl_state_bind_array_buffer(0);
+    gl_state_bind_element_array_buffer(0);
+    free_def(vtx_data);
     free_def(ebo_data);
 
     if (!star_sampler)
@@ -1653,10 +1655,6 @@ void star_catalog_milky_way::create_buffers(int32_t subdivs, float_t uv_rec_scal
     glSamplerParameteri(star_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glSamplerParameteri(star_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glSamplerParameteri(star_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    gl_state_bind_vertex_array(0);
-    gl_state_bind_array_buffer(0);
-    gl_state_bind_element_array_buffer(0);
 }
 
 void star_catalog_milky_way::create_default_sphere() {

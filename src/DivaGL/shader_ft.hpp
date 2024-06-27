@@ -56,6 +56,8 @@ enum shader_ft_enum {
     SHADER_FT_FONT,
     SHADER_FT_IMGFILT,
     SHADER_FT_SPRITE,
+    SHADER_FT_DOF,
+    SHADER_FT_TRANSPARENCY,
     SHADER_FT_END,
     SHADER_FT_MAX,
 };

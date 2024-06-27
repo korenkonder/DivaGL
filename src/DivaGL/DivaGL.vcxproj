@@ -171,7 +171,6 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="pv_game\pv_game.cpp" />
     <ClCompile Include="renderer\dof.cpp" />
     <ClCompile Include="renderer\fbo.cpp" />
-    <ClCompile Include="renderer\gl_program.cpp" />
     <ClCompile Include="renderer\transparency.cpp" />
     <ClCompile Include="rob\rob.cpp" />
     <ClCompile Include="auth_2d.cpp" />
@@ -229,7 +228,6 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="pv_game\pvpp.hpp" />
     <ClInclude Include="pv_game\pvsr.hpp" />
     <ClInclude Include="pv_game\pv_game.hpp" />
-    <ClInclude Include="renderer\gl_program.hpp" />
     <ClInclude Include="renderer\dof.hpp" />
     <ClInclude Include="renderer\fbo.hpp" />
     <ClInclude Include="renderer\transparency.hpp" />

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "shared.hpp"
+#include "gl_state.hpp"
 #include "texture.hpp"
 
 struct RenderTexture {
@@ -46,7 +47,7 @@ struct RenderTexture {
     };
 
     inline void SetViewport() {
-        glViewportDLL(0, 0, GetWidth(), GetHeight());
+        gl_state_set_viewport(0, 0, GetWidth(), GetHeight());
     };
 };
 

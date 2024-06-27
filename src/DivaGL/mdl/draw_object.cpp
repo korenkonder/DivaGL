@@ -609,6 +609,7 @@ static bool draw_object_blend_set_check_use_default_blend(int32_t index) {
         false, false, false, false, false, false, false, false, false, false, false, false,
         false, false, false, false, false, false, false, false, false, false, false, false,
         false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false,
     };
 
     if (index >= 0 && index < SHADER_FT_MAX)
