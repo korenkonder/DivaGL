@@ -5,6 +5,8 @@
     Original: Allocator.h, Types.h by blueskythlikesclouds from DivaModLoader
 */
 
+#pragma once
+
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/prj/vector_pair.hpp"
 #include "../KKdLib/prj/vector_pair_combine.hpp"
@@ -14,8 +16,6 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
-
-#pragma once
 
 namespace prj {
     typedef enum HeapCMallocType {

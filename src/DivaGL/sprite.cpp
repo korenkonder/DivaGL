@@ -93,6 +93,11 @@ namespace spr {
         void Draw(int32_t index, bool font, texture* tex);
     };
 
+    struct SpriteVertexData {
+        size_t max_count;
+        spr::SpriteVertex* array;
+    };
+
     static_assert(sizeof(spr::SpriteManager) == 0x10C8, "\"spr::SpriteManager\" struct should have a size of 0x10C8");
 
     static void calc_sprite_vertex(spr::SprArgs* args, vec3* vtx, mat4* mat, bool font);
@@ -120,19 +125,16 @@ bool (FASTCALL* sprite_manager_load_file)(int32_t set_id)
 
 spr::SpriteManager* sprite_manager = (spr::SpriteManager*)0x000000014CC611C0;
 
-#if BREAK_SPRITE_VERTEX_LIMIT
-size_t sprite_vertex_array_max_count = 0x2000;
+spr::SpriteVertexData& sprite_vertex_data = *(spr::SpriteVertexData*)0x000000014CC62480;
 
-spr::SpriteVertex* sprite_vertex_array;
-#else
 const size_t sprite_vertex_array_max_count = 0x2000;
-
 spr::SpriteVertex* sprite_vertex_array = (spr::SpriteVertex*)0x000000014CC62480;
-#endif
+
 size_t& sprite_vertex_array_count = *(size_t*)0x000000014CC611B0;
 
 static mat4 view_projection_aet;
 
+static bool break_sprite_vertex_limit = false;
 static spr::SpriteManager::RenderData* sprite_manager_render_data;
 
 static const GLenum spr_blend_param[6][4] = {
@@ -157,6 +159,13 @@ namespace spr {
         Reset();
     }
 
+    SpriteVertex* SprArgs::GetVertexArray() {
+        if (break_sprite_vertex_limit)
+            return sprite_vertex_data.array + vertex_array;
+        else
+            return vertex_array_ptr;
+    }
+
     void SprArgs::Reset() {
         kind = SPR_KIND_NORMAL;
         id = {};
@@ -176,11 +185,10 @@ namespace spr {
         mat = mat4_identity;
         texture = 0;
         shader = SHADER_FT_FFP;
-#if BREAK_SPRITE_VERTEX_LIMIT
-        vertex_array = -1;
-#else
-        vertex_array = 0;
-#endif
+        if (break_sprite_vertex_limit)
+            vertex_array = -1;
+        else
+            vertex_array = 0;
         num_vertex = 0;
         flags = (SprArgs::Flags)0;
         sprite_size = 0.0f;
@@ -211,30 +219,11 @@ namespace spr {
     }
 
     void SprArgs::SetVertexArray(SpriteVertex* vertex_array, size_t num_vertex) {
-#if BREAK_SPRITE_VERTEX_LIMIT
-        if (sprite_vertex_array_count + num_vertex >= sprite_vertex_array_max_count) {
-            while (sprite_vertex_array_count + num_vertex >= sprite_vertex_array_max_count)
-                sprite_vertex_array_max_count *= 2;
-
-            spr::SpriteVertex* _sprite_vertex_array = new spr::SpriteVertex[sprite_vertex_array_max_count * 2];
-            memmove(_sprite_vertex_array, sprite_vertex_array, sizeof(SpriteVertex) * sprite_vertex_array_count);
-            delete[] sprite_vertex_array;
-            sprite_vertex_array = _sprite_vertex_array;
-        }
-#else
-        if (sprite_vertex_array_count + num_vertex >= sprite_vertex_array_max_count)
-            return;
-#endif
-
-        this->num_vertex = num_vertex;
-#if BREAK_SPRITE_VERTEX_LIMIT
-        this->vertex_array = sprite_vertex_array_count;
-        memmove(sprite_vertex_array + this->vertex_array, vertex_array, sizeof(SpriteVertex) * num_vertex);
-#else
-        this->vertex_array = &sprite_vertex_array[sprite_vertex_array_count];
-        memmove(this->vertex_array, vertex_array, sizeof(SpriteVertex) * num_vertex);
-#endif
-        sprite_vertex_array_count += num_vertex;
+        void (FASTCALL * spr__SprArgs__SetVertexArray)(spr::SprArgs * This,
+            spr::SpriteVertex * vertex_array, size_t num_vertex)
+            = (void (FASTCALL*)(spr::SprArgs * This,
+                spr::SpriteVertex * vertex_array, size_t num_vertex))0x000000014063F040;
+        spr__SprArgs__SetVertexArray(this, vertex_array, num_vertex);
     }
 
     void SprArgs::SetNext(SprArgs* args, SprArgs* next) {
@@ -799,7 +788,7 @@ namespace spr {
                 param->texcoord.uv[3].v = (height - (uv11.y + texture_pos.y)) * v_scale;
             }
             else if (font) {
-                SpriteVertex* vtx = args->vertex_array;
+                SpriteVertex* vtx = args->GetVertexArray();
                 for (size_t i = args->num_vertex; i; i--, vtx++) {
                     vtx->uv.x = vtx->uv.x * u_scale;
                     vtx->uv.y = (height - vtx->uv.y) * v_scale;
@@ -1050,7 +1039,7 @@ namespace spr {
                     size_t vertex_buffer_size = vertex_buffer.size();
                     vertex_buffer.reserve(args.num_vertex / 2 * 2);
 
-                    SpriteVertex* vtx = args.vertex_array;
+                    SpriteVertex* vtx = args.GetVertexArray();
                     for (size_t i = args.num_vertex / 2; i; i--, vtx += 2) {
                         if (vtx[0].pos == 0.0f && vtx[1].pos == 0.0f)
                             continue;
@@ -1099,7 +1088,7 @@ namespace spr {
                 sprite_draw_vertex spr_vtx = {};
                 spr_vtx.color = color;
 
-                SpriteVertex* vtx = args.vertex_array;
+                SpriteVertex* vtx = args.GetVertexArray();
                 for (size_t i = args.num_vertex; i; i--, vtx++) {
                     spr_vtx.pos = vtx->pos;
                     vertex_buffer.push_back(spr_vtx);
@@ -1120,7 +1109,7 @@ namespace spr {
                 sprite_draw_vertex spr_vtx = {};
                 spr_vtx.color = color;
 
-                SpriteVertex* vtx = args.vertex_array;
+                SpriteVertex* vtx = args.GetVertexArray();
                 for (size_t i = args.num_vertex; i; i--, vtx++) {
                     spr_vtx.pos = vtx->pos;
                     vertex_buffer.push_back(spr_vtx);
@@ -1148,7 +1137,7 @@ namespace spr {
 
                     sprite_draw_vertex spr_vtx = {};
 
-                    SpriteVertex* vtx = args.vertex_array;
+                    SpriteVertex* vtx = args.GetVertexArray();
                     for (size_t i = args.num_vertex; i; i--, vtx++) {
                         spr_vtx.pos = vtx->pos;
                         spr_vtx.uv[0] = vtx->uv;
@@ -1173,7 +1162,7 @@ namespace spr {
 
                     sprite_draw_vertex spr_vtx[4] = {};
 
-                    SpriteVertex* vtx = args.vertex_array;
+                    SpriteVertex* vtx = args.GetVertexArray();
                     for (size_t i = num_vertex / 6, j = 0; i; i--, j += 4, vtx += 4) {
                         if (vtx[0].pos == 0.0f && vtx[1].pos == 0.0f
                             && vtx[2].pos == 0.0f && vtx[3].pos == 0.0f)
@@ -1392,7 +1381,7 @@ namespace spr {
                 args->trans.y = (args->trans.y - src_res_y) * scale_y + src_res_y;
                 args->trans.z = args->trans.z * scale_y;
 
-                SpriteVertex* vtx = args->vertex_array;
+                SpriteVertex* vtx = args->GetVertexArray();
                 for (size_t i = args->num_vertex; i; i--, vtx++) {
                     vtx->pos.x = (vtx->pos.x - src_res_x) * scale_x + dst_res_x;
                     vtx->pos.y = (vtx->pos.y - src_res_y) * scale_y + dst_res_y;
@@ -1424,6 +1413,17 @@ int32_t sprite_database_get_spr_set_id_by_name(const prj::string& name) {
 }
 
 void sprite_manager_init() {
+    const uint8_t orig_spr__SprArgs__SetVertexArray[] = {
+        0x40, 0x53, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x8B,
+        0x05, 0x63, 0x21, 0x62, 0x0C, 0x4C, 0x8B, 0xC9,
+    };
+
+    if (memcmp((void*)0x000000014063F040, (void*)orig_spr__SprArgs__SetVertexArray,
+        sizeof(orig_spr__SprArgs__SetVertexArray)))
+        break_sprite_vertex_limit = true;
+    else
+        break_sprite_vertex_limit = false;
+
     if (!sprite_manager_render_data)
         sprite_manager_render_data = new spr::SpriteManager::RenderData;
 }

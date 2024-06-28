@@ -9,13 +9,10 @@
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/rectangle.hpp"
 #include "../KKdLib/vec.hpp"
-#include "gl_state.hpp"
 #include "render_context.hpp"
 #include "resolution_mode.hpp"
 #include "texture.hpp"
 #include "types.hpp"
-
-#define BREAK_SPRITE_VERTEX_LIMIT (0)
 
 struct spr_info {
     uint16_t index;
@@ -241,11 +238,10 @@ namespace spr {
         mat4 mat;
         texture* texture;
         int32_t shader;
-#if BREAK_SPRITE_VERTEX_LIMIT
-        size_t vertex_array;
-#else
-        SpriteVertex* vertex_array;
-#endif
+        union {
+            size_t vertex_array;
+            SpriteVertex* vertex_array_ptr;
+        };
         size_t num_vertex;
         Flags flags;
         vec2 sprite_size;
@@ -256,6 +252,7 @@ namespace spr {
 
         SprArgs();
 
+        SpriteVertex* GetVertexArray();
         void Reset();
         void SetSpriteSize(vec2 size);
         void SetTexturePosSize(float_t x, float_t y, float_t width, float_t height);
