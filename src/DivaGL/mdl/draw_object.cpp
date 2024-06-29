@@ -117,6 +117,8 @@ namespace mdl {
         rctx->obj_batch.g_blend_color = color;
 
         gl_state_bind_vertex_array(vao);
+        rctx->obj_shader.set_shader_flags(uniform->arr);
+        rctx->obj_shader_ubo.WriteMemory(rctx->obj_shader);
         rctx->obj_batch_ubo.WriteMemory(rctx->obj_batch);
 
         //shaders_ft.set(SHADER_FT_SIMPLE);
