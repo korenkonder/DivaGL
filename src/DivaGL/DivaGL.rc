@@ -5,8 +5,8 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,0,0
- PRODUCTVERSION 0,7,0,0
+ FILEVERSION 0,7,0,1
+ PRODUCTVERSION 0,7,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -22,12 +22,12 @@ BEGIN
         BLOCK "000904b0"
         BEGIN
             VALUE "FileDescription", "DivaGL plugin for PDAFT 7.10"
-            VALUE "FileVersion", "0.7.0.0"
+            VALUE "FileVersion", "0.7.0.1"
             VALUE "InternalName", "DivaGL"
             VALUE "LegalCopyright", "korenkonder (C) 2020-2024"
             VALUE "OriginalFilename", "DivaGL.dll"
             VALUE "ProductName", "DivaGL"
-            VALUE "ProductVersion", "0.7.0.0"
+            VALUE "ProductVersion", "0.7.0.1"
         END
     END
     BLOCK "VarFileInfo"
