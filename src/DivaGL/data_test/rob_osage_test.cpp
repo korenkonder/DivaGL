@@ -1022,8 +1022,8 @@ void RobOsageTest::disp_coli() {
             mat4_transpose(&transform[i.node_idx[0]], &mat);
             mat4_transform_point(&mat, &i.pos[0], &pos);
 
-            vec3 dir = vec3::normalize(i.pos[1]);
-            vec3 up = { 0.0f, 1.0f, 0.0f };
+            const vec3 dir = vec3::normalize(i.pos[1]);
+            const vec3 up = { 0.0f, 1.0f, 0.0f };
             vec3 axis;
             float_t angle;
             Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
@@ -1057,8 +1057,8 @@ void RobOsageTest::disp_coli() {
             vec3 origin = (pos[0] + pos[1]) * 0.5f;
             mat4_translate(&origin, &mat);
 
-            vec3 dir = vec3::normalize(pos[1] - pos[0]);
-            vec3 up = { 0.0f, 1.0f, 0.0f };
+            const vec3 dir = vec3::normalize(pos[1] - pos[0]);
+            const vec3 up = { 0.0f, 1.0f, 0.0f };
             vec3 axis;
             float_t angle;
             Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);

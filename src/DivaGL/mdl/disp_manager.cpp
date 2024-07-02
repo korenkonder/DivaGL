@@ -1545,8 +1545,8 @@ namespace mdl {
             vec3 origin = (line.pos[0] + line.pos[1]) * 0.5f;
             mat4_add_translate(&mat, &origin, &mat);
 
-            vec3 dir = vec3::normalize(line.pos[1] - line.pos[0]);
-            vec3 up = { 0.0f, 1.0f, 0.0f };
+            const vec3 dir = vec3::normalize(line.pos[1] - line.pos[0]);
+            const vec3 up = { 0.0f, 1.0f, 0.0f };
             vec3 axis;
             float_t angle;
             Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
@@ -1566,8 +1566,8 @@ namespace mdl {
             vec3 origin = (capsule.pos[0] + capsule.pos[1]) * 0.5f;
             mat4_add_translate(&mat, &origin, &mat);
 
-            vec3 dir = vec3::normalize(capsule.pos[1] - capsule.pos[0]);
-            vec3 up = { 0.0f, 1.0f, 0.0f };
+            const vec3 dir = vec3::normalize(capsule.pos[1] - capsule.pos[0]);
+            const vec3 up = { 0.0f, 1.0f, 0.0f };
             vec3 axis;
             float_t angle;
             Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
