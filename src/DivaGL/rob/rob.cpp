@@ -39,7 +39,7 @@ struct rob_chara_age_age_object {
     obj_mesh_vertex_buffer obj_vert_buf;
 #endif
     obj_mesh_index_buffer obj_index_buf;
-    vec3 trans[10];
+    vec3 pos[10];
     int32_t disp_count;
     int32_t count;
     bool field_C3C;
@@ -53,7 +53,7 @@ static_assert(sizeof(rob_chara_age_age_object) == 0xC40, "\"rob_chara_age_age_ob
 struct rob_chara_age_age_data {
     int32_t index;
     int32_t part_id;
-    vec3 trans;
+    vec3 pos;
     float_t field_14;
     float_t rot_z;
     int32_t field_1C;
@@ -93,7 +93,7 @@ static_assert(sizeof(rob_chara_age_age) == 0x1658, "\"rob_chara_age_age\" struct
 
 struct rob_chara_item_adjust_x {
     mat4 mat;
-    vec3 trans;
+    vec3 pos;
     float_t scale;
 
     rob_chara_item_adjust_x();
@@ -345,7 +345,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
                 for (int32_t j = indices_count; j; j--, indices++) {
                     CLOTHNode* node = &nodes[*indices];
 
-                    *(vec3*)data = node->trans;
+                    *(vec3*)data = node->pos;
                     *(vec3*)(data + 0x0C) = node->normal * facing;
                     *(vec3*)(data + 0x18) = node->tangent;
                     *(float_t*)(data + 0x24) = node->tangent_sign;
@@ -361,7 +361,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
                 for (int32_t j = indices_count; j; j--, indices++) {
                     CLOTHNode* node = &nodes[*indices];
 
-                    *(vec3*)data = node->trans;
+                    *(vec3*)data = node->pos;
                     *(vec3*)(data + 0x0C) = node->normal * facing;
 
                     data += mesh->size_vertex;
@@ -377,7 +377,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
                 for (int32_t j = indices_count; j; j--, indices++) {
                     CLOTHNode* node = &nodes[*indices];
 
-                    *(vec3*)data = node->trans;
+                    *(vec3*)data = node->pos;
 
                     vec3_to_vec3i16(node->normal * (32767.0f * facing), *(vec3i16*)(data + 0x0C));
                     *(int16_t*)(data + 0x12) = 0;
@@ -398,7 +398,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
                 for (int32_t j = indices_count; j; j--, indices++) {
                     CLOTHNode* node = &nodes[*indices];
 
-                    *(vec3*)data = node->trans;
+                    *(vec3*)data = node->pos;
 
                     vec3_to_vec3i16(node->normal * (32767.0f * facing), *(vec3i16*)(data + 0x0C));
                     *(int16_t*)(data + 0x12) = 0;
@@ -415,7 +415,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
                 for (int32_t j = indices_count; j; j--, indices++) {
                     CLOTHNode* node = &nodes[*indices];
 
-                    *(vec3*)data = node->trans;
+                    *(vec3*)data = node->pos;
 
                     vec3i16 normal_int;
                     vec3_to_vec3i16(node->normal * 511.0f, normal_int);
@@ -446,7 +446,7 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
                 for (int32_t j = indices_count; j; j--, indices++) {
                     CLOTHNode* node = &nodes[*indices];
 
-                    *(vec3*)data = node->trans;
+                    *(vec3*)data = node->pos;
 
                     vec3i16 normal_int;
                     vec3_to_vec3i16(node->normal * 511.0f, normal_int);
@@ -493,76 +493,76 @@ HOOK(void, FASTCALL, sub_1405044B0, 0x00000001405044B0, rob_chara* rob_chr) {
     originalsub_1405044B0(rob_chr);
 }
 
-static void rob_chara_data_adjuct_set_trans(rob_chara_adjust_data* rob_chr_adj,
-    rob_chara_item_adjust_x* rob_chr_itm_adj_x, vec3& trans, bool pos_adjust, vec3* global_trans) {
+static void rob_chara_data_adjuct_set_pos(rob_chara_adjust_data* rob_chr_adj,
+    rob_chara_item_adjust_x* rob_chr_itm_adj_x, const vec3& pos, bool pos_adjust, const vec3* global_position) {
     float_t scale = rob_chr_adj->scale;
     float_t item_scale = rob_chr_itm_adj_x->scale;
     vec3 _offset = rob_chr_adj->offset;
-    if (global_trans)
-        _offset.y += global_trans->y;
+    if (global_position)
+        _offset.y += global_position->y;
 
-    vec3 _trans = trans;
-    vec3 _item_trans = trans;
+    vec3 _pos = pos;
+    vec3 _item_pos = pos;
     if (rob_chr_adj->height_adjust) {
-        _trans.y += rob_chr_adj->pos_adjust_y;
-        _item_trans.y += rob_chr_adj->pos_adjust_y;
+        _pos.y += rob_chr_adj->pos_adjust_y;
+        _item_pos.y += rob_chr_adj->pos_adjust_y;
     }
     else {
-        vec3 temp = (_trans - _offset) * scale + _offset;
-        vec3 arm_temp = (_item_trans - _offset) * item_scale + _offset;
+        vec3 temp = (_pos - _offset) * scale + _offset;
+        vec3 arm_temp = (_item_pos - _offset) * item_scale + _offset;
 
         if (!rob_chr_adj->offset_x) {
-            _trans.x = temp.x;
-            _item_trans.x = arm_temp.x;
+            _pos.x = temp.x;
+            _item_pos.x = arm_temp.x;
         }
 
         if (!rob_chr_adj->offset_y) {
-            _trans.y = temp.y;
-            _item_trans.y = arm_temp.y;
+            _pos.y = temp.y;
+            _item_pos.y = arm_temp.y;
         }
 
         if (!rob_chr_adj->offset_z) {
-            _trans.z = temp.z;
-            _item_trans.z = arm_temp.z;
+            _pos.z = temp.z;
+            _item_pos.z = arm_temp.z;
         }
     }
 
     if (pos_adjust) {
-        _trans = rob_chr_adj->pos_adjust + _trans;
-        _item_trans = rob_chr_adj->pos_adjust + _item_trans;
+        _pos = rob_chr_adj->pos_adjust + _pos;
+        _item_pos = rob_chr_adj->pos_adjust + _item_pos;
     }
 
-    rob_chr_adj->trans = _trans - trans * scale;
-    rob_chr_itm_adj_x->trans = _item_trans - trans * item_scale;
+    rob_chr_adj->pos = _pos - pos * scale;
+    rob_chr_itm_adj_x->pos = _item_pos - pos * item_scale;
 }
 
 HOOK(void, FASTCALL, rob_chara_set_data_adjust_mat, 0x00000001405050D0,
     rob_chara* rob_chr, rob_chara_adjust_data* rob_chr_adj, bool pos_adjust) {
     mat4 mat = *rob_chara_bone_data_get_mats_mat((size_t)rob_chr->bone_data, ROB_BONE_N_HARA_CP);
 
-    vec3 trans;
+    vec3 pos;
     mat4_transpose(&mat, &mat);
-    mat4_get_translation(&mat, &trans);
+    mat4_get_translation(&mat, &pos);
 
     rob_chara_item_adjust_x* item_adjust = &rob_chara_item_adjust_x_array[rob_chr->chara_id];
 
-    vec3* global_trans = 0;
-    if (rob_chr_adj->get_global_trans) {
-        static vec3* (FASTCALL * rob_chara_bone_data_get_global_trans)(size_t rob_bone_data)
+    vec3* global_position = 0;
+    if (rob_chr_adj->get_global_position) {
+        static vec3* (FASTCALL * rob_chara_bone_data_get_global_position)(size_t rob_bone_data)
             = (vec3 * (FASTCALL*)(size_t rob_bone_data))0x0000000140419360;
 
-        global_trans = rob_chara_bone_data_get_global_trans((size_t)rob_chr->bone_data);
+        global_position = rob_chara_bone_data_get_global_position((size_t)rob_chr->bone_data);
     }
-    rob_chara_data_adjuct_set_trans(rob_chr_adj, item_adjust, trans, pos_adjust, global_trans);
+    rob_chara_data_adjuct_set_pos(rob_chr_adj, item_adjust, pos, pos_adjust, global_position);
 
     float_t scale = rob_chr_adj->scale;
     mat4_scale(scale, scale, scale, &rob_chr_adj->mat);
-    mat4_set_translation(&rob_chr_adj->mat, &rob_chr_adj->trans);
+    mat4_set_translation(&rob_chr_adj->mat, &rob_chr_adj->pos);
     mat4_transpose(&rob_chr_adj->mat, &rob_chr_adj->mat);
 
     float_t item_scale = item_adjust->scale;
     mat4_scale(item_scale, item_scale, item_scale, &item_adjust->mat);
-    mat4_set_translation(&item_adjust->mat, &item_adjust->trans);
+    mat4_set_translation(&item_adjust->mat, &item_adjust->pos);
     mat4_transpose(&item_adjust->mat, &item_adjust->mat);
 }
 
@@ -908,7 +908,7 @@ void rob_chara_age_age_object::disp(size_t chara_index,
 
     std::pair<float_t, int32_t> v44[10];
     for (int32_t i = 0; i < disp_count; i++) {
-        v44[i].first = vec3::dot(trans[i], a5);
+        v44[i].first = vec3::dot(pos[i], a5);
         v44[i].second = i;
     }
 
@@ -961,7 +961,7 @@ rob_chara_item_adjust_x::rob_chara_item_adjust_x() : scale() {
 }
 
 void rob_chara_item_adjust_x::reset() {
-    mat4_translate(&trans, &mat);
+    mat4_translate(&pos, &mat);
     mat4_transpose(&mat, &mat);
     scale = 1.0f;
 }

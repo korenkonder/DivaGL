@@ -250,95 +250,95 @@ enum mot_bone_index {
 };
 
 enum mothead_data_type {
-    MOTHEAD_DATA_TYPE_0 = 0x00,
-    MOTHEAD_DATA_TYPE_1 = 0x01,
-    MOTHEAD_DATA_TYPE_2 = 0x02,
-    MOTHEAD_DATA_TYPE_3 = 0x03,
-    MOTHEAD_DATA_TYPE_4 = 0x04,
-    MOTHEAD_DATA_TYPE_5 = 0x05,
-    MOTHEAD_DATA_TYPE_6 = 0x06,
-    MOTHEAD_DATA_TYPE_7 = 0x07,
-    MOTHEAD_DATA_TYPE_8 = 0x08,
-    MOTHEAD_DATA_TYPE_9 = 0x09,
-    MOTHEAD_DATA_TYPE_10 = 0x0A,
-    MOTHEAD_DATA_TYPE_11 = 0x0B,
-    MOTHEAD_DATA_TYPE_12 = 0x0C,
-    MOTHEAD_DATA_TYPE_13 = 0x0D,
-    MOTHEAD_DATA_TYPE_14 = 0x0E,
-    MOTHEAD_DATA_TYPE_15 = 0x0F,
-    MOTHEAD_DATA_TYPE_16 = 0x10,
-    MOTHEAD_DATA_TYPE_17 = 0x11,
-    MOTHEAD_DATA_TYPE_18 = 0x12,
-    MOTHEAD_DATA_TYPE_19 = 0x13,
-    MOTHEAD_DATA_TYPE_20 = 0x14,
-    MOTHEAD_DATA_TYPE_21 = 0x15,
-    MOTHEAD_DATA_TYPE_22 = 0x16,
-    MOTHEAD_DATA_TYPE_23 = 0x17,
-    MOTHEAD_DATA_TYPE_24 = 0x18,
-    MOTHEAD_DATA_TYPE_25 = 0x19,
-    MOTHEAD_DATA_TYPE_26 = 0x1A,
-    MOTHEAD_DATA_TYPE_27 = 0x1B,
-    MOTHEAD_DATA_TYPE_28 = 0x1C,
-    MOTHEAD_DATA_TYPE_29 = 0x1D,
-    MOTHEAD_DATA_TYPE_30 = 0x1E,
-    MOTHEAD_DATA_TYPE_31 = 0x1F,
-    MOTHEAD_DATA_TYPE_32 = 0x20,
-    MOTHEAD_DATA_TYPE_33 = 0x21,
-    MOTHEAD_DATA_TYPE_34 = 0x22,
-    MOTHEAD_DATA_TYPE_35 = 0x23,
-    MOTHEAD_DATA_TYPE_36 = 0x24,
-    MOTHEAD_DATA_TYPE_37 = 0x25,
-    MOTHEAD_DATA_TYPE_38 = 0x26,
-    MOTHEAD_DATA_TYPE_39 = 0x27,
-    MOTHEAD_DATA_TYPE_40 = 0x28,
-    MOTHEAD_DATA_TYPE_41 = 0x29,
-    MOTHEAD_DATA_TYPE_42 = 0x2A,
-    MOTHEAD_DATA_TYPE_43 = 0x2B,
-    MOTHEAD_DATA_TYPE_44 = 0x2C,
-    MOTHEAD_DATA_TYPE_45 = 0x2D,
-    MOTHEAD_DATA_TYPE_46 = 0x2E,
-    MOTHEAD_DATA_TYPE_47 = 0x2F,
-    MOTHEAD_DATA_TYPE_48 = 0x30,
-    MOTHEAD_DATA_TYPE_49 = 0x31,
-    MOTHEAD_DATA_SET_FACE_MOTION_ID = 0x32,
-    MOTHEAD_DATA_TYPE_51 = 0x33,
-    MOTHEAD_DATA_TYPE_52 = 0x34,
-    MOTHEAD_DATA_SET_FACE_MOTTBL_MOTION = 0x35,
-    MOTHEAD_DATA_SET_HAND_R_MOTTBL_MOTION = 0x36,
-    MOTHEAD_DATA_SET_HAND_L_MOTTBL_MOTION = 0x37,
-    MOTHEAD_DATA_SET_MOUTH_MOTTBL_MOTION = 0x38,
-    MOTHEAD_DATA_SET_EYES_MOTTBL_MOTION = 0x39,
-    MOTHEAD_DATA_SET_EYELID_MOTTBL_MOTION = 0x3A,
-    MOTHEAD_DATA_SET_ROB_CHARA_HEAD_OBJECT = 0x3B,
-    MOTHEAD_DATA_TYPE_60 = 0x3C,
+    MOTHEAD_DATA_TYPE_0                      = 0x00,
+    MOTHEAD_DATA_TYPE_1                      = 0x01,
+    MOTHEAD_DATA_TYPE_2                      = 0x02,
+    MOTHEAD_DATA_TYPE_3                      = 0x03,
+    MOTHEAD_DATA_TYPE_4                      = 0x04,
+    MOTHEAD_DATA_TYPE_5                      = 0x05,
+    MOTHEAD_DATA_TYPE_6                      = 0x06,
+    MOTHEAD_DATA_TYPE_7                      = 0x07,
+    MOTHEAD_DATA_TYPE_8                      = 0x08,
+    MOTHEAD_DATA_TYPE_9                      = 0x09,
+    MOTHEAD_DATA_TYPE_10                     = 0x0A,
+    MOTHEAD_DATA_TYPE_11                     = 0x0B,
+    MOTHEAD_DATA_TYPE_12                     = 0x0C,
+    MOTHEAD_DATA_TYPE_13                     = 0x0D,
+    MOTHEAD_DATA_TYPE_14                     = 0x0E,
+    MOTHEAD_DATA_TYPE_15                     = 0x0F,
+    MOTHEAD_DATA_TYPE_16                     = 0x10,
+    MOTHEAD_DATA_TYPE_17                     = 0x11,
+    MOTHEAD_DATA_TYPE_18                     = 0x12,
+    MOTHEAD_DATA_TYPE_19                     = 0x13,
+    MOTHEAD_DATA_TYPE_20                     = 0x14,
+    MOTHEAD_DATA_TYPE_21                     = 0x15,
+    MOTHEAD_DATA_TYPE_22                     = 0x16,
+    MOTHEAD_DATA_TYPE_23                     = 0x17,
+    MOTHEAD_DATA_TYPE_24                     = 0x18,
+    MOTHEAD_DATA_TYPE_25                     = 0x19,
+    MOTHEAD_DATA_TYPE_26                     = 0x1A,
+    MOTHEAD_DATA_TYPE_27                     = 0x1B,
+    MOTHEAD_DATA_TYPE_28                     = 0x1C,
+    MOTHEAD_DATA_TYPE_29                     = 0x1D,
+    MOTHEAD_DATA_TYPE_30                     = 0x1E,
+    MOTHEAD_DATA_TYPE_31                     = 0x1F,
+    MOTHEAD_DATA_TYPE_32                     = 0x20,
+    MOTHEAD_DATA_TYPE_33                     = 0x21,
+    MOTHEAD_DATA_TYPE_34                     = 0x22,
+    MOTHEAD_DATA_TYPE_35                     = 0x23,
+    MOTHEAD_DATA_TYPE_36                     = 0x24,
+    MOTHEAD_DATA_TYPE_37                     = 0x25,
+    MOTHEAD_DATA_TYPE_38                     = 0x26,
+    MOTHEAD_DATA_TYPE_39                     = 0x27,
+    MOTHEAD_DATA_TYPE_40                     = 0x28,
+    MOTHEAD_DATA_TYPE_41                     = 0x29,
+    MOTHEAD_DATA_TYPE_42                     = 0x2A,
+    MOTHEAD_DATA_TYPE_43                     = 0x2B,
+    MOTHEAD_DATA_TYPE_44                     = 0x2C,
+    MOTHEAD_DATA_TYPE_45                     = 0x2D,
+    MOTHEAD_DATA_TYPE_46                     = 0x2E,
+    MOTHEAD_DATA_TYPE_47                     = 0x2F,
+    MOTHEAD_DATA_TYPE_48                     = 0x30,
+    MOTHEAD_DATA_TYPE_49                     = 0x31,
+    MOTHEAD_DATA_SET_FACE_MOTION_ID          = 0x32,
+    MOTHEAD_DATA_TYPE_51                     = 0x33,
+    MOTHEAD_DATA_TYPE_52                     = 0x34,
+    MOTHEAD_DATA_SET_FACE_MOTTBL_MOTION      = 0x35,
+    MOTHEAD_DATA_SET_HAND_R_MOTTBL_MOTION    = 0x36,
+    MOTHEAD_DATA_SET_HAND_L_MOTTBL_MOTION    = 0x37,
+    MOTHEAD_DATA_SET_MOUTH_MOTTBL_MOTION     = 0x38,
+    MOTHEAD_DATA_SET_EYES_MOTTBL_MOTION      = 0x39,
+    MOTHEAD_DATA_SET_EYELID_MOTTBL_MOTION    = 0x3A,
+    MOTHEAD_DATA_SET_ROB_CHARA_HEAD_OBJECT   = 0x3B,
+    MOTHEAD_DATA_TYPE_60                     = 0x3C,
     MOTHEAD_DATA_SET_EYELID_MOTION_FROM_FACE = 0x3D,
-    MOTHEAD_DATA_ROB_PARTS_ADJUST = 0x3E,
-    MOTHEAD_DATA_TYPE_63 = 0x3F,
-    MOTHEAD_DATA_WIND_RESET = 0x40,
-    MOTHEAD_DATA_OSAGE_RESET = 0x41,
-    MOTHEAD_DATA_OSAGE_STEP = 0x42,
-    MOTHEAD_DATA_SLEEVE_ADJUST = 0x43,
-    MOTHEAD_DATA_TYPE_68 = 0x44,
-    MOTHEAD_DATA_TYPE_69 = 0x45,
-    MOTHEAD_DATA_TYPE_70 = 0x46,
-    MOTHEAD_DATA_OSAGE_MOVE_CANCEL = 0x47,
-    MOTHEAD_DATA_TYPE_72 = 0x48,
-    MOTHEAD_DATA_ROB_HAND_ADJUST = 0x49,
-    MOTHEAD_DATA_DISABLE_COLLISION = 0x4A,
-    MOTHEAD_DATA_ROB_ADJUST_GLOBAL = 0x4B,
-    MOTHEAD_DATA_ROB_ARM_ADJUST = 0x4C,
-    MOTHEAD_DATA_DISABLE_EYE_MOTION = 0x4D,
-    MOTHEAD_DATA_TYPE_78 = 0x4E,
-    MOTHEAD_DATA_ROB_CHARA_COLI_RING = 0x4F,
-    MOTHEAD_DATA_ADJUST_GET_GLOBAL_TRANS = 0x50,
-    MOTHEAD_DATA_MAX = 0x51,
+    MOTHEAD_DATA_ROB_PARTS_ADJUST            = 0x3E,
+    MOTHEAD_DATA_TYPE_63                     = 0x3F,
+    MOTHEAD_DATA_WIND_RESET                  = 0x40,
+    MOTHEAD_DATA_OSAGE_RESET                 = 0x41,
+    MOTHEAD_DATA_OSAGE_STEP                  = 0x42,
+    MOTHEAD_DATA_SLEEVE_ADJUST               = 0x43,
+    MOTHEAD_DATA_TYPE_68                     = 0x44,
+    MOTHEAD_DATA_TYPE_69                     = 0x45,
+    MOTHEAD_DATA_TYPE_70                     = 0x46,
+    MOTHEAD_DATA_OSAGE_MOVE_CANCEL           = 0x47,
+    MOTHEAD_DATA_TYPE_72                     = 0x48,
+    MOTHEAD_DATA_ROB_HAND_ADJUST             = 0x49,
+    MOTHEAD_DATA_DISABLE_COLLISION           = 0x4A,
+    MOTHEAD_DATA_ROB_ADJUST_GLOBAL           = 0x4B,
+    MOTHEAD_DATA_ROB_ARM_ADJUST              = 0x4C,
+    MOTHEAD_DATA_DISABLE_EYE_MOTION          = 0x4D,
+    MOTHEAD_DATA_TYPE_78                     = 0x4E,
+    MOTHEAD_DATA_ROB_CHARA_COLI_RING         = 0x4F,
+    MOTHEAD_DATA_ADJUST_GET_GLOBAL_POSITION  = 0x50,
+    MOTHEAD_DATA_MAX                         = 0x51,
 };
 
 enum MotionBlendType {
-    MOTION_BLEND_NONE = -1,
-    MOTION_BLEND = 0x00,
-    MOTION_BLEND_FREEZE = 0x01,
-    MOTION_BLEND_CROSS = 0x02,
+    MOTION_BLEND_NONE    = -1,
+    MOTION_BLEND         = 0x00,
+    MOTION_BLEND_FREEZE  = 0x01,
+    MOTION_BLEND_CROSS   = 0x02,
     MOTION_BLEND_COMBINE = 0x03,
 };
 
@@ -948,8 +948,8 @@ struct skin_param_osage_node {
 static_assert(sizeof(skin_param_osage_node) == 0x1C, "\"skin_param_osage_node\" struct should have a size of 0x1C");
 
 struct RobOsageNodeResetData {
-    vec3 trans;
-    vec3 trans_diff;
+    vec3 pos;
+    vec3 delta_pos;
     vec3 rotation;
     float_t length;
 };
@@ -1002,19 +1002,19 @@ static_assert(sizeof(opd_node_data_pair) == 0x20, "\"opd_node_data_pair\" struct
 
 struct RobOsageNode {
     float_t length;
-    vec3 trans;
-    vec3 trans_orig;
-    vec3 trans_diff;
-    vec3 field_28;
+    vec3 pos;
+    vec3 fixed_pos;
+    vec3 delta_pos;
+    vec3 vel;
     float_t child_length;
     bone_node* bone_node_ptr;
     mat4* bone_node_mat;
     mat4 mat;
     RobOsageNode* sibling_node;
     float_t max_distance;
-    vec3 field_94;
+    vec3 rel_pos;
     RobOsageNodeResetData reset_data;
-    float_t field_C8;
+    float_t hit;
     float_t friction;
     vec3 external_force;
     float_t force;
@@ -1139,16 +1139,16 @@ struct skin_param_file_data;
 
 struct CLOTHNode {
     uint32_t flags;
-    vec3 trans;
-    vec3 trans_orig;
-    vec3 field_1C;
-    vec3 trans_diff;
+    vec3 pos;
+    vec3 fixed_pos;
+    vec3 prev_pos;
+    vec3 delta_pos;
     vec3 normal;
     vec3 tangent;
     vec3 binormal;
     float_t tangent_sign;
     vec2 texcoord;
-    vec3 field_64;
+    vec3 direction;
     float_t dist_up;
     float_t dist_down;
     float_t dist_right;
@@ -1188,7 +1188,7 @@ struct CLOTH {
 };
 
 struct RobClothRoot {
-    vec3 trans;
+    vec3 pos;
     vec3 normal;
     vec4 tangent;
     bone_node* node[4];
@@ -1681,8 +1681,8 @@ struct rob_chara_adjust_data {
     bool offset_x;
     bool offset_y;
     bool offset_z;
-    bool get_global_trans;
-    vec3 trans;
+    bool get_global_position;
+    vec3 pos;
     mat4 mat;
     float_t left_hand_scale;
     float_t right_hand_scale;
