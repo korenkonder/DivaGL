@@ -1163,32 +1163,26 @@ static const uniform_name TRANSPARENCY_uniform[] = {
 };
 
 struct glass_eye_struct {
-    vec4 field_0;
-    vec4 field_10;
-    float_t field_20;
-    float_t field_24;
-    float_t field_28;
-    float_t field_2C;
-    vec3 field_30;
-    vec3 field_3C;
-    vec3 field_48;
-    float_t field_54;
-    vec3 field_58;
-    float_t field_64;
-    vec3 field_68;
-    vec3 field_74;
-    vec3 field_80;
-    float_t field_8C;
-    vec3 field_90;
+    const vec4 tex_model_param;
+    const vec4 eb_tex_model_param;
+    const float_t n_1;
+    const float_t n_2;
+    const float_t scale_const;
+    const float_t trsmit_coef_const;
+    const vec3 ellipsoid_radius_const;
+    const vec3 iris_radius_const;
+    const vec3 pupil_radius_const;
+    const float_t lens_depth_const;
+    const vec3 eb_radius_const;
+    float_t trsmit_coef;
+    vec3 ellipsoid_radius;
+    vec3 iris_radius;
+    vec3 pupil_radius;
+    float_t lens_depth;
+    vec3 eb_radius;
     uint32_t frame;
-    vec4 field_A0;
-    bool field_B0;
-    bool field_B1;
-    bool field_B2;
-    bool field_B3;
-    int32_t field_B4;
-    int32_t field_B8;
-    int32_t field_BC;
+    vec4 tex_offset;
+    bool eye_twitch;
 };
 
 #define shader_table_struct(n) \
@@ -1376,13 +1370,7 @@ static glass_eye_struct glass_eye = {
     { 0.0f, 0.0f, 0.0f },
     0,
     { 0.0f, 0.0f, 0.0f, 0.0f },
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    false,
 };
 
 int32_t shader_ft_get_index_by_name(const char* name) {
@@ -1392,15 +1380,16 @@ int32_t shader_ft_get_index_by_name(const char* name) {
 }
 
 static void glass_eye_calc(glass_eye_struct* glass_eye) {
-    float_t v2 = glass_eye->field_28;
-    glass_eye->field_64 = glass_eye->field_2C / v2;
-    glass_eye->field_90 = glass_eye->field_58;
-    glass_eye->field_68 = glass_eye->field_30 * v2;
-    glass_eye->field_74 = glass_eye->field_3C * v2;
-    glass_eye->field_80 = glass_eye->field_48 * v2;
-    glass_eye->field_8C = glass_eye->field_54 * v2;
-    if (!glass_eye->field_B0) {
-        glass_eye->field_A0 = 0.0f;
+    const float_t scale_const = glass_eye->scale_const;
+    glass_eye->trsmit_coef = glass_eye->trsmit_coef_const / scale_const;
+    glass_eye->eb_radius = glass_eye->eb_radius_const;
+    glass_eye->ellipsoid_radius = glass_eye->ellipsoid_radius_const * scale_const;
+    glass_eye->iris_radius = glass_eye->iris_radius_const * scale_const;
+    glass_eye->pupil_radius = glass_eye->pupil_radius_const * scale_const;
+    glass_eye->lens_depth = glass_eye->lens_depth_const * scale_const;
+
+    if (!glass_eye->eye_twitch) {
+        glass_eye->tex_offset = 0.0f;
         return;
     }
 
@@ -1413,68 +1402,68 @@ static void glass_eye_calc(glass_eye_struct* glass_eye) {
     glass_eye->frame = frame;
     if (frame == (frame / 90) * 90) {
         float_t(FASTCALL * rand_state_array_get_float)(int32_t index) = (float_t(FASTCALL*)(int32_t index))0x00000001404FFE60;
-        glass_eye->field_A0.x = (rand_state_array_get_float(0) - 0.5f) * 0.015f;
-        glass_eye->field_A0.y = (rand_state_array_get_float(0) - 0.5f) * 0.015f;
+        glass_eye->tex_offset.x = (rand_state_array_get_float(0) - 0.5f) * 0.015f;
+        glass_eye->tex_offset.y = (rand_state_array_get_float(0) - 0.5f) * 0.015f;
     }
 
-    float_t v17 = (float_t)(uint8_t)frame * (float_t)(M_PI * (1.0 / 128.0));
-    float_t v19 = sinf(sinf(v17 * 27.0f) + v17 * 2.0f);
-    float_t v20 = sinf(v17 * 23.0f);
-    glass_eye->field_A0.z = (v19 + v20) * 0.5f * 0.01f;
-    glass_eye->field_A0.w = 0.0f;
+    float_t phase = (float_t)(uint8_t)frame * (float_t)(M_PI * (1.0 / 128.0));
+    float_t main_wobble = sinf(sinf(phase * 27.0f) + phase * 2.0f);
+    float_t secondary_wobble = sinf(phase * 23.0f);
+    glass_eye->tex_offset.z = (main_wobble + secondary_wobble) * 0.5f * 0.01f;
+    glass_eye->tex_offset.w = 0.0f;
 }
 
 static void glass_eye_set(glass_eye_struct* glass_eye) {
     glass_eye_batch_shader_data glass_eye_batch = {};
 
     vec4 temp;
-    *(vec3*)&temp = glass_eye->field_68 * glass_eye->field_68;
+    *(vec3*)&temp = glass_eye->ellipsoid_radius * glass_eye->ellipsoid_radius;
     temp.w = temp.z;
     *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
     glass_eye_batch.g_ellipsoid_radius = temp;
 
-    *(vec3*)&temp = glass_eye->field_68;
+    *(vec3*)&temp = glass_eye->ellipsoid_radius;
     temp.w = 1.0f;
     glass_eye_batch.g_ellipsoid_scale = temp;
 
-    glass_eye_batch.g_tex_model_param = glass_eye->field_0;
-    glass_eye_batch.g_tex_offset = glass_eye->field_A0;
+    glass_eye_batch.g_tex_model_param = glass_eye->tex_model_param;
+    glass_eye_batch.g_tex_offset = glass_eye->tex_offset;
 
-    *(vec3*)&temp = glass_eye->field_90 * glass_eye->field_90;
+    *(vec3*)&temp = glass_eye->eb_radius * glass_eye->eb_radius;
     temp.w = temp.z;
     *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
     glass_eye_batch.g_eb_radius = temp;
 
-    glass_eye_batch.g_eb_tex_model_param = glass_eye->field_10;
+    glass_eye_batch.g_eb_tex_model_param = glass_eye->eb_tex_model_param;
 
-    float_t v2 = (glass_eye->field_20 - glass_eye->field_24) / (glass_eye->field_20 + glass_eye->field_24);
-    v2 *= v2;
-    glass_eye_batch.g_fresnel = { 1.0f - v2, v2, 0.0f, 0.0f };
+    float_t r_0 = (glass_eye->n_1 - glass_eye->n_2) / (glass_eye->n_1 + glass_eye->n_2);
+    r_0 *= r_0;
+    glass_eye_batch.g_fresnel = { 1.0f - r_0, r_0, 0.0f, 0.0f };
 
-    float_t v3 = (glass_eye->field_20 * glass_eye->field_20) / (glass_eye->field_24 * glass_eye->field_24);
-    glass_eye_batch.g_refract1 = { v3, 1.0f - v3, glass_eye->field_20 / glass_eye->field_24, 0.0f };
+    float_t v3 = (glass_eye->n_1 * glass_eye->n_1) / (glass_eye->n_2 * glass_eye->n_2);
+    glass_eye_batch.g_refract1 = { v3, 1.0f - v3, glass_eye->n_1 / glass_eye->n_2, 0.0f };
 
-    float_t v4 = (glass_eye->field_24 * glass_eye->field_24) / (glass_eye->field_20 * glass_eye->field_20);
-    glass_eye_batch.g_refract2 = { v4, 1.0f - v4, glass_eye->field_24 / glass_eye->field_20, 0.0f };
+    float_t v4 = (glass_eye->n_2 * glass_eye->n_2) / (glass_eye->n_1 * glass_eye->n_1);
+    glass_eye_batch.g_refract2 = { v4, 1.0f - v4, glass_eye->n_2 / glass_eye->n_1, 0.0f };
 
-    *(vec3*)&temp = glass_eye->field_74 * glass_eye->field_74;
+    *(vec3*)&temp = glass_eye->iris_radius * glass_eye->iris_radius;
     temp.w = -1.0f;
     *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
     glass_eye_batch.g_iris_radius = temp;
 
-    *(vec3*)&temp = glass_eye->field_68 * glass_eye->field_68;
+    *(vec3*)&temp = glass_eye->ellipsoid_radius * glass_eye->ellipsoid_radius;
     temp.w = -1.0f;
     *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
     glass_eye_batch.g_cornea_radius = temp;
 
-    *(vec3*)&temp = glass_eye->field_80 * glass_eye->field_80;
+    *(vec3*)&temp = glass_eye->pupil_radius * glass_eye->pupil_radius;
     temp.w = -1.0f;
     *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
     glass_eye_batch.g_pupil_radius = temp;
 
-    *(vec2*)&temp = *(vec2*)&glass_eye->field_0 * *(vec2*)&glass_eye->field_74;
-    temp.z = glass_eye->field_64 * 1.442695f;
-    temp.w = glass_eye->field_8C;
+    *(vec2*)&temp = *(vec2*)&glass_eye->tex_model_param * *(vec2*)&glass_eye->iris_radius;
+    temp.z = glass_eye->trsmit_coef * 1.442695f;
+    temp.w = glass_eye->lens_depth;
     *(vec2*)&temp = vec2::rcp(*(vec2*)&temp);
     glass_eye_batch.g_tex_scale = temp;
 
