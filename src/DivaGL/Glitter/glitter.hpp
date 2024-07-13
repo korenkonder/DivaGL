@@ -1358,7 +1358,6 @@ namespace Glitter {
         size_t GetCtrlCount(ParticleType ptcl_type);
         size_t GetDispCount(ParticleType ptcl_type);
         float_t GeFrameLifeTime(int32_t* life_time, size_t id);
-        void GetStartEndFrame(int32_t* start_frame, int32_t* end_frame);
         bool FreeEffect(uint32_t effect_hash, bool free);
         bool FreeEffectByID(size_t id, bool free);
         bool HasEnded(bool a2);

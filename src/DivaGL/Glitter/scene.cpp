@@ -44,7 +44,7 @@ namespace Glitter {
 
     bool SceneX::Copy(EffectInstX* eff_inst, Glitter::SceneX* dst) {
         if (!(flags & SCENE_FLAG_3))
-            return flags;
+            return false;
 
         for (SceneEffectX& i : effects)
             if (i.ptr && i.disp && i.ptr->id == eff_inst->id) {
@@ -161,34 +161,6 @@ namespace Glitter {
                 break;
             }
         return frame;
-    }
-
-    void SceneX::GetStartEndFrame(int32_t* start_frame, int32_t* end_frame) {
-        for (SceneEffectX& i : effects) {
-            if (!i.ptr || !i.disp)
-                continue;
-
-            EffectInstX* effect = i.ptr;
-            if (effect) {
-                int32_t life_time = effect->data.life_time;
-                if (start_frame && effect->data.appear_time < *start_frame)
-                    *start_frame = effect->data.appear_time;
-
-                for (EmitterInstX*& j : effect->emitters) {
-                    if (!j)
-                        continue;
-
-                    EmitterInstX* emitter = j;
-                    if (life_time < emitter->data.life_time)
-                        life_time = emitter->data.life_time;
-                }
-
-                life_time += effect->data.appear_time;
-
-                if (end_frame && life_time > *end_frame)
-                    *end_frame = life_time;
-            }
-        }
     }
 
     bool SceneX::FreeEffect(uint32_t effect_hash, bool free) {
