@@ -583,11 +583,11 @@ static_assert(sizeof(obj_vertex_buffer) == 0x10, "\"obj_vertex_buffer\" struct s
 #endif
 
 extern void (FASTCALL* objset_info_storage_unload_set)(int32_t set);
-extern obj_mesh* (FASTCALL* object_info_get_mesh_by_index)(object_info object, int32_t mesh_index);
-extern int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(object_info object, const char* mesh_name);
+extern obj_mesh* (FASTCALL* objset_info_storage_get_obj_mesh_by_index)(object_info obj_info, int32_t mesh_index);
+extern int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(object_info obj_info, const char* mesh_name);
 extern const char* (FASTCALL* object_database_get_object_name)(object_info obj_info);
 extern uint32_t(FASTCALL* object_database_get_object_info)(const char* name);
-extern obj* (FASTCALL* objset_info_storage_get_object)(object_info obj_info);
+extern obj* (FASTCALL* objset_info_storage_get_obj)(object_info obj_info);
 extern obj_mesh_index_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_index_buffer)(object_info obj_info, int32_t a2);
 extern obj_skin* (FASTCALL* objset_info_storage_get_obj_skin)(object_info obj_info);
 extern obj_mesh_vertex_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_vertex_buffer)(object_info obj_info, int32_t a2);

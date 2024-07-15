@@ -2770,7 +2770,7 @@ namespace mdl {
         if (obj_info.id == (uint16_t)-1 && obj_info.set_id == (uint16_t)-1)
             return false;
 
-        ::obj* object = objset_info_storage_get_object(obj_info);
+        ::obj* object = objset_info_storage_get_obj(obj_info);
         if (!object)
             return false;
 
@@ -2781,7 +2781,7 @@ namespace mdl {
         ::obj* obj_morph = 0;
         obj_mesh_vertex_buffer* obj_morph_vertex_buffer = 0;
         if (morph.object.set_id != (uint16_t)-1) {
-            obj_morph = objset_info_storage_get_object(morph.object);
+            obj_morph = objset_info_storage_get_obj(morph.object);
             obj_morph_vertex_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
         }
 
