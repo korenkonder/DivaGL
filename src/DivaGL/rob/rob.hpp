@@ -880,7 +880,7 @@ static_assert(sizeof(rob_chara_pv_data) == 0xC4, "\"rob_chara_pv_data\" struct s
 
 struct rob_chara_item_equip_object;
 
-struct ExNodeBlock;
+class ExNodeBlock;
 
 struct ExNodeBlock_vtbl {
     ExNodeBlock* (FASTCALL* Dispose)(ExNodeBlock* _this, uint8_t);
@@ -899,7 +899,8 @@ struct ExNodeBlock_vtbl {
 
 static_assert(sizeof(ExNodeBlock_vtbl) == 0x60, "\"ExNodeBlock_vtbl\" struct should have a size of 0x60");
 
-struct ExNodeBlock {
+class ExNodeBlock {
+public:
     ExNodeBlock_vtbl* __vftable;
     bone_node* bone_node_ptr;
     ExNodeType type;
@@ -1169,7 +1170,28 @@ struct struc_341 {
 
 static_assert(sizeof(struc_341) == 0x18, "\"struc_341\" struct should have a size of 0x18");
 
-struct CLOTH {
+class CLOTH;
+
+struct CLOTH_vtbl {
+    CLOTH* (FASTCALL* Dispose)(CLOTH* _this, uint8_t);
+    void(FASTCALL* Field_8)(CLOTH* _this);
+    void(FASTCALL* Field_10)(CLOTH* _this);
+    void(FASTCALL* Field_18)(CLOTH* _this, int32_t stage, bool disable_external_force);
+    void(FASTCALL* Field_20)(CLOTH* _this);
+    void(FASTCALL* SetOsagePlayData)(CLOTH* _this);
+    void(FASTCALL* Disp)(CLOTH* _this);
+    void(FASTCALL* Reset)(CLOTH* _this);
+    void(FASTCALL* Field_40)(CLOTH* _this);
+    void(FASTCALL* Field_48)(CLOTH* _this);
+    void(FASTCALL* Field_50)(CLOTH* _this);
+    void(FASTCALL* Field_58)(CLOTH* _this);
+};
+
+static_assert(sizeof(CLOTH_vtbl) == 0x60, "\"CLOTH_vtbl\" struct should have a size of 0x60");
+
+class CLOTH {
+public:
+    CLOTH_vtbl* __vftable;
     int32_t field_8;
     size_t root_count;
     size_t nodes_count;
@@ -1187,6 +1209,8 @@ struct CLOTH {
     mat4* mats;
 };
 
+static_assert(sizeof(CLOTH) == 0x1D40, "\"CLOTH\" struct should have a size of 0x1D40");
+
 struct RobClothRoot {
     vec3 pos;
     vec3 normal;
@@ -1200,11 +1224,16 @@ struct RobClothRoot {
     mat4 field_118;
 };
 
+static_assert(sizeof(RobClothRoot) == 0x158, "\"RobClothRoot\" struct should have a size of 0x158");
+
 struct RobClothSubMeshArray {
     obj_sub_mesh arr[4];
 };
 
-struct RobCloth : public CLOTH {
+static_assert(sizeof(RobClothSubMeshArray) == 0x1C0, "\"RobClothSubMeshArray\" struct should have a size of 0x1C0");
+
+class RobCloth : public CLOTH {
+public:
     prj::vector<RobClothRoot> root;
     rob_chara_item_equip_object* itm_eq_obj;
     struct obj_skin_block_cloth_root* cls_root;
@@ -1213,11 +1242,18 @@ struct RobCloth : public CLOTH {
     bool osage_reset;
     obj_mesh mesh[2];
     RobClothSubMeshArray submesh[2];
+    obj_axis_aligned_bounding_box axis_aligned_bounding_box;
+#if SHARED_OBJECT_BUFFER
+    obj_mesh_vertex_buffer_aft vertex_buffer[2];
+#else
     obj_mesh_vertex_buffer vertex_buffer[2];
+#endif
     obj_mesh_index_buffer index_buffer[2];
     prj::map<prj::pair<int32_t, int32_t>, prj::list<RobOsageNodeResetData>> motion_reset_data;
     prj::list<RobOsageNodeResetData>* reset_data_list;
 };
+
+static_assert(sizeof(RobCloth) == 0x23C0, "\"RobCloth\" struct should have a size of 0x23C0");
 
 class ExClothBlock : public ExNodeBlock {
 public:
@@ -1227,16 +1263,22 @@ public:
     size_t index;
 };
 
+static_assert(sizeof(ExClothBlock) == 0x2438, "\"ExClothBlock\" struct should have a size of 0x2438");
+
 struct skin_param_file_data {
     skin_param skin_param;
     prj::vector<RobOsageNodeData> nodes_data;
     bool field_88;
 };
 
+static_assert(sizeof(skin_param_file_data) == 0x90, "\"skin_param_file_data\" struct should have a size of 0x90");
+
 struct osage_setting_osg_cat {
     rob_osage_parts parts;
     size_t exf;
 };
+
+static_assert(sizeof(osage_setting_osg_cat) == 0x10, "\"osage_setting_osg_cat\" struct should have a size of 0x10");
 
 struct RobOsage {
     skin_param* skin_param_ptr;
@@ -1278,6 +1320,8 @@ struct RobOsage {
     void SetRot(float_t rot_y, float_t rot_z);
 };
 
+static_assert(sizeof(RobOsage) == 0x1F88, "\"RobOsage\" struct should have a size of 0x1F88");
+
 class ExOsageBlock : public ExNodeBlock {
 public:
     size_t index;
@@ -1286,6 +1330,8 @@ public:
     int32_t field_1FF8;
     float_t step;
 };
+
+static_assert(sizeof(ExOsageBlock) == 0x2000, "\"ExOsageBlock\" struct should have a size of 0x2000");
 
 struct rob_chara_item_equip;
 

@@ -73,6 +73,8 @@ public:
 
     int32_t chara_id;
     int32_t load_chara_id;
+    chara_index chara_index;
+    int32_t cos_id;
     ::item_id item_id;
     object_info obj_info;
     size_t osage_index;
@@ -102,21 +104,25 @@ public:
     virtual void basic() override;
 
     void disp_coli();
+    void disp_coli_cls_list(ExNodeBlock* ex_node, SkinParam::CollisionParam* selected_cls_param);
     void disp_line();
+    void disp_line_cls_param(const mat4& transform, const vec3& pos);
 
     ExClothBlock* get_cloth_block(rob_chara_item_equip_object* itm_eq_obj) const;
-    rob_chara_item_equip_object* get_item_equip_object() const;
-    ExOsageBlock* get_osage_block(rob_chara_item_equip_object* itm_eq_obj) const;
-    prj::vector<SkinParam::CollisionParam>* get_cls_list(ExClothBlock* cls) const;
-    prj::vector<SkinParam::CollisionParam>* get_cls_list(ExOsageBlock* osg) const;
+    prj::vector<SkinParam::CollisionParam>* get_cls_list(ExNodeBlock* cls) const;
     SkinParam::CollisionParam* get_cls_param(prj::vector<SkinParam::CollisionParam>* cls_list) const;
+    rob_chara_item_equip_object* get_item_equip_object() const;
+    ExNodeBlock* get_node_block(rob_chara_item_equip_object* itm_eq_obj) const;
+    ExOsageBlock* get_osage_block(rob_chara_item_equip_object* itm_eq_obj) const;
     void set_node(skin_param_osage_node* skp_osg_node);
     void set_root(skin_param* skp);
 
     inline prj::vector<SkinParam::CollisionParam>* get_cls_list() const {
         rob_chara_item_equip_object* itm_eq_obj = get_item_equip_object();
-        ExOsageBlock* osg = get_osage_block(itm_eq_obj);
-        return osg ? get_cls_list(osg) : get_cls_list(get_cloth_block(itm_eq_obj));
+        if (!itm_eq_obj)
+            return 0;
+
+        return get_cls_list(get_node_block(itm_eq_obj));
     }
 
     inline SkinParam::CollisionParam* get_cls_param() const {
@@ -125,14 +131,14 @@ public:
 
     inline skin_param* get_skin_param() const {
         rob_chara_item_equip_object* itm_eq_obj = get_item_equip_object();
-        ExOsageBlock* osg = get_osage_block(itm_eq_obj);
-        if (osg)
-            return osg->rob.skin_param_ptr;
-        else {
-            ExClothBlock* cls = get_cloth_block(itm_eq_obj);
-            if (cls)
-                return cls->rob.skin_param_ptr;
-        }
+        ExNodeBlock* ex_node = get_node_block(itm_eq_obj);
+        if (!ex_node)
+            return 0;
+
+        if (ex_node->type == EX_OSAGE)
+            return ((ExOsageBlock*)ex_node)->rob.skin_param_ptr;
+        else if (ex_node->type == EX_CLOTH)
+            return ((ExClothBlock*)ex_node)->rob.skin_param_ptr;
         return 0;
     }
 
