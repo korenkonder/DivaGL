@@ -490,10 +490,10 @@ bool RobOsageTest::ctrl() {
                 continue;
 
             objects.push_back((::item_id)i, itm_eq_obj->obj_info);
-            rob_osage_test_dw->rob.object_list_box->AddItem(object_database_get_object_name(itm_eq_obj->obj_info));
+            rob_osage_test_dw->rob.object_list_box->AddItem(object_database_get_obj_name(itm_eq_obj->obj_info));
 
             std::string buf = string_to_lower(sprintf_s_string(
-                "ext_skp_%s.txt", object_database_get_object_name(itm_eq_obj->obj_info)));
+                "ext_skp_%s.txt", object_database_get_obj_name(itm_eq_obj->obj_info)));
 
             std::string path("ram/skin_param/");
             path.append(buf);
@@ -672,7 +672,7 @@ bool RobOsageTest::ctrl() {
             path_create_directory("ram/skin_param/");
 
             std::string buf = string_to_lower(sprintf_s_string(
-                "ext_skp_%s.txt", object_database_get_object_name(itm_eq_obj->obj_info)));
+                "ext_skp_%s.txt", object_database_get_obj_name(itm_eq_obj->obj_info)));
 
             prj::vector_pair_alloc<prj::string, ExNodeBlock*> ex_nodes;
             ex_nodes.reserve(itm_eq_obj->osage_blocks.size() + itm_eq_obj->cloth_blocks.size());
