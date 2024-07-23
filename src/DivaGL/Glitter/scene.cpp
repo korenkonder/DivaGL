@@ -4,7 +4,6 @@
 */
 
 #include "glitter.hpp"
-#include "../gl_state.hpp"
 
 namespace Glitter {
     void Scene::Disp(DispType disp_type) {
@@ -232,12 +231,12 @@ namespace Glitter {
 #endif
     }
 
-    bool SceneX::ResetCheckInit(float_t* a2) {
+    bool SceneX::ResetCheckInit(float_t* init_delta_frame) {
         if (!(flags & SCENE_FLAG_3) || !effects.size())
             return false;
 
         for (SceneEffectX& i : effects)
-            if (i.disp && i.ptr && i.ptr->ResetCheckInit(this, a2))
+            if (i.disp && i.ptr && i.ptr->ResetCheckInit(this, init_delta_frame))
                 return true;
         return false;
     }

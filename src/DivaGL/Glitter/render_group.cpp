@@ -4,7 +4,6 @@
 */
 
 #include "glitter.hpp"
-#include "../gl_state.hpp"
 
 namespace Glitter {
     mat4 RenderGroup::RotateToEmitPosition(RenderGroup* rend_group,
@@ -54,28 +53,29 @@ namespace Glitter {
         return mat;
     }
 
-    void RenderGroup::CreateBuffer(RenderGroup* rend_group) {
-        if (rend_group->use_own_buffer) {
-            if (rend_group->max_count > 0) {
-                rend_group->buffer = (Buffer*)_operator_new(sizeof(Buffer) * rend_group->max_count);
-                if (!rend_group->buffer)
-                    rend_group->max_count = 0;
-
-                Glitter::CreateBuffer(rend_group->max_count, rend_group->type == PARTICLE_QUAD,
-                    rend_group->vao, rend_group->vbo, rend_group->ebo);
-                rend_group->draw_list = new DrawListData;
-            }
+    void RenderGroup::CreateBuffer(RenderGroup* rend_group, Particle* ptcl) {
+        if (ptcl && ptcl->vao && ptcl->vbo && !ptcl->buffer_used) {
+            rend_group->max_count = ptcl->max_count;
+            rend_group->vao = ptcl->vao;
+            rend_group->vbo = ptcl->vbo;
+            rend_group->ebo = ptcl->ebo;
+            rend_group->draw_list = ptcl->draw_list;
+            rend_group->use_own_buffer = false;
+            ptcl->buffer_used = true;
         }
-        else {
-            size_t particle = *(size_t*)((size_t)rend_group->particle_inst + 0x98 + 0x178);
-            rend_group->vao = *((GLuint*)(particle + 0x40 + 0x170));
-            rend_group->ebo = *((GL::ElementArrayBuffer*)(particle + 0x40 + 0x174));
-            rend_group->draw_list = *(DrawListData**)(particle
-                + 0x40 + 0x170 + sizeof(GLuint) * 2);
+
+        if (rend_group->use_own_buffer && rend_group->max_count > 0) {
+            rend_group->buffer = (Buffer*)_operator_new(sizeof(Buffer) * rend_group->max_count);
+            if (!rend_group->buffer)
+                rend_group->max_count = 0;
+
+            Glitter::CreateBuffer(rend_group->max_count, rend_group->type == PARTICLE_QUAD,
+                rend_group->vao, rend_group->vbo, rend_group->ebo);
+            rend_group->draw_list = new DrawListData;
         }
     }
 
-    void RenderGroup::DeleteBuffer(RenderGroup* rend_group) {
+    void RenderGroup::DeleteBuffer(RenderGroup* rend_group, Particle* ptcl) {
         if (rend_group->use_own_buffer) {
             DrawListData* draw_list = rend_group->draw_list;
             if (draw_list) {
@@ -87,14 +87,24 @@ namespace Glitter {
 
             Glitter::DeleteBuffer(rend_group->vao, rend_group->vbo, rend_group->ebo);
         }
-        else {
-            rend_group->vbo = 0;
-            rend_group->ebo = {};
-            rend_group->draw_list = 0;
-        }
+        else if (ptcl && ptcl->vao && ptcl->vbo)
+            ptcl->buffer_used = false;
     }
 
-    RenderGroupX::RenderGroupX(ParticleInstX* a1) : flags(), type(), draw_type(), pivot(),
+    void RenderGroup::InitData(RenderGroup* rend_group) {
+        rend_group->blend_mode = PARTICLE_BLEND_ZERO;
+        rend_group->mask_blend_mode = PARTICLE_BLEND_ZERO;
+        rend_group->texture = 0;
+        rend_group->mask_texture = 0;
+
+        rend_group->vao = 0;
+        rend_group->ebo = {};
+        rend_group->disp = 0;
+        rend_group->mat_draw = mat4_identity;
+        rend_group->draw_list = 0;
+    }
+
+    RenderGroupX::RenderGroupX(ParticleInstX* ptcl_inst) : flags(), type(), draw_type(), pivot(),
         z_offset(), count(), ctrl(), disp(), texture(), mask_texture(), frame(), elements(), max_count(),
         random_ptr(), disp_type(), fog_type(), vao(), vbo(), ebo(), particle(), use_culling() {
         split_u = 1;
@@ -105,27 +115,28 @@ namespace Glitter {
         mat_draw = mat4_identity;
         disp_type = DISP_NORMAL;
         emission = 1.0f;
+        use_own_buffer = true;
         blend_mode = PARTICLE_BLEND_TYPICAL;
         mask_blend_mode = PARTICLE_BLEND_TYPICAL;
 
         object = -1;
 
-        switch (a1->data.data.type) {
+        switch (ptcl_inst->data.data.type) {
         case PARTICLE_QUAD:
-            if (a1->data.data.count > 0)
-                count = a1->data.data.count;
+            if (ptcl_inst->data.data.count > 0)
+                count = ptcl_inst->data.data.count;
             else
                 count = 2500;
             max_count = 4 * count;
             break;
         case PARTICLE_LINE:
-            count = (size_t)a1->data.data.locus_history_size
-                + a1->data.data.locus_history_size_random;
+            count = (size_t)ptcl_inst->data.data.locus_history_size
+                + ptcl_inst->data.data.locus_history_size_random;
             max_count = count;
             break;
         case PARTICLE_LOCUS:
-            count = (size_t)a1->data.data.locus_history_size
-                + a1->data.data.locus_history_size_random;
+            count = (size_t)ptcl_inst->data.data.locus_history_size
+                + ptcl_inst->data.data.locus_history_size_random;
             max_count = 2 * count;
             break;
         case PARTICLE_MESH:
@@ -136,8 +147,8 @@ namespace Glitter {
             return;
         }
 
-        random_ptr = a1->data.random_ptr;
-        particle = a1;
+        random_ptr = ptcl_inst->data.random_ptr;
+        particle = ptcl_inst;
 
         elements = new RenderElementX[count];
         if (!elements) {
@@ -147,49 +158,23 @@ namespace Glitter {
         }
 
         memset(elements, 0, sizeof(RenderElementX) * count);
-        if (!max_count || a1->data.data.type == PARTICLE_MESH)
+        if (!max_count || ptcl_inst->data.data.type == PARTICLE_MESH)
             return;
 
-        bool is_quad = a1->data.data.type == PARTICLE_QUAD;
+        bool is_quad = ptcl_inst->data.data.type == PARTICLE_QUAD;
 
-        glGenVertexArrays(1, &vao);
-        gl_state_bind_vertex_array(vao, true);
-
-        static const GLsizei buffer_size = sizeof(Buffer);
-
-        vbo.Create(buffer_size * max_count);
-        vbo.Bind(true);
-
-        if (is_quad) {
-            size_t count = max_count / 4 * 5;
-            uint32_t* ebo_data = force_malloc<uint32_t>(count);
-            for (size_t i = 0, j = 0, k = count; k; i += 5, j += 4, k -= 5) {
-                ebo_data[i + 0] = (uint32_t)(j + 0);
-                ebo_data[i + 1] = (uint32_t)(j + 1);
-                ebo_data[i + 2] = (uint32_t)(j + 3);
-                ebo_data[i + 3] = (uint32_t)(j + 2);
-                ebo_data[i + 4] = 0xFFFFFFFF;
-            }
-
-            ebo.Create(sizeof(uint32_t) * count, ebo_data);
-            ebo.Bind(true);
-            free_def(ebo_data);
+        ParticleX* ptcl = particle->data.particle;
+        if (ptcl && ptcl->vao && ptcl->vbo && !ptcl->buffer_used) {
+            max_count = ptcl->max_count;
+            vao = ptcl->vao;
+            vbo = ptcl->vbo;
+            ebo = ptcl->ebo;
+            use_own_buffer = false;
+            ptcl->buffer_used = true;
         }
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
-            (void*)offsetof(Buffer, position));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, buffer_size,
-            (void*)offsetof(Buffer, uv));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, buffer_size,
-            (void*)offsetof(Buffer, color));
-
-        gl_state_bind_array_buffer(0);
-        gl_state_bind_vertex_array(0);
-        if (is_quad)
-            gl_state_bind_element_array_buffer(0);
+        if (use_own_buffer)
+            Glitter::CreateBuffer(max_count, is_quad, vao, vbo, ebo);
 
         if (!is_quad)
             draw_list.reserve(count);
@@ -362,19 +347,18 @@ namespace Glitter {
     }
 
     void RenderGroupX::DeleteBuffers(bool a2) {
+        ParticleX* ptcl = 0;
         if (particle) {
+            ptcl = particle->data.particle;
             if (!a2)
                 particle->data.render_group = 0;
             particle = 0;
         }
 
-        ebo.Destroy();
-        vbo.Destroy();
-
-        if (vao) {
-            glDeleteVertexArrays(1, &vao);
-            vao = 0;
-        }
+        if (use_own_buffer)
+            Glitter::DeleteBuffer(vao, vbo, ebo);
+        else if (ptcl && ptcl->vao && ptcl->vbo)
+            ptcl->buffer_used = false;
 
         if (!a2 && elements) {
             Free();

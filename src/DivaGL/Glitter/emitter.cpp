@@ -31,7 +31,7 @@ namespace Glitter {
         direction = DIRECTION_EFFECT_ROTATION;
     }
 
-    EmitterX::EmitterX() {
+    EmitterX::EmitterX() : buffer_init() {
         version = 0x04 ;
     }
 

@@ -561,6 +561,7 @@ namespace Glitter {
         prj::vector<MeshX> meshes;
         bool not_loaded;
         bool scene_init;
+        bool buffer_init;
         uint32_t version;
 
         EffectGroupX();
@@ -730,8 +731,8 @@ namespace Glitter {
         void GetValue();
         bool HasEnded(bool a2);
         void Reset(SceneX* sc);
-        bool ResetCheckInit(SceneX* sc, float_t* a3 = 0);
-        bool ResetInit(SceneX* sc, float_t* a3 = 0);
+        bool ResetCheckInit(SceneX* sc, float_t* init_delta_frame = 0);
+        bool ResetInit(SceneX* sc, float_t* init_delta_frame = 0);
         void SetExtAnim(const mat4* a2, const mat4* a3, const vec3* trans, bool set_flags);
         void SetExtColor(bool set, float_t r, float_t g, float_t b, float_t a);
     };
@@ -797,6 +798,7 @@ namespace Glitter {
 
         EmitterX::Data data;
         prj::vector<ParticleX*> particles;
+        bool buffer_init;
         uint32_t version;
 
         EmitterX();
@@ -970,29 +972,25 @@ namespace Glitter {
             int32_t locus_history_size_random;
             int32_t dword118;
             float_t emission;
-            uint32_t tex_hash;
-            uint32_t mask_tex_hash;
+            uint64_t tex_hash;
+            uint64_t mask_tex_hash;
             int32_t texture;
             int32_t mask_texture;
             char dword138[32];
         };
 
-        struct Sub {
-            Glitter::Particle::Data data;
-            Glitter::Buffer* buffer;
-            GL::ArrayBuffer vbo;
-            int32_t max_count;
-            bool field_168;
-            int32_t dword16C;
-            GLuint vao;
-            GL::ElementArrayBuffer ebo;
-            DrawListData* draw_list;
-        };
-
-        Glitter::Particle::Sub sub;
+        Glitter::Particle::Data data;
+        Glitter::Buffer* buffer;
+        GL::ArrayBuffer vbo;
+        int32_t max_count;
+        bool buffer_used;
+        GLuint vao;
+        GL::ElementArrayBuffer ebo;
+        DrawListData* draw_list;
 
         static void CreateBuffer(Particle* ptcl);
         static void DeleteBuffer(Particle* ptcl);
+        static void InitData(Particle* ptcl);
     };
 
     class ParticleX : public ItemBaseX {
@@ -1071,6 +1069,11 @@ namespace Glitter {
         };
 
         ParticleX::Data data;
+        GLuint vao;
+        GL::ArrayBuffer vbo;
+        GL::ElementArrayBuffer ebo;
+        int32_t max_count;
+        bool buffer_used;
         int32_t version;
 
         ParticleX();
@@ -1149,7 +1152,6 @@ namespace Glitter {
         GL::ArrayBuffer vbo;
         float_t emission;
         bool use_own_buffer;
-        int32_t dword12C;
         GLuint vao;
         GL::ElementArrayBuffer ebo;
         size_t disp;
@@ -1161,8 +1163,9 @@ namespace Glitter {
         static mat4 RotateToPrevPosition(RenderGroup* rend_group,
             RenderElement* rend_elem, vec3* vec);
 
-        static void CreateBuffer(RenderGroup* rend_group);
-        static void DeleteBuffer(RenderGroup* rend_group);
+        static void CreateBuffer(RenderGroup* rend_group, Particle* ptcl);
+        static void DeleteBuffer(RenderGroup* rend_group, Particle* ptcl);
+        static void InitData(RenderGroup* rend_group);
     };
 
     struct RenderGroupX {
@@ -1194,6 +1197,7 @@ namespace Glitter {
         GL::ArrayBuffer vbo;
         GL::ElementArrayBuffer ebo;
         float_t emission;
+        bool use_own_buffer;
         DrawListData draw_list;
 
         ParticleInstX* particle;
@@ -1363,7 +1367,7 @@ namespace Glitter {
         bool HasEnded(bool a2);
         bool HasEnded(size_t id, bool a3);
         void InitEffect(EffectX* eff, size_t id, bool appear_now, uint8_t load_flags = 0);
-        bool ResetCheckInit(float_t* a2 = 0);
+        bool ResetCheckInit(float_t* init_delta_frame = 0);
         bool ResetEffect(uint32_t effect_hash, size_t* id = 0);
         bool SetExtColor(bool set, uint32_t effect_hash, float_t r, float_t g, float_t b, float_t a);
         bool SetExtColorByID(bool set, size_t id, float_t r, float_t g, float_t b, float_t a);
@@ -1381,10 +1385,10 @@ namespace Glitter {
         void* sys_frame_rate;
         ParticleManagerFlag flags;
         int32_t scene_load_counter;
-        int32_t available_buffers_init;
-        int32_t available_buffers;
-        float_t field_D0;
-        float_t field_D4;
+        int32_t init_buffers_init;
+        int32_t init_buffers;
+        float_t init_delta_frame_base;
+        float_t init_delta_frame;
         float_t emission;
         float_t delta_frame;
         prj::map<uint64_t, uint32_t> resources;
@@ -1403,8 +1407,10 @@ namespace Glitter {
         FrameRateControl* frame_rate;
         ParticleManagerFlag flags;
         int32_t scene_load_counter;
-        float_t field_D0;
-        float_t field_D4;
+        int32_t init_buffers_base;
+        int32_t init_buffers;
+        float_t init_delta_frame_base;
+        float_t init_delta_frame;
         float_t emission;
         float_t delta_frame;
         bool draw_all;
@@ -1427,6 +1433,7 @@ namespace Glitter {
         bool CheckSceneEnded(SceneCounter scene_counter);
         void CheckSceneHasLocalEffect(SceneX* sc);
         void CtrlScenes();
+        void DecrementInitBuffersByCount(int32_t count = 1);
         void DispScenes(DispType disp_type);
         void FreeEffects();
         void FreeSceneEffect(SceneCounter scene_counter, bool force_kill = true);
@@ -1442,14 +1449,13 @@ namespace Glitter {
         SceneCounter GetSceneCounter(uint8_t index = 0);
         uint32_t LoadFile(const char* file, const char* path, float_t emission, bool init_scene);
         SceneCounter LoadSceneEffect(uint32_t hash, bool appear_now = true, uint8_t load_flags = 0);
+        void SetInitDeltaFrame(float_t value);
         void SetSceneEffectExtColor(SceneCounter scene_counter, bool set,
             uint32_t effect_hash, float_t r, float_t g, float_t b, float_t a);
         void SetSceneEffectReqFrame(SceneCounter scene_counter, float_t req_frame);
         void SetSceneFrameRate(SceneCounter scene_counter, FrameRateControl* frame_rate);
         void SetPause(bool value);
         void UnloadEffectGroup(uint32_t hash);
-
-        void sub_1403A53E0(float_t a2);
     };
 
     extern GltParticleManager* glt_particle_manager;
@@ -1459,7 +1465,7 @@ namespace Glitter {
 
     extern void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec0, const vec3* vec1);
 
-    extern void CreateBuffer(int32_t max_count, bool is_quad,
+    extern void CreateBuffer(size_t max_count, bool is_quad,
         GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
     extern void DeleteBuffer(GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
 

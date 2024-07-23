@@ -47,20 +47,51 @@ namespace Glitter {
 
         bool ret = 0;
         if (!effect_group->scene_init) {
-            float_t v20 = Glitter::glt_particle_manager->field_D4;
-            if (Glitter::glt_particle_manager->field_D4 > 0.0f) {
+            float_t init_delta_frame = Glitter::glt_particle_manager_x->init_delta_frame;
+            if (init_delta_frame > 0.0f) {
                 if (effect_group->scene) {
-                    if (effect_group->scene->ResetCheckInit(&v20))
+                    if (effect_group->scene->ResetCheckInit(&init_delta_frame))
                         ret = true;
                     else
                         effect_group->scene_init = true;
-                    glt_particle_manager_x->sub_1403A53E0(v20);
+                    glt_particle_manager_x->SetInitDeltaFrame(init_delta_frame);
                 }
                 else
                     effect_group->scene_init = true;
             }
             else
                 ret = true;
+        }
+
+        if (!effect_group->buffer_init) {
+            int32_t init_buffers = Glitter::glt_particle_manager_x->init_buffers;
+            if (init_buffers <= 0)
+                return 0;
+
+            for (EffectX*& i : effect_group->effects) {
+                if (!i)
+                    continue;
+
+                for (EmitterX*& j : i->emitters) {
+                    if (!j || j->buffer_init)
+                        continue;
+
+                    for (ParticleX*& k : j->particles) {
+                        if (!k || k->vao || k->vbo)
+                            continue;
+                        else if (k->data.type == PARTICLE_MESH || k->max_count <= 0 || init_buffers <= 0)
+                            continue;
+
+                        CreateBuffer(k->max_count, k->data.type == PARTICLE_QUAD, k->vao, k->vbo, k->ebo);
+                        init_buffers--;
+                        glt_particle_manager_x->DecrementInitBuffersByCount();
+                    }
+
+                    j->buffer_init = true;
+                }
+            }
+
+            effect_group->buffer_init = true;
         }
 
         for (MeshX& i : effect_group->meshes)
@@ -318,6 +349,27 @@ namespace Glitter {
 
         ParseAnimation(st->sub_structs.size() ? st->sub_structs.data() : 0, &ptcl->animation);
         emit->particles.push_back(ptcl);
+
+        int32_t count = 0;
+        switch (ptcl->data.type) {
+        case Glitter::PARTICLE_QUAD:
+            count = 250;
+            if (ptcl->data.count)
+                count = ptcl->data.count;
+            count = 4 * count;
+            break;
+        case Glitter::PARTICLE_LINE:
+            count = ptcl->data.locus_history_size + ptcl->data.locus_history_size_random + 1;
+            break;
+        case Glitter::PARTICLE_LOCUS:
+            count = (ptcl->data.locus_history_size + ptcl->data.locus_history_size_random) * 2 + 1;
+            break;
+        case Glitter::PARTICLE_MESH:
+        default:
+            count = 0;
+            break;
+        }
+        ptcl->max_count = count;
         return true;
     }
 

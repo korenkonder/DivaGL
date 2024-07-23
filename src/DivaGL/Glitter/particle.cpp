@@ -7,19 +7,32 @@
 
 namespace Glitter {
     void Particle::CreateBuffer(Particle* ptcl) {
-        Glitter::CreateBuffer(ptcl->sub.max_count,
-            ptcl->sub.data.type == PARTICLE_QUAD, ptcl->sub.vao, ptcl->sub.vbo, ptcl->sub.ebo);
+        if (ptcl->max_count <= 0)
+            return;
 
-        ptcl->sub.draw_list = new DrawListData;
+        Glitter::CreateBuffer(ptcl->max_count,
+            ptcl->data.type == PARTICLE_QUAD, ptcl->vao, ptcl->vbo, ptcl->ebo);
+
+        ptcl->draw_list = new DrawListData;
     }
 
     void Particle::DeleteBuffer(Particle* ptcl) {
-        if (ptcl->sub.draw_list) {
-            delete ptcl->sub.draw_list;
-            ptcl->sub.draw_list = 0;
+        if (ptcl->draw_list) {
+            delete ptcl->draw_list;
+            ptcl->draw_list = 0;
         }
 
-        Glitter::DeleteBuffer(ptcl->sub.vao, ptcl->sub.vbo, ptcl->sub.ebo);
+        Glitter::DeleteBuffer(ptcl->vao, ptcl->vbo, ptcl->ebo);
+    }
+
+    void Particle::InitData(Particle* ptcl) {
+        ptcl->buffer = 0;
+        ptcl->vbo = {};
+        ptcl->max_count = 0;
+        ptcl->buffer_used = false;
+        ptcl->vao = 0;
+        ptcl->ebo = {};
+        ptcl->draw_list = 0;
     }
 
     ParticleX::Data::Data() : flags(), life_time(), life_time_random(), fade_in(), fade_in_random(),
@@ -32,7 +45,7 @@ namespace Glitter {
 
     }
 
-    ParticleX::ParticleX() {
+    ParticleX::ParticleX() : vao(), max_count(), buffer_used() {
         version = 0x05;
         data.pivot = PIVOT_MIDDLE_CENTER;
         data.scale = 1.0f;
@@ -59,6 +72,6 @@ namespace Glitter {
     }
 
     ParticleX::~ParticleX() {
-
+        Glitter::DeleteBuffer(vao, vbo, ebo);
     }
 }

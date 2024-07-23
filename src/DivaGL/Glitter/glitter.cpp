@@ -28,18 +28,17 @@ namespace Glitter {
             *angle = (float_t)M_PI - *angle;
     }
 
-    void CreateBuffer(int32_t max_count, bool is_quad, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo) {
+    void CreateBuffer(size_t max_count, bool is_quad, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo) {
         glGenVertexArrays(1, &vao);
         gl_state_bind_vertex_array(vao, true);
 
         static const GLsizei buffer_size = sizeof(Buffer);
 
-        vbo = {};
-        vbo.Create(buffer_size * (size_t)max_count);
+        vbo.Create(buffer_size * max_count);
         vbo.Bind(true);
 
         if (is_quad) {
-            size_t count = (size_t)max_count / 4 * 5;
+            size_t count = max_count / 4 * 5;
             uint32_t* ebo_data = (uint32_t*)_operator_new(sizeof(uint32_t) * count);
             for (size_t i = 0, j = 0, k = count; k; i += 5, j += 4, k -= 5) {
                 ebo_data[i + 0] = (uint32_t)(j + 0);
@@ -49,13 +48,10 @@ namespace Glitter {
                 ebo_data[i + 4] = 0xFFFFFFFF;
             }
 
-            ebo = {};
             ebo.Create(sizeof(uint32_t) * count, ebo_data);
             ebo.Bind(true);
             _operator_delete(ebo_data);
         }
-        else
-            ebo = {};
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
@@ -84,16 +80,20 @@ namespace Glitter {
     }
 
     // Particle
-    const char* _000000014039BC78_patch_data
-        = "\x48\x89\xE9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x3D";
-    const char* _00000001403AEA7E_patch_data
-        = "\x48\x89\xD9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x0B";
+    const char* _000000014039BC4E_patch_data
+        = "\x48\x89\xE9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x67";
+    const char* _00000001403AE5DE_patch_data
+        = "\x48\x8B\xCB\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xD0\xEB\x03";
+    const char* _00000001403AEA75_patch_data
+        = "\x48\x89\xD9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x30";
 
     // RenderGroup
-    const char* _00000001403A5CA7_patch_data
-        = "\x48\x8B\xCE\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xE9\x95\x00\x00\x00";
-    const char* _00000001403A8552_patch_data
-        = "\x48\x89\xD9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x07";
+    const char* _00000001403A5B5B_patch_data
+        = "\x48\x8B\xCE\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xD0\xEB\x17";
+    const char* _00000001403A5C60_patch_data
+        = "\x48\x8B\xD1\x48\x8B\xCE\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xE9\xD9\x00\x00\x00";
+    const char* _00000001403A8541_patch_data
+        = "\x48\x89\xD9\x48\x8B\xD7\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x3B";
 
     void Patch() {
         uint8_t buf[0x100];
@@ -101,29 +101,32 @@ namespace Glitter {
         // Particle
         WRITE_MEMORY(0x000000014039A396, uint32_t, sizeof(Particle));
 
-        WRITE_MEMORY_STRING(0x000000014039BBAF, "\xE9\x7D\x01\x00\x00", 0x05);
-        WRITE_MEMORY_STRING(0x00000001403AEA75, "\xEB\x3F", 0x02);
-
-        memcpy(buf, _000000014039BC78_patch_data, 0x11);
+        memcpy(buf, _000000014039BC4E_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)Particle::CreateBuffer;
-        WRITE_MEMORY_STRING(0x000000014039BC78, buf, 0x11);
+        WRITE_MEMORY_STRING(0x000000014039BC4E, buf, 0x11);
 
-        memcpy(buf, _00000001403AEA7E_patch_data, 0x11);
+        memcpy(buf, _00000001403AE5DE_patch_data, 0x11);
+        *(uint64_t*)&buf[0x05] = (uint64_t)Particle::InitData;
+        WRITE_MEMORY_STRING(0x00000001403AE5DE, buf, 0x11);
+
+        memcpy(buf, _00000001403AEA75_patch_data, 0x11);
         *(uint64_t*)&buf[0x05] = (uint64_t)Particle::DeleteBuffer;
-        WRITE_MEMORY_STRING(0x00000001403AEA7E, buf, 0x11);
+        WRITE_MEMORY_STRING(0x00000001403AEA75, buf, 0x11);
 
         // RenderGroup
         WRITE_MEMORY(0x00000001403A9740, uint32_t, sizeof(RenderGroup));
 
-        WRITE_MEMORY_STRING(0x00000001403A5C59, "\xEB\x4C", 0x02);
+        memcpy(buf, _00000001403A5B5B_patch_data, 0x17);
+        *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::InitData;
+        WRITE_MEMORY_STRING(0x00000001403A5B5B, buf, 0x17);
 
-        memcpy(buf, _00000001403A5CA7_patch_data, 0x14);
-        *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::CreateBuffer;
-        WRITE_MEMORY_STRING(0x00000001403A5CA7, buf, 0x14);
+        memcpy(buf, _00000001403A5C60_patch_data, 0x17);
+        *(uint64_t*)&buf[0x08] = (uint64_t)RenderGroup::CreateBuffer;
+        WRITE_MEMORY_STRING(0x00000001403A5C60, buf, 0x17);
 
-        memcpy(buf, _00000001403A8552_patch_data, 0x11);
-        *(uint64_t*)&buf[0x05] = (uint64_t)RenderGroup::DeleteBuffer;
-        WRITE_MEMORY_STRING(0x00000001403A8552, buf, 0x11);
+        memcpy(buf, _00000001403A8541_patch_data, 0x14);
+        *(uint64_t*)&buf[0x08] = (uint64_t)RenderGroup::DeleteBuffer;
+        WRITE_MEMORY_STRING(0x00000001403A8541, buf, 0x14);
 
         // GltParticleManager
         WRITE_MEMORY(0x00000001409EB880 + 0x20, uint64_t, (uint64_t)GltParticleManager::Disp);
