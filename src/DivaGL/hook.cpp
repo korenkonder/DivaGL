@@ -127,6 +127,26 @@ HOOK(void, FASTCALL, rndr__Render__free, 0x00000001404AB900, rndr::Render* rend)
     rend->free();
 }
 
+HOOK(void, FASTCALL, rndr__Render__render_texture_set, 0x00000001404B1560,
+    rndr::Render* rend, texture* render_texture, bool task_photo) {
+    rend->render_texture_set(render_texture, task_photo);
+}
+
+HOOK(void, FASTCALL, rndr__Render__movie_texture_set, 0x00000001404B16A0,
+    rndr::Render* rend, texture* movie_texture) {
+    rend->movie_texture_set(movie_texture);
+}
+
+HOOK(void, FASTCALL, rndr__Render__render_texture_free, 0x00000001404B1880,
+    rndr::Render* rend, texture* render_texture, bool task_photo) {
+    rend->render_texture_free(render_texture, task_photo);
+}
+
+HOOK(void, FASTCALL, rndr__Render__movie_texture_free, 0x00000001404B18F0,
+    rndr::Render* rend, texture* movie_texture) {
+    rend->movie_texture_free(movie_texture);
+}
+
 HOOK(void, FASTCALL, rndr__RenderManager__render_ctrl, 0x0000000140502C90) {
     render_manager->render->ctrl();
 }
@@ -236,6 +256,10 @@ void hook_funcs() {
     INSTALL_HOOK(rndr__Render__init_tone_map_buffers);
     INSTALL_HOOK(rndr__Render__init_render_buffers);
     INSTALL_HOOK(rndr__Render__free);
+    INSTALL_HOOK(rndr__Render__render_texture_set);
+    INSTALL_HOOK(rndr__Render__movie_texture_set);
+    INSTALL_HOOK(rndr__Render__render_texture_free);
+    INSTALL_HOOK(rndr__Render__movie_texture_free);
 
     INSTALL_HOOK(rndr__RenderManager__render_ctrl);
     INSTALL_HOOK(rndr__RenderManager__render_all);
