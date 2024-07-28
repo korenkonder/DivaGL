@@ -142,32 +142,32 @@ namespace Glitter {
     };
 
     enum EffectInstFlag {
-        EFFECT_INST_NONE                        = 0x0000000,
-        EFFECT_INST_FREE                        = 0x0000001,
-        EFFECT_INST_JUST_INIT                   = 0x0000002,
-        EFFECT_INST_HAS_EXT_ANIM                = 0x0000004,
-        EFFECT_INST_HAS_EXT_ANIM_TRANS          = 0x0000008,
-        EFFECT_INST_HAS_EXT_ANIM_NON_INIT       = 0x0000010,
-        EFFECT_INST_CHARA_ANIM                  = 0x0000020,
-        EFFECT_INST_GET_EXT_ANIM_MAT            = 0x0000040,
-        EFFECT_INST_SET_EXT_ANIM_ONCE           = 0x0000080,
-        EFFECT_INST_SET_EXT_COLOR               = 0x0000100,
-        EFFECT_INST_EXT_COLOR                   = 0x0000200,
-        EFFECT_INST_SET_ADD_EXT_COLOR           = 0x0000400,
-        EFFECT_INST_HAS_EXT_ANIM_SCALE          = 0x0000800,
-        EFFECT_INST_NO_EXT_ANIM_TRANS_X         = 0x0001000,
-        EFFECT_INST_NO_EXT_ANIM_TRANS_Y         = 0x0002000,
-        EFFECT_INST_NO_EXT_ANIM_TRANS_Z         = 0x0004000,
-        EFFECT_INST_EXT_ANIM_TRANS_ONLY         = 0x0008000,
-        EFFECT_INST_FLAG_17                     = 0x0010000,
-        EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE    = 0x0020000,
-        EFFECT_INST_FLAG_19                     = 0x0040000,
-        EFFECT_INST_DISP                        = 0x0080000,
-        EFFECT_INST_FLAG_21                     = 0x0100000,
-        EFFECT_INST_HAS_MESH                    = 0x0200000,
-        EFFECT_INST_FLAG_23                     = 0x0400000,
-        EFFECT_INST_FLAG_24                     = 0x0800000,
-        EFFECT_INST_NOT_ENDED                   = 0x1000000,
+        EFFECT_INST_NONE                     = 0x0000000,
+        EFFECT_INST_FREE                     = 0x0000001,
+        EFFECT_INST_RESET_INIT               = 0x0000002,
+        EFFECT_INST_HAS_EXT_ANIM             = 0x0000004,
+        EFFECT_INST_HAS_EXT_ANIM_TRANS       = 0x0000008,
+        EFFECT_INST_HAS_EXT_ANIM_NON_INIT    = 0x0000010,
+        EFFECT_INST_CHARA_ANIM               = 0x0000020,
+        EFFECT_INST_GET_EXT_ANIM_MAT         = 0x0000040,
+        EFFECT_INST_SET_EXT_ANIM_ONCE        = 0x0000080,
+        EFFECT_INST_SET_EXT_COLOR            = 0x0000100,
+        EFFECT_INST_EXT_COLOR                = 0x0000200,
+        EFFECT_INST_HAS_EXT_SCALE            = 0x0000400,
+        EFFECT_INST_HAS_EXT_ANIM_SCALE       = 0x0000800,
+        EFFECT_INST_NO_EXT_ANIM_TRANS_X      = 0x0001000,
+        EFFECT_INST_NO_EXT_ANIM_TRANS_Y      = 0x0002000,
+        EFFECT_INST_NO_EXT_ANIM_TRANS_Z      = 0x0004000,
+        EFFECT_INST_EXT_ANIM_TRANS_ONLY      = 0x0008000,
+        EFFECT_INST_FLAG_17                  = 0x0010000,
+        EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE = 0x0020000,
+        EFFECT_INST_SET_EXT_ANIM_MAT         = 0x0040000,
+        EFFECT_INST_DISP                     = 0x0080000,
+        EFFECT_INST_DEPENDS_ON_EXT_DATA      = 0x0100000,
+        EFFECT_INST_HAS_MESH                 = 0x0200000,
+        EFFECT_INST_FLAG_23                  = 0x0400000,
+        EFFECT_INST_JUST_INIT                = 0x0800000,
+        EFFECT_INST_NOT_ENDED                = 0x1000000,
     };
 
     enum EmitterDirection {
@@ -304,6 +304,7 @@ namespace Glitter {
         SCENE_NOT_DISP = 0x02,
         SCENE_FLAG_3   = 0x04,
         SCENE_ENDED    = 0x08,
+        SCENE_PAUSE    = 0x10,
     };
 
     enum UVIndexType {
@@ -521,7 +522,7 @@ namespace Glitter {
             EffectFlag flags;
             float_t emission;
             int32_t seed;
-            float_t unk;
+            float_t ext_anim_scale_start_time;
 
             Data();
         };
@@ -607,6 +608,7 @@ namespace Glitter {
 
         void CalcDisp();
         void CalcDisp(RenderGroup* rend_group);
+        void CheckUseCamera();
         void Disp(Glitter::DispType disp_type);
         void Disp(RenderGroup* rend_group);
 
@@ -648,6 +650,7 @@ namespace Glitter {
         void CalcDispQuadDirectionRotation(RenderGroupX* rend_group, mat4* model_mat);
         void CalcDispQuadNormal(RenderGroupX* rend_group, mat4* model_mat, mat4* dir_mat);
         bool CanDisp(DispType disp_type, bool a3);
+        void CheckUseCamera();
         void Ctrl(float_t delta_frame, bool copy_mats);
         void Disp(DispType disp_type);
         void Disp(RenderGroupX* rend_group);
@@ -677,8 +680,8 @@ namespace Glitter {
         uint32_t random;
         float_t req_frame;
         vec4 ext_color;
+        float_t ext_scale;
         vec3 ext_anim_scale;
-        float_t some_scale;
 
         struct ExtAnim {
             union {
@@ -715,26 +718,37 @@ namespace Glitter {
         virtual ~EffectInstX();
 
         void CalcDisp();
+        void CheckDataDependency();
+        void CheckUpdate();
         void Copy(EffectInstX* dst, float_t emission);
-        void Ctrl(float_t delta_frame, float_t emission);
+        void Ctrl(float_t delta_frame);
+        void CtrlFlags(float_t delta_frame);
+        void CtrlInit(float_t delta_frame);
         void CtrlMat();
         void Disp(DispType disp_type);
+        void Emit(float_t delta_frame, float_t emission);
+        void EmitInit(float_t delta_frame, float_t emission);
         void Free(float_t emission, bool free);
         size_t GetCtrlCount(ParticleType type);
         size_t GetDispCount(ParticleType type);
         DispType GetDispType();
         void GetExtAnim();
         bool GetExtAnimMat(mat4* mat);
-        bool GetExtAnimScale(vec3* ext_anim_scale, float_t* some_scale);
+        bool GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale);
         void GetExtColor(float_t& r, float_t& g, float_t& b, float_t& a);
         FogType GetFog();
+        bool GetUseCamera();
         void GetValue();
         bool HasEnded(bool a2);
+        void InitExtAnim();
+        void RenderSceneCtrl(float_t delta_frame);
         void Reset(SceneX* sc);
         bool ResetCheckInit(SceneX* sc, float_t* init_delta_frame = 0);
         bool ResetInit(SceneX* sc, float_t* init_delta_frame = 0);
         void SetExtAnim(const mat4* a2, const mat4* a3, const vec3* trans, bool set_flags);
-        void SetExtColor(bool set, float_t r, float_t g, float_t b, float_t a);
+        void SetExtAnimMat(const mat4* mat);
+        void SetExtColor(float_t r, float_t g, float_t b, float_t a, bool set);
+        void SetExtScale(float_t scale);
     };
 
     class EmitterX : public NodeX {
@@ -832,12 +846,14 @@ namespace Glitter {
         EmitterInstX(EmitterX* emit, EffectInstX* eff_inst, float_t emission);
         virtual ~EmitterInstX();
 
+        bool CheckUseCamera();
         void Copy(EmitterInstX* dst, float_t emission);
         void Ctrl(EffectInstX* eff_inst, float_t delta_frame);
         void CtrlInit(EffectInstX* eff_inst, float_t delta_frame);
         void CtrlMat(EffectInstX* eff_inst);
         void Emit(float_t delta_frame, float_t emission);
-        void EmitParticle(float_t emission);
+        void EmitInit(EffectInstX* eff_inst, float_t delta_frame, float_t emission);
+        void EmitParticle(float_t emission, float_t frame);
         void Free(float_t emission, bool free);
         void GetValue();
         bool HasEnded(bool a2);
@@ -845,6 +861,7 @@ namespace Glitter {
             vec3& position, vec3& direction, RandomX* random);
         uint8_t RandomGetStep();
         void RandomStepValue();
+        void RenderGroupCtrl(float_t delta_frame);
         void Reset();
     };
 
@@ -1104,16 +1121,19 @@ namespace Glitter {
 
         void AccelerateParticle(RenderElementX* rend_elem,
             float_t delta_frame, RandomX* random);
+        bool CheckUseCamera();
         void Copy(ParticleInstX* dst, float_t emission);
-        void Emit(int32_t dup_count, int32_t count, float_t emission);
+        void Emit(int32_t dup_count, int32_t count, float_t emission, float_t frame);
         void EmitParticle(RenderElementX* rend_elem, EmitterInstX* emit_inst,
             ParticleInstX::Data* ptcl_inst_data, int32_t index, uint8_t step, RandomX* random);
         void GetColor(RenderElementX* rend_elem, float_t color_scale);
-        bool GetExtAnimScale(vec3* ext_anim_scale, float_t* some_scale);
+        bool GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale);
         void GetExtColor(float_t& r, float_t& g, float_t& b, float_t& a);
+        bool GetUseCamera();
         bool GetValue(RenderElementX* rend_elem, float_t frame, RandomX* random, float_t* color_scale);
         void Free(bool free);
         bool HasEnded(bool a2);
+        void RenderGroupCtrl(float_t delta_frame);
         void Reset();
         void StepUVParticle(RenderElementX* rend_elem, float_t delta_frame, RandomX* random);
     };
@@ -1203,22 +1223,24 @@ namespace Glitter {
         ParticleInstX* particle;
         object_info object;
         bool use_culling;
+        bool use_camera;
 
         RenderGroupX(ParticleInstX* ptcl_inst);
         virtual ~RenderGroupX();
 
         RenderElementX* AddElement(RenderElementX* rend_elem);
         bool CannotDisp();
+        void CheckUseCamera();
         void Copy(RenderGroupX* dst);
         void Ctrl(float_t delta_frame, bool copy_mats);
         void CtrlParticle(RenderElementX* rend_elem, float_t delta_frame);
         void DeleteBuffers(bool a2);
         void Emit(ParticleInstX::Data* ptcl_inst_data,
-            EmitterInstX* emit_inst, int32_t dup_count, int32_t count);
+            EmitterInstX* emit_inst, int32_t dup_count, int32_t count, float_t frame);
         void Free();
         void FreeData();
         bool GetEmitterScale(vec3& emitter_scale);
-        bool GetExtAnimScale(vec3* ext_anim_scale, float_t* some_scale);
+        bool GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale);
         bool HasEnded();
 
         static mat4 RotateMeshToEmitPosition(RenderGroupX* rend_group,
@@ -1344,11 +1366,9 @@ namespace Glitter {
         uint32_t hash;
         SceneFlag flags;
         float_t emission;
-        EffectGroupX* effect_group;
-        float_t fade_frame;
         float_t fade_frame_left;
-        float_t delta_frame_history;
-        bool skip;
+        float_t fade_frame;
+        EffectGroupX* effect_group;
         FrameRateControl* frame_rate;
 
         SceneX(SceneCounter counter, uint32_t hash, EffectGroupX* eff_group, bool a5);
@@ -1356,6 +1376,7 @@ namespace Glitter {
 
         void CalcDisp();
         bool CanDisp(DispType disp_type, bool a3);
+        void CheckUpdate(float_t delta_frame);
         bool Copy(EffectInstX* eff_inst, SceneX* dst);
         void Ctrl(float_t delta_frame);
         void Disp(DispType disp_type);
@@ -1369,8 +1390,11 @@ namespace Glitter {
         void InitEffect(EffectX* eff, size_t id, bool appear_now, uint8_t load_flags = 0);
         bool ResetCheckInit(float_t* init_delta_frame = 0);
         bool ResetEffect(uint32_t effect_hash, size_t* id = 0);
-        bool SetExtColor(bool set, uint32_t effect_hash, float_t r, float_t g, float_t b, float_t a);
-        bool SetExtColorByID(bool set, size_t id, float_t r, float_t g, float_t b, float_t a);
+        void SetEnded();
+        void SetExtAnimMat(mat4* mat, size_t id);
+        bool SetExtColor(float_t r, float_t g, float_t b, float_t a, bool set, uint32_t effect_hash);
+        bool SetExtColorByID(float_t r, float_t g, float_t b, float_t a, bool set, size_t id);
+        void SetExtScale(float_t scale, size_t id);
         void SetFrameRate(FrameRateControl* frame_rate);
         void SetReqFrame(size_t id, float_t req_frame);
     };
@@ -1450,8 +1474,10 @@ namespace Glitter {
         uint32_t LoadFile(const char* file, const char* path, float_t emission, bool init_scene);
         SceneCounter LoadSceneEffect(uint32_t hash, bool appear_now = true, uint8_t load_flags = 0);
         void SetInitDeltaFrame(float_t value);
-        void SetSceneEffectExtColor(SceneCounter scene_counter, bool set,
-            uint32_t effect_hash, float_t r, float_t g, float_t b, float_t a);
+        void SetSceneEffectExtAnimMat(SceneCounter scene_counter, mat4* mat);
+        void SetSceneEffectExtColor(SceneCounter scene_counter,
+            float_t r, float_t g, float_t b, float_t a, bool set, uint32_t effect_hash);
+        void SetSceneEffectExtScale(SceneCounter scene_counter, float_t scale);
         void SetSceneEffectReqFrame(SceneCounter scene_counter, float_t req_frame);
         void SetSceneFrameRate(SceneCounter scene_counter, FrameRateControl* frame_rate);
         void SetPause(bool value);

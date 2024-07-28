@@ -106,7 +106,7 @@ namespace Glitter {
 
     RenderGroupX::RenderGroupX(ParticleInstX* ptcl_inst) : flags(), type(), draw_type(), pivot(),
         z_offset(), count(), ctrl(), disp(), texture(), mask_texture(), frame(), elements(), max_count(),
-        random_ptr(), disp_type(), fog_type(), vao(), vbo(), ebo(), particle(), use_culling() {
+        random_ptr(), disp_type(), fog_type(), vao(), vbo(), ebo(), particle(), use_culling(), use_camera() {
         split_u = 1;
         split_v = 1;
         split_uv = 1.0f;
@@ -215,6 +215,13 @@ namespace Glitter {
             return (effect->flags & EFFECT_INST_HAS_EXT_ANIM_NON_INIT) != 0;
         else
             return true;
+    }
+
+    void RenderGroupX::CheckUseCamera() {
+        if (particle)
+            use_camera = particle->GetUseCamera();
+        else
+            use_camera = false;
     }
 
     void RenderGroupX::Copy(RenderGroupX* dst) {
@@ -365,8 +372,9 @@ namespace Glitter {
             free_def(elements);
         }
     }
+
     void RenderGroupX::Emit(ParticleInstX::Data* ptcl_inst_data,
-        EmitterInstX* emit_inst, int32_t dup_count, int32_t count) {
+        EmitterInstX* emit_inst, int32_t dup_count, int32_t count, float_t frame) {
         RenderElementX* element;
         int64_t i;
         int32_t index;
@@ -381,6 +389,7 @@ namespace Glitter {
                     break;
 
                 emit_inst->RandomStepValue();
+                element->frame = frame;
                 particle->EmitParticle(element, emit_inst, ptcl_inst_data, index, step, random_ptr);
             }
     }
@@ -419,9 +428,9 @@ namespace Glitter {
         return false;
     }
 
-    bool RenderGroupX::GetExtAnimScale(vec3* ext_anim_scale, float_t* some_scale) {
+    bool RenderGroupX::GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale) {
         if (particle)
-            particle->GetExtAnimScale(ext_anim_scale, some_scale);
+            particle->GetExtAnimScale(ext_anim_scale, ext_scale);
         return false;
     }
 

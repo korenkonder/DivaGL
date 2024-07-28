@@ -126,6 +126,35 @@ namespace Glitter {
         rend_elem->speed = max_def(speed, 0.0f);
     }
 
+    bool ParticleInstX::CheckUseCamera() {
+        ParticleX* ptcl = data.particle;
+        if (!ptcl)
+            return false;
+
+        switch (ptcl->data.draw_type) {
+        case DIRECTION_BILLBOARD:
+        case DIRECTION_BILLBOARD_Y_AXIS:
+            return true;
+        }
+
+        if (ptcl->data.type != PARTICLE_QUAD || fabsf(ptcl->data.z_offset) <= 0.000001f)
+            return false;
+
+        switch (ptcl->data.draw_type) {
+        case DIRECTION_BILLBOARD:
+        case DIRECTION_EMITTER_DIRECTION:
+        case DIRECTION_Y_AXIS:
+        case DIRECTION_X_AXIS:
+        case DIRECTION_Z_AXIS:
+        case DIRECTION_BILLBOARD_Y_AXIS:
+        case DIRECTION_EMITTER_ROTATION:
+        case DIRECTION_EFFECT_ROTATION:
+        case DIRECTION_PARTICLE_ROTATION:
+            return true;
+        }
+        return false;
+    }
+
     void ParticleInstX::Copy(ParticleInstX* dst, float_t emission) {
         dst->data.flags = data.flags;
         if (data.render_group && dst->data.render_group)
@@ -146,7 +175,7 @@ namespace Glitter {
             }
     }
 
-    void ParticleInstX::Emit(int32_t dup_count, int32_t count, float_t emission) {
+    void ParticleInstX::Emit(int32_t dup_count, int32_t count, float_t emission, float_t frame) {
         if (data.flags & PARTICLE_INST_ENDED)
             return;
 
@@ -164,7 +193,7 @@ namespace Glitter {
         }
 
         if (ptcl->data.render_group)
-            ptcl->data.render_group->Emit(&ptcl->data, ptcl->data.emitter, dup_count, count);
+            ptcl->data.render_group->Emit(&ptcl->data, ptcl->data.emitter, dup_count, count, frame);
     }
 
     void ParticleInstX::EmitParticle(RenderElementX* rend_elem, EmitterInstX* emit_inst,
@@ -332,11 +361,11 @@ namespace Glitter {
             rend_elem->disp = false;
     }
 
-    bool ParticleInstX::GetExtAnimScale(vec3* ext_anim_scale, float_t* some_scale) {
+    bool ParticleInstX::GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale) {
         if (data.effect)
-            return data.effect->GetExtAnimScale(ext_anim_scale, some_scale);
+            return data.effect->GetExtAnimScale(ext_anim_scale, ext_scale);
         else if (data.parent && data.parent->data.effect)
-            return data.parent->data.effect->GetExtAnimScale(ext_anim_scale, some_scale);
+            return data.parent->data.effect->GetExtAnimScale(ext_anim_scale, ext_scale);
         else
             return false;
     }
@@ -346,6 +375,15 @@ namespace Glitter {
             data.effect->GetExtColor(r, g, b, a);
         else if (data.parent && data.parent->data.effect)
             data.parent->data.effect->GetExtColor(r, g, b, a);
+    }
+
+    bool ParticleInstX::GetUseCamera() {
+        if (data.effect)
+            return data.effect->GetUseCamera();
+        else if (data.parent && data.parent->data.effect)
+            return data.parent->data.effect->GetUseCamera();
+        else
+            return false;
     }
 
     bool ParticleInstX::GetValue(RenderElementX* rend_elem, float_t frame, RandomX* random, float_t* color_scale) {
@@ -478,6 +516,17 @@ namespace Glitter {
             if (!i->HasEnded(a2))
                 return false;
         return true;
+    }
+
+    void ParticleInstX::RenderGroupCtrl(float_t delta_frame) {
+        if (data.parent || !(data.flags & PARTICLE_INST_NO_CHILD)) {
+            if (data.render_group)
+                data.render_group->Ctrl(delta_frame, true);
+            return;
+        }
+
+        for (ParticleInstX*& i : data.children)
+            i->RenderGroupCtrl(delta_frame);
     }
 
     void ParticleInstX::Reset() {

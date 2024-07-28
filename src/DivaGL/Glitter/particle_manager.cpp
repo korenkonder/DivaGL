@@ -81,6 +81,20 @@ namespace Glitter {
             else
                 delta_frame = get_delta_frame();
 
+            for (SceneX*& i : scenes) {
+                if (!i)
+                    continue;
+
+                float_t delta_frame = this->delta_frame;
+                if (i->frame_rate)
+                    delta_frame = i->frame_rate->get_delta_frame();
+
+                i->CheckUpdate(delta_frame);
+
+                if (i->HasEnded(true))
+                    i->SetEnded();
+            }
+
             CtrlScenes();
         }
         return false;
@@ -278,13 +292,8 @@ namespace Glitter {
                 free = scene->HasEnded(true);
             }
 
-            if (free) {
-                if (!(scene->flags & SCENE_ENDED)) {
-                    enum_or(scene->flags, SCENE_ENDED);
-                    scene->fade_frame_left = scene->fade_frame;
-                }
-                i++;
-            }
+            if (free)
+                scene->SetEnded();
             break;
         }
     }
@@ -552,18 +561,33 @@ namespace Glitter {
             enum_and(flags, ~PARTICLE_MANAGER_PAUSE);
     }
 
-    void GltParticleManagerX::SetSceneEffectExtColor(SceneCounter scene_counter, bool set,
-        uint32_t effect_hash, float_t r, float_t g, float_t b, float_t a) {
+    void GltParticleManagerX::SetSceneEffectExtAnimMat(SceneCounter scene_counter, mat4* mat) {
         for (SceneX*& i : scenes)
             if (i && i->counter.counter == scene_counter.counter) {
-                if (effect_hash == hash_murmurhash_empty)
-                    i->SetExtColorByID(set, scene_counter.index, r, g, b, a);
-                else
-                    i->SetExtColor(set, effect_hash, r, g, b, a);
+                i->SetExtAnimMat(mat, scene_counter.index);
                 break;
             }
     }
 
+    void GltParticleManagerX::SetSceneEffectExtColor(SceneCounter scene_counter,
+        float_t r, float_t g, float_t b, float_t a, bool set, uint32_t effect_hash) {
+        for (SceneX*& i : scenes)
+            if (i && i->counter.counter == scene_counter.counter) {
+                if (effect_hash == hash_fnv1a64m_empty || effect_hash == hash_murmurhash_empty)
+                    i->SetExtColorByID(r, g, b, a, set, scene_counter.index);
+                else
+                    i->SetExtColor(r, g, b, a, set, effect_hash);
+                break;
+            }
+    }
+
+    void GltParticleManagerX::SetSceneEffectExtScale(SceneCounter scene_counter, float_t scale) {
+        for (SceneX*& i : scenes)
+            if (i && i->counter.counter == scene_counter.counter) {
+                i->SetExtScale(scale, scene_counter.index);
+                break;
+            }
+    }
     void GltParticleManagerX::SetSceneEffectReqFrame(SceneCounter scene_counter, float_t req_frame) {
         for (SceneX*& i : scenes)
             if (i && i->counter.counter == scene_counter.counter) {
