@@ -608,7 +608,6 @@ namespace Glitter {
 
         void CalcDisp();
         void CalcDisp(RenderGroup* rend_group);
-        void CheckUseCamera();
         void Disp(Glitter::DispType disp_type);
         void Disp(RenderGroup* rend_group);
 
@@ -1125,7 +1124,7 @@ namespace Glitter {
         void Copy(ParticleInstX* dst, float_t emission);
         void Emit(int32_t dup_count, int32_t count, float_t emission, float_t frame);
         void EmitParticle(RenderElementX* rend_elem, EmitterInstX* emit_inst,
-            ParticleInstX::Data* ptcl_inst_data, int32_t index, uint8_t step, RandomX* random);
+            ParticleX::Data* ptcl_data, int32_t index, uint8_t step, RandomX* random);
         void GetColor(RenderElementX* rend_elem, float_t color_scale);
         bool GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale);
         void GetExtColor(float_t& r, float_t& g, float_t& b, float_t& a);
@@ -1235,7 +1234,7 @@ namespace Glitter {
         void Ctrl(float_t delta_frame, bool copy_mats);
         void CtrlParticle(RenderElementX* rend_elem, float_t delta_frame);
         void DeleteBuffers(bool a2);
-        void Emit(ParticleInstX::Data* ptcl_inst_data,
+        void Emit(ParticleX::Data* ptcl_data,
             EmitterInstX* emit_inst, int32_t dup_count, int32_t count, float_t frame);
         void Free();
         void FreeData();
@@ -1322,7 +1321,7 @@ namespace Glitter {
 
         void InitLocusHistory(ParticleInstX* ptcl_inst, RandomX* random);
         void InitMesh(EmitterInstX* emit_inst,
-            ParticleInstX::Data* ptcl_inst_data, int32_t index, RandomX* random);
+            ParticleX::Data* ptcl_data, int32_t index, RandomX* random);
     };
 
     struct SceneEffect {

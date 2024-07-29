@@ -254,21 +254,21 @@ namespace Glitter {
         if (!particle)
             return;
 
-        ParticleInstX::Data* data = &particle->data;
-        blend_mode = data->data.blend_mode;
-        mask_blend_mode = data->data.mask_blend_mode;
-        texture = data->data.texture;
-        mask_texture = data->data.mask_texture;
-        object.set_id = (uint16_t)data->data.mesh.object_set;
-        object.id = (uint16_t)data->data.mesh.object;
-        split_u = data->data.split_u;
-        split_v = data->data.split_v;
-        split_uv = data->data.split_uv;
-        type = data->data.type;
-        draw_type = data->data.draw_type;
-        z_offset = data->data.z_offset;
-        pivot = data->data.pivot;
-        flags = data->data.flags;
+        ParticleX::Data* ptcl_data = &particle->data.data;
+        blend_mode = ptcl_data->blend_mode;
+        mask_blend_mode = ptcl_data->mask_blend_mode;
+        texture = ptcl_data->texture;
+        mask_texture = ptcl_data->mask_texture;
+        object.set_id = (uint16_t)ptcl_data->mesh.object_set;
+        object.id = (uint16_t)ptcl_data->mesh.object;
+        split_u = ptcl_data->split_u;
+        split_v = ptcl_data->split_v;
+        split_uv = ptcl_data->split_uv;
+        type = ptcl_data->type;
+        draw_type = ptcl_data->draw_type;
+        z_offset = ptcl_data->z_offset;
+        pivot = ptcl_data->pivot;
+        flags = ptcl_data->flags;
 
         if (copy_mats && particle->data.emitter) {
             EmitterInstX* emitter = particle->data.emitter;
@@ -373,7 +373,7 @@ namespace Glitter {
         }
     }
 
-    void RenderGroupX::Emit(ParticleInstX::Data* ptcl_inst_data,
+    void RenderGroupX::Emit(ParticleX::Data* ptcl_data,
         EmitterInstX* emit_inst, int32_t dup_count, int32_t count, float_t frame) {
         RenderElementX* element;
         int64_t i;
@@ -390,7 +390,7 @@ namespace Glitter {
 
                 emit_inst->RandomStepValue();
                 element->frame = frame;
-                particle->EmitParticle(element, emit_inst, ptcl_inst_data, index, step, random_ptr);
+                particle->EmitParticle(element, emit_inst, ptcl_data, index, step, random_ptr);
             }
     }
 

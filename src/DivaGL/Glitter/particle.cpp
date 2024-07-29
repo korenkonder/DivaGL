@@ -40,8 +40,8 @@ namespace Glitter {
         deceleration(), deceleration_random(), reflection_coeff(), reflection_coeff_random(), rebound_plane_y(),
         uv_index_type(), uv_index(), frame_step_uv(), uv_index_start(), uv_index_end(), uv_index_count(),
         uv_scroll_add_scale(), uv_scroll_2nd_add_scale(), split_u(), split_v(), blend_mode(), mask_blend_mode(),
-        sub_flags(), count(), locus_history_size(), locus_history_size_random(), draw_flags(), emission(),
-        tex_hash(), mask_tex_hash(), texture(), mask_texture(), unk0(), unk1(), unk2(), unk3(), unk4(), mesh() {
+        sub_flags(), count(), locus_history_size(), locus_history_size_random(), draw_flags(), emission(), tex_hash(),
+        mask_tex_hash(), texture(), mask_texture(), unk0(), unk1(), unk2(), unk3(), unk4(), mesh() {
 
     }
 
