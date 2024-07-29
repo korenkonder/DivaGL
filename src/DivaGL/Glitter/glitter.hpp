@@ -552,18 +552,13 @@ namespace Glitter {
     struct EffectGroupX {
         prj::vector<EffectX*> effects;
         int32_t load_count;
-        uint32_t hash;
+        texture** resources;
         SceneX* scene;
         float_t emission;
-        uint32_t resources_count;
-        prj::vector<uint32_t> resource_hashes;
-        txp_set resources_tex;
-        texture** resources;
-        prj::vector<MeshX> meshes;
         bool not_loaded;
         bool scene_init;
         bool buffer_init;
-        uint32_t version;
+        prj::vector<MeshX> meshes;
 
         EffectGroupX();
         virtual ~EffectGroupX();
@@ -704,6 +699,8 @@ namespace Glitter {
 
             ExtAnim();
             ~ExtAnim();
+
+            void Reset();
         };
 
         prj::vector<EmitterInstX*> emitters;
@@ -867,6 +864,7 @@ namespace Glitter {
     struct FileReaderX {
         p_file_handler* file_handler;
         farc* farc;
+        uint32_t* resource_hashes;
         EffectGroupX* effect_group;
         uint32_t hash;
         int32_t load_count;

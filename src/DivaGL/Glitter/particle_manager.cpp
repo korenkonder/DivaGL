@@ -125,7 +125,6 @@ namespace Glitter {
         eff_group->emission = file_read->emission;
         if (file_read->emission <= 0.0f)
             eff_group->emission = emission;
-        eff_group->hash = hash;
 
         effect_groups.insert({ hash, eff_group });
         return true;

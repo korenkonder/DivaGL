@@ -20,11 +20,11 @@
 namespace prj {
     typedef enum HeapCMallocType {
         HeapCMallocSystem = 0x00,
-        HeapCMallocTemp = 0x01,
-        HeapCMallocMode = 0x02,
-        HeapCMallocEvent = 0x03,
-        HeapCMallocDebug = 0x04,
-        HeapCMallocMax = 0x05,
+        HeapCMallocTemp   = 0x01,
+        HeapCMallocMode   = 0x02,
+        HeapCMallocEvent  = 0x03,
+        HeapCMallocDebug  = 0x04,
+        HeapCMallocMax    = 0x05,
     } HeapCMallocType;
 
     static void* (*HeapCMallocAllocate)(HeapCMallocType type, size_t size, const char* name)
@@ -40,7 +40,6 @@ namespace prj {
 static void* (*_operator_new)(size_t) = (void* (*)(size_t))0x000000014084530C;
 static void(*_operator_delete)(void*) = (void(*)(void*))0x0000000140845378;
 
-static float_t(*get_anim_frame_speed)() = (float_t(*)())0x0000000140192CC0;
 static float_t(*get_delta_frame)() = (float_t(*)())0x0000000140192D50;
 
 template <class T>

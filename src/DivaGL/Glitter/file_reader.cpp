@@ -10,13 +10,13 @@
 
 namespace Glitter {
     FileReaderX::FileReaderX() : file_handler(), farc(),
-        effect_group(), load_count(), state(), init_scene() {
+        resource_hashes(), effect_group(), load_count(), state(), init_scene() {
         emission = -1.0f;
         hash = hash_murmurhash_empty;
     }
 
     FileReaderX::FileReaderX(const char* path, const char* file, float_t emission)
-        : file_handler(), farc(), effect_group(), load_count(), state(), init_scene() {
+        : file_handler(), farc(), resource_hashes(), effect_group(), load_count(), state(), init_scene() {
         this->path = path ? path : "rom/particle_x/";
         this->file = file;
         this->emission = emission;
@@ -24,7 +24,7 @@ namespace Glitter {
     }
 
     FileReaderX::FileReaderX(const wchar_t* path, const wchar_t* file, float_t emission)
-        : file_handler(), farc(), effect_group(), load_count(), state(), init_scene() {
+        : file_handler(), farc(), resource_hashes(), effect_group(), load_count(), state(), init_scene() {
         char* path_temp = utf16_to_utf8(path);
         char* file_temp = utf16_to_utf8(file);
         this->path = path_temp ? path_temp : "rom/particle_x/";
@@ -36,9 +36,21 @@ namespace Glitter {
     }
 
     FileReaderX::~FileReaderX() {
-        delete farc;
-        file_handler->~p_file_handler();
-        _operator_delete(file_handler);
+        if (file_handler) {
+            file_handler->~p_file_handler();
+            _operator_delete(file_handler);
+            file_handler = 0;
+        }
+
+        if (farc) {
+            farc = 0;
+            delete farc;
+        }
+
+        if (resource_hashes) {
+            _operator_delete(resource_hashes);
+            resource_hashes = 0;
+        }
     }
 
     bool FileReaderX::CheckInit() {
@@ -531,27 +543,18 @@ namespace Glitter {
             || st->header.signature != reverse_endianness_uint32_t('TXPC'))
             return false;
 
-        eff_group->resources_tex.unpack_file(st->data.data(), false);
-        if (!eff_group->resources_count)
-            return false;
+        uint32_t count = *(uint32_t*)(st->data.data() + 0x04);
+        if (!count)
+            return true;
 
-        size_t count = eff_group->resources_tex.textures.size();
+        texture_id* ids = (texture_id*)_operator_new(sizeof(texture_id) * count);
+        for (size_t i = 0; i < count; i++)
+            ids[i] = texture_id(0x2A, GPM_VAL->texture_counter++);
 
-        if (count < 1 || eff_group->resources_count < 1
-            || eff_group->resources_count != count)
-            return false;
-
-        texture_id* ids = force_malloc<texture_id>(count);
-        for (size_t i = 0; i < count; i++) {
-            ids[i] = texture_id(0x2A, GPM_VAL->texture_counter);
-            GPM_VAL->texture_counter++;
-        }
-
-        if (!texture_txp_set_load(&eff_group->resources_tex, &eff_group->resources, ids)) {
-            free_def(ids);
-            return false;
-        }
+        txp_set_load(st->data.data(), &eff_group->resources, (uint32_t*)ids);
         free_def(ids);
+
+        uint32_t* resource_hashes = this->resource_hashes;
 
         for (EffectX*& i : eff_group->effects) {
             if (!i)
@@ -572,10 +575,10 @@ namespace Glitter {
                         || k->data.type == PARTICLE_MESH)
                         continue;
 
-                    for (size_t l = 0; l < eff_group->resources_count; l++) {
-                        if (k->data.tex_hash == eff_group->resource_hashes[l])
+                    for (size_t l = 0; l < count; l++) {
+                        if (k->data.tex_hash == resource_hashes[l])
                             k->data.texture = eff_group->resources[l]->glid;
-                        if (k->data.mask_tex_hash == eff_group->resource_hashes[l])
+                        if (k->data.mask_tex_hash == resource_hashes[l])
                             k->data.mask_texture = eff_group->resources[l]->glid;
                     }
                 }
@@ -585,7 +588,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::UnpackDivaResourceHashes(f2_struct* st, EffectGroupX* eff_group) {
-        if (eff_group->resources_count && eff_group->resource_hashes.size() > 0)
+        if (resource_hashes)
             return true;
         else if (!st || !st->header.data_size
             || st->header.signature != reverse_endianness_uint32_t('DVRS'))
@@ -598,10 +601,9 @@ namespace Glitter {
         uint32_t count = *(int32_t*)d;
         d += 8;
 
-        eff_group->resources_count = count;
         if (count) {
-            eff_group->resource_hashes = prj::vector<uint32_t>(count);
-            uint32_t* resource_hashes = eff_group->resource_hashes.data();
+            uint32_t* resource_hashes = (uint32_t*)_operator_new(sizeof(uint32_t) * count);
+            this->resource_hashes = resource_hashes;
             if (!resource_hashes)
                 return false;
 

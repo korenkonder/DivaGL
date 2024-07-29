@@ -10,7 +10,16 @@
 #include "../object.hpp"
 
 namespace Glitter {
-    EffectInstX::ExtAnim::ExtAnim() {
+    EffectInstX::ExtAnim::ExtAnim() : object_index(), mesh_index(), a3da_id(),
+        object_is_hrc(), a3da_uid(), instance_id(), mesh_name() {
+
+    }
+
+    EffectInstX::ExtAnim::~ExtAnim() {
+
+    }
+
+    void EffectInstX::ExtAnim::Reset() {
         object_index = -1;
         mesh_index = -1;
         a3da_id = -1;
@@ -21,10 +30,6 @@ namespace Glitter {
         mesh_name = 0;
         mat = mat4_identity;
         translation = 0.0f;
-    }
-
-    EffectInstX::ExtAnim::~ExtAnim() {
-
     }
 
     EffectInstX::EffectInstX(EffectX* eff, size_t id, SceneX* sc,
@@ -378,8 +383,11 @@ namespace Glitter {
     }
 
     void EffectInstX::InitExtAnim() {
-        if (!ext_anim)
+        if (!ext_anim) {
             ext_anim = new EffectInstX::ExtAnim;
+            if (ext_anim)
+                ext_anim->Reset();
+        }
     }
 
     void EffectInstX::RenderSceneCtrl(float_t delta_frame) {

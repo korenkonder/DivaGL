@@ -7,7 +7,6 @@
 
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/image.hpp"
-#include "../KKdLib/txp.hpp"
 #include "wrap.hpp"
 
 enum texture_flags {
@@ -84,6 +83,7 @@ struct texture {
 static_assert(sizeof(texture) == 0x24, "\"texture\" struct should have a size of 0x24");
 
 extern int32_t(FASTCALL* texture_info_get_id)(const char* name);
+extern void (FASTCALL* txp_set_load)(const void* data, texture*** textures, uint32_t* texture_ids);
 
 extern texture* texture_alloc(texture_id id);
 extern void texture_apply_color_tone(texture* chg_tex,
@@ -95,15 +95,11 @@ extern texture* texture_load_tex_2d(texture_id id, GLenum internal_format, int32
     int32_t max_mipmap_level, const void** data_ptr, bool use_high_anisotropy);
 extern texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format, int32_t width, int32_t height,
     int32_t max_mipmap_level, const void** data_ptr);
-extern texture* texture_txp_load(txp* t, texture_id id);
 extern void texture_release(texture* tex);
 
 extern void texture_array_free(texture** arr);
 
 extern void texture_set_params(GLenum target, int32_t max_mipmap_level, bool use_high_anisotropy);
-
-extern bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids);
-extern bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids);
 
 extern texture_id texture_manager_get_copy_id(uint32_t id);
 extern texture* texture_manager_get_texture(uint32_t id);

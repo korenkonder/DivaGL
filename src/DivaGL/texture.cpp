@@ -35,6 +35,8 @@ static_assert(sizeof(texture_manager) == 0x48, "\"texture_manager\" struct shoul
 
 int32_t(FASTCALL* texture_info_get_id)(const char* name)
     = (int32_t(FASTCALL*)(const char* name))0x000000014069CBD0;
+void (FASTCALL* txp_set_load)(const void* data, texture*** textures, uint32_t* texture_ids)
+    = (void (FASTCALL*)(const void* data, texture * **textures, uint32_t * texture_ids))0x000000014069D4B0;
 
 texture_manager*& texture_manager_work_ptr = *(texture_manager**)0x000000014CC96988;
 
@@ -47,7 +49,6 @@ static int32_t texture_load_pixels(GLenum target, GLenum internal_format,
 static texture* texture_load_tex(texture_id id, GLenum target,
     GLenum internal_format, int32_t width, int32_t height,
     int32_t max_mipmap_level, const void** data_ptr, bool use_high_anisotropy);
-static GLenum texture_txp_get_gl_internal_format(txp* t);
 
 texture::texture() : ref_count(), flags(), width(), height(),
 glid(), target(), internal_format(), max_mipmap_level(), size_texmem() {
@@ -250,27 +251,6 @@ texture* texture_load_tex_cube_map(texture_id id, GLenum internal_format, int32_
         width, height, max_mipmap_level, data_ptr, false);
 }
 
-texture* texture_txp_load(txp* t, texture_id id) {
-    if (!t || !t->mipmaps.size())
-        return 0;
-
-    prj::vector<const void*> data((size_t)t->array_size * t->mipmaps_count);
-    const void** data_ptr = data.data();
-    for (int32_t i = 0, k = 0; i < t->array_size; i++)
-        for (int32_t j = 0; j < t->mipmaps_count; j++, k++)
-            data_ptr[k] = t->mipmaps[k].data.data();
-
-    GLenum internal_format = texture_txp_get_gl_internal_format(t);
-    int32_t width = t->mipmaps[0].width;
-    int32_t height = t->mipmaps[0].height;
-    int32_t max_mipmap_level = t->mipmaps_count - 1;
-
-    if (t->has_cube_map)
-        return texture_load_tex_cube_map(id, internal_format, width, height, max_mipmap_level, data_ptr);
-    else
-        return texture_load_tex_2d(id, internal_format, width, height, max_mipmap_level, data_ptr, true);
-}
-
 void texture_release(texture* tex) {
     if (!texture_manager_work_ptr || !tex)
         return;
@@ -319,32 +299,6 @@ void texture_set_params(GLenum target, int32_t max_mipmap_level, bool use_high_a
     else
         max_anisotropy = 1.0f;
     glTexParameterfDLL(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_anisotropy);
-}
-
-bool texture_txp_set_load(txp_set* t, texture*** texs, uint32_t* ids) {
-    if (!t || !texs || !ids)
-        return false;
-
-    size_t count = t->textures.size();
-    *texs = force_malloc<texture*>(count + 1);
-    texture** tex = *texs;
-    for (size_t i = 0; i < count; i++)
-        tex[i] = texture_txp_load(&t->textures[i], texture_id(0x00, ids[i]));
-    tex[count] = 0;
-    return true;
-}
-
-bool texture_txp_set_load(txp_set* t, texture*** texs, texture_id* ids) {
-    if (!t || !texs || !ids)
-        return false;
-
-    size_t count = t->textures.size();
-    *texs = force_malloc<texture*>(count + 1);
-    texture** tex = *texs;
-    for (size_t i = 0; i < count; i++)
-        tex[i] = texture_txp_load(&t->textures[i], ids[i]);
-    tex[count] = 0;
-    return true;
 }
 
 inline texture_id texture_manager_get_copy_id(uint32_t id) {
@@ -758,42 +712,4 @@ fail:
     texture_bind(target, 0);
     texture_release(tex);
     return 0;
-}
-
-static GLenum texture_txp_get_gl_internal_format(txp* t) {
-    if (!t || !t->mipmaps.size())
-        return GL_ZERO;
-
-    switch (t->mipmaps[0].format) {
-    case TXP_A8:
-        return GL_ALPHA8;
-    case TXP_RGB8:
-        return GL_RGB8;
-    case TXP_RGBA8:
-        return GL_RGBA8;
-    case TXP_RGB5:
-        return GL_RGB5;
-    case TXP_RGB5A1:
-        return GL_RGB5_A1;
-    case TXP_RGBA4:
-        return GL_RGBA4;
-    case TXP_BC1:
-        return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-    case TXP_BC1a:
-        return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-    case TXP_BC2:
-        return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-    case TXP_BC3:
-        return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    case TXP_BC4:
-        return GL_COMPRESSED_RED_RGTC1_EXT;
-    case TXP_BC5:
-        return GL_COMPRESSED_RED_GREEN_RGTC2_EXT;
-    case TXP_L8:
-        return GL_LUMINANCE8;
-    case TXP_L8A8:
-        return GL_LUMINANCE8_ALPHA8;
-    default:
-        return GL_ZERO;
-    }
 }

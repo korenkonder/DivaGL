@@ -9,10 +9,9 @@
 #include "../texture.hpp"
 
 namespace Glitter {
-    EffectGroupX::EffectGroupX() : effects(), load_count(), hash(), scene(), resources_count(),
-        resources_tex(), resources(), not_loaded(), scene_init(), buffer_init() {
+    EffectGroupX::EffectGroupX() : effects(), load_count(), resources(),
+        scene(), not_loaded(), scene_init(), buffer_init() {
         emission = 1.0f;
-        version = 0x0C;
     }
 
     EffectGroupX::~EffectGroupX() {
