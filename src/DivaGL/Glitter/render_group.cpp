@@ -206,13 +206,12 @@ namespace Glitter {
     }
 
     bool RenderGroupX::CannotDisp() {
-        EffectInstX* effect;
         if (!particle)
             return true;
         else if (particle->data.effect)
-            return (particle->data.effect->flags & EFFECT_INST_HAS_EXT_ANIM_NON_INIT) != 0;
-        else if ((particle = particle->data.parent) && (effect = particle->data.effect))
-            return (effect->flags & EFFECT_INST_HAS_EXT_ANIM_NON_INIT) != 0;
+            return (particle->data.effect->flags & EFFECT_INST_EXT_ANIM_NON_INIT) != 0;
+        else if ((particle = particle->data.parent) && (particle->data.effect))
+            return (particle->data.effect->flags & EFFECT_INST_EXT_ANIM_NON_INIT) != 0;
         else
             return true;
     }

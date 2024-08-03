@@ -96,7 +96,7 @@ namespace Glitter {
         EFFECT_EXT_ANIM_NO_TRANS_Z          = 0x00010,
         EFFECT_EXT_ANIM_NO_DRAW_IF_NO_DATA  = 0x00020,
         EFFECT_EXT_ANIM_GET_THEN_UPDATE     = 0x00040,
-        EFFECT_EXT_ANIM_CHARA_ANIM          = 0x10000,
+        EFFECT_EXT_ANIM_CHARA               = 0x10000,
     };
 
     enum EffectExtAnimCharaNode {
@@ -145,26 +145,26 @@ namespace Glitter {
         EFFECT_INST_NONE                     = 0x0000000,
         EFFECT_INST_FREE                     = 0x0000001,
         EFFECT_INST_RESET_INIT               = 0x0000002,
-        EFFECT_INST_HAS_EXT_ANIM             = 0x0000004,
-        EFFECT_INST_HAS_EXT_ANIM_TRANS       = 0x0000008,
-        EFFECT_INST_HAS_EXT_ANIM_NON_INIT    = 0x0000010,
-        EFFECT_INST_CHARA_ANIM               = 0x0000020,
-        EFFECT_INST_GET_EXT_ANIM_MAT         = 0x0000040,
-        EFFECT_INST_SET_EXT_ANIM_ONCE        = 0x0000080,
-        EFFECT_INST_SET_EXT_COLOR            = 0x0000100,
+        EFFECT_INST_EXT_ANIM                 = 0x0000004,
+        EFFECT_INST_EXT_ANIM_TRANS           = 0x0000008,
+        EFFECT_INST_EXT_ANIM_NON_INIT        = 0x0000010,
+        EFFECT_INST_EXT_ANIM_CHARA           = 0x0000020,
+        EFFECT_INST_EXT_ANIM_AUTH            = 0x0000040,
+        EFFECT_INST_EXT_ANIM_SET_ONCE        = 0x0000080,
+        EFFECT_INST_EXT_COLOR_SET            = 0x0000100,
         EFFECT_INST_EXT_COLOR                = 0x0000200,
-        EFFECT_INST_HAS_EXT_SCALE            = 0x0000400,
-        EFFECT_INST_HAS_EXT_ANIM_SCALE       = 0x0000800,
+        EFFECT_INST_EXT_SCALE                = 0x0000400,
+        EFFECT_INST_EXT_ANIM_END             = 0x0000800,
         EFFECT_INST_NO_EXT_ANIM_TRANS_X      = 0x0001000,
         EFFECT_INST_NO_EXT_ANIM_TRANS_Y      = 0x0002000,
         EFFECT_INST_NO_EXT_ANIM_TRANS_Z      = 0x0004000,
         EFFECT_INST_EXT_ANIM_TRANS_ONLY      = 0x0008000,
         EFFECT_INST_FLAG_17                  = 0x0010000,
-        EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE = 0x0020000,
-        EFFECT_INST_SET_EXT_ANIM_MAT         = 0x0040000,
+        EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE = 0x0020000,
+        EFFECT_INST_EXT_ANIM_MAT             = 0x0040000,
         EFFECT_INST_DISP                     = 0x0080000,
-        EFFECT_INST_DEPENDS_ON_EXT_DATA      = 0x0100000,
-        EFFECT_INST_HAS_MESH                 = 0x0200000,
+        EFFECT_INST_CAMERA                   = 0x0100000,
+        EFFECT_INST_MESH                     = 0x0200000,
         EFFECT_INST_FLAG_23                  = 0x0400000,
         EFFECT_INST_JUST_INIT                = 0x0800000,
         EFFECT_INST_NOT_ENDED                = 0x1000000,
@@ -522,7 +522,7 @@ namespace Glitter {
             EffectFlag flags;
             float_t emission;
             int32_t seed;
-            float_t ext_anim_scale_start_time;
+            float_t ext_anim_end_time;
 
             Data();
         };
@@ -714,8 +714,8 @@ namespace Glitter {
         virtual ~EffectInstX();
 
         void CalcDisp();
-        void CheckDataDependency();
         void CheckUpdate();
+        void CheckUseCamera();
         void Copy(EffectInstX* dst, float_t emission);
         void Ctrl(float_t delta_frame);
         void CtrlFlags(float_t delta_frame);

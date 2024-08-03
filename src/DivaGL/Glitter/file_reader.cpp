@@ -660,7 +660,7 @@ namespace Glitter {
 
         eff->data.emission = *(float_t*)d;
         eff->data.seed = *(int32_t*)(d + 4);
-        eff->data.ext_anim_scale_start_time = *(float_t*)(d + 8);
+        eff->data.ext_anim_end_time = *(float_t*)(d + 8);
         d += 12;
 
         if (eff->version != 8)
@@ -686,7 +686,7 @@ namespace Glitter {
                 int32_t node_index = * (int32_t*)(d + 8);
 
                 ext_anim->bone_index = GetEffectExtAnimBoneIndex((EffectExtAnimCharaNode)node_index);
-                enum_or(ext_anim->flags, EFFECT_EXT_ANIM_CHARA_ANIM);
+                enum_or(ext_anim->flags, EFFECT_EXT_ANIM_CHARA);
             }
         }
         else if (type == 3) {

@@ -75,11 +75,13 @@ namespace Glitter {
         random_shared.value = random;
 
         if (!(eff->data.flags & EFFECT_LOCAL) && data.ext_anim) {
-            EffectInstX::ExtAnim* inst_ext_anim = new EffectInstX::ExtAnim;
+            InitExtAnim();
+
+            EffectInstX::ExtAnim* inst_ext_anim = this->ext_anim;
             if (inst_ext_anim) {
                 EffectX::ExtAnim* ext_anim = data.ext_anim;
                 if (ext_anim->flags & EFFECT_EXT_ANIM_SET_ONCE)
-                    enum_or(flags, EFFECT_INST_SET_EXT_ANIM_ONCE);
+                    enum_or(flags, EFFECT_INST_EXT_ANIM_SET_ONCE);
                 if (ext_anim->flags & EFFECT_EXT_ANIM_TRANS_ONLY)
                     enum_or(flags, EFFECT_INST_EXT_ANIM_TRANS_ONLY);
                 if (ext_anim->flags & EFFECT_EXT_ANIM_NO_TRANS_X)
@@ -89,12 +91,12 @@ namespace Glitter {
                 if (ext_anim->flags & EFFECT_EXT_ANIM_NO_TRANS_Z)
                     enum_or(flags, EFFECT_INST_NO_EXT_ANIM_TRANS_Z);
                 if (ext_anim->flags & EFFECT_EXT_ANIM_GET_THEN_UPDATE)
-                    enum_or(flags, EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE);
+                    enum_or(flags, EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE);
 
-                if (ext_anim->flags & EFFECT_EXT_ANIM_CHARA_ANIM) {
+                if (ext_anim->flags & EFFECT_EXT_ANIM_CHARA) {
                     inst_ext_anim->chara_index = ext_anim->chara_index;
                     inst_ext_anim->bone_index = ext_anim->bone_index;
-                    enum_or(flags, EFFECT_INST_CHARA_ANIM);
+                    enum_or(flags, EFFECT_INST_EXT_ANIM_CHARA);
                 }
                 else {
                     inst_ext_anim->object = ext_anim->object;
@@ -107,10 +109,10 @@ namespace Glitter {
                 else
                     inst_ext_anim->mesh_name = 0;
             }
-            ext_anim = inst_ext_anim;
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM);
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_NON_INIT);
-            enum_or(flags, EFFECT_INST_GET_EXT_ANIM_MAT);
+
+            enum_or(flags, EFFECT_INST_EXT_ANIM);
+            enum_or(flags, EFFECT_INST_EXT_ANIM_NON_INIT);
+            enum_or(flags, EFFECT_INST_EXT_ANIM_AUTH);
         }
 
         emitters.reserve(eff->emitters.size());
@@ -138,30 +140,30 @@ namespace Glitter {
         render_scene.CalcDisp();
     }
 
-    void EffectInstX::CheckDataDependency() {
-        bool depends_on_ext_data = false;
-        if (ext_anim)
-            if (!(flags & EFFECT_INST_SET_EXT_ANIM_MAT) && !(flags & EFFECT_INST_HAS_EXT_ANIM)
-                || (flags & EFFECT_INST_HAS_EXT_ANIM_SCALE)
-                || (flags & EFFECT_INST_SET_EXT_ANIM_ONCE) && (flags & EFFECT_INST_HAS_EXT_ANIM_TRANS))
-                depends_on_ext_data = true;
+    void EffectInstX::CheckUpdate() {
+        CheckUseCamera();
+        render_scene.CheckUseCamera();
+    }
 
-        if (!depends_on_ext_data)
+    void EffectInstX::CheckUseCamera() {
+        bool use_camera = false;
+        if (ext_anim)
+            if (!(flags & EFFECT_INST_EXT_ANIM) && !(flags & EFFECT_INST_EXT_ANIM_MAT)
+                || (flags & EFFECT_INST_EXT_ANIM_END)
+                || (flags & EFFECT_INST_EXT_ANIM_SET_ONCE) && (flags & EFFECT_INST_EXT_ANIM_TRANS))
+                use_camera = true;
+
+        if (!use_camera)
             for (EmitterInstX*& i : emitters)
                 if (i->CheckUseCamera()) {
-                    depends_on_ext_data = true;
+                    use_camera = true;
                     break;
                 }
 
-        if (depends_on_ext_data)
-            enum_or(flags, EFFECT_INST_DEPENDS_ON_EXT_DATA);
+        if (use_camera)
+            enum_or(flags, EFFECT_INST_CAMERA);
         else
-            enum_and(flags, ~EFFECT_INST_DEPENDS_ON_EXT_DATA);
-    }
-
-    void EffectInstX::CheckUpdate() {
-        CheckDataDependency();
-        render_scene.CheckUseCamera();
+            enum_and(flags, ~EFFECT_INST_CAMERA);
     }
 
     void EffectInstX::Copy(EffectInstX* dst, float_t emission) {
@@ -187,7 +189,7 @@ namespace Glitter {
 
     void EffectInstX::Ctrl(float_t delta_frame) {
         GetExtAnim();
-        if (flags & EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE)
+        if (flags & EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE)
             return;
 
         GetValue();
@@ -231,10 +233,10 @@ namespace Glitter {
 
         frame0 += delta_frame;
 
-        if ((flags & EFFECT_INST_HAS_EXT_ANIM) && !(flags & EFFECT_INST_HAS_EXT_ANIM_SCALE)) {
-            if (data.ext_anim_scale_start_time >= 0.0f && (flags & EFFECT_INST_HAS_EXT_ANIM_TRANS)
-                && frame0 >= data.ext_anim_scale_start_time)
-                enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_SCALE);
+        if ((flags & EFFECT_INST_EXT_ANIM) && !(flags & EFFECT_INST_EXT_ANIM_END)) {
+            if ((flags & EFFECT_INST_EXT_ANIM_TRANS)
+                && data.ext_anim_end_time >= 0.0f && frame0 >= data.ext_anim_end_time)
+                enum_or(flags, EFFECT_INST_EXT_ANIM_END);
         }
 
         float_t life_time = (float_t)data.life_time;
@@ -280,7 +282,7 @@ namespace Glitter {
     }
 
     void EffectInstX::Emit(float_t delta_frame, float_t emission) {
-        if (flags & EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE)
+        if (flags & EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE)
             return;
         else if (flags & EFFECT_INST_NOT_ENDED) {
             if (!(data.flags & EFFECT_LOOP)) {
@@ -350,7 +352,7 @@ namespace Glitter {
             if (ext_anim) {
                 EffectX::ExtAnim* ext_anim = data.ext_anim;
                 if (ext_anim->flags & EFFECT_EXT_ANIM_SET_ONCE)
-                    enum_or(flags, EFFECT_INST_SET_EXT_ANIM_ONCE);
+                    enum_or(flags, EFFECT_INST_EXT_ANIM_SET_ONCE);
                 if (ext_anim->flags & EFFECT_EXT_ANIM_TRANS_ONLY)
                     enum_or(flags, EFFECT_INST_EXT_ANIM_TRANS_ONLY);
                 if (ext_anim->flags & EFFECT_EXT_ANIM_NO_TRANS_X)
@@ -360,13 +362,13 @@ namespace Glitter {
                 if (ext_anim->flags & EFFECT_EXT_ANIM_NO_TRANS_Z)
                     enum_or(flags, EFFECT_INST_NO_EXT_ANIM_TRANS_Z);
                 if (ext_anim->flags & EFFECT_EXT_ANIM_GET_THEN_UPDATE)
-                    enum_or(flags, EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE);
-                if (ext_anim->flags & EFFECT_EXT_ANIM_CHARA_ANIM)
-                    enum_or(flags, EFFECT_INST_CHARA_ANIM);
+                    enum_or(flags, EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE);
+                if (ext_anim->flags & EFFECT_EXT_ANIM_CHARA)
+                    enum_or(flags, EFFECT_INST_EXT_ANIM_CHARA);
             }
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM);
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_NON_INIT);
-            enum_or(flags, EFFECT_INST_GET_EXT_ANIM_MAT);
+            enum_or(flags, EFFECT_INST_EXT_ANIM);
+            enum_or(flags, EFFECT_INST_EXT_ANIM_NON_INIT);
+            enum_or(flags, EFFECT_INST_EXT_ANIM_AUTH);
         }
 
         for (EmitterInstX*& i : emitters)
@@ -496,17 +498,17 @@ namespace Glitter {
         if (!ext_anim)
             return;
         
-        if (!(flags & EFFECT_INST_SET_EXT_ANIM_MAT) && !(flags & EFFECT_INST_HAS_EXT_ANIM)
-            || (flags & EFFECT_INST_HAS_EXT_ANIM_SCALE)
-            || (flags & EFFECT_INST_SET_EXT_ANIM_ONCE) && (flags & EFFECT_INST_HAS_EXT_ANIM_TRANS))
+        if (!(flags & EFFECT_INST_EXT_ANIM) && !(flags & EFFECT_INST_EXT_ANIM_MAT)
+            || (flags & EFFECT_INST_EXT_ANIM_END)
+            || (flags & EFFECT_INST_EXT_ANIM_SET_ONCE) && (flags & EFFECT_INST_EXT_ANIM_TRANS))
             return;
 
         bool set_flags = false;
 
-        if (data.ext_anim->flags & EFFECT_INST_CHARA_ANIM)
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_NON_INIT);
+        if (data.ext_anim->flags & EFFECT_INST_EXT_ANIM_CHARA)
+            enum_or(flags, EFFECT_INST_EXT_ANIM_NON_INIT);
 
-        if (flags & EFFECT_INST_CHARA_ANIM) {
+        if (flags & EFFECT_INST_EXT_ANIM_CHARA) {
             size_t rob_chara_smth = get_rob_chara_smth();
             rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, ext_anim->chara_index);
             if (!rob_chr)
@@ -519,7 +521,7 @@ namespace Glitter {
             mat4_get_scale(&mat, &scale);
             ext_anim_scale = scale - 1.0f;
             ext_anim_scale.z = 0.0f;
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_SCALE);
+            enum_or(flags, EFFECT_INST_EXT_SCALE);
 
             if (rob_chara_array_check_visibility(rob_chara_smth, ext_anim->chara_index)
                 || !(data.ext_anim->flags & EFFECT_EXT_ANIM_NO_DRAW_IF_NO_DATA))
@@ -536,7 +538,7 @@ namespace Glitter {
             else
                 SetExtAnim(&mat, 0, 0, set_flags);
         }
-        else if (flags & EFFECT_INST_GET_EXT_ANIM_MAT) {
+        else if (flags & EFFECT_INST_EXT_ANIM_AUTH) {
             const mat4* obj_mat = 0;
             if (ext_anim->a3da_id != -1)
                 obj_mat = ((auth_3d_id*)&ext_anim->a3da_id)->get_auth_3d_object_mat(
@@ -567,7 +569,7 @@ namespace Glitter {
                     mat4_get_scale(&mat, &scale);
                     ext_anim_scale = scale - 1.0f;
                     ext_anim_scale.z = 0.0f;
-                    enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_SCALE);
+                    enum_or(flags, EFFECT_INST_EXT_SCALE);
                 }
             }
 
@@ -606,7 +608,7 @@ namespace Glitter {
     }
 
     bool EffectInstX::GetExtAnimMat(mat4* mat) {
-        if (!(flags & EFFECT_INST_HAS_EXT_ANIM_TRANS) || !ext_anim)
+        if (!(flags & EFFECT_INST_EXT_ANIM_TRANS) || !ext_anim)
             return false;
 
         mat4_mul_translate(&ext_anim->mat, &ext_anim->translation, mat);
@@ -617,7 +619,7 @@ namespace Glitter {
         if (!(flags & EFFECT_INST_EXT_COLOR))
             return;
 
-        if (flags & EFFECT_INST_SET_EXT_COLOR) {
+        if (flags & EFFECT_INST_EXT_COLOR_SET) {
             if (ext_color.x >= 0.0f)
                 r = ext_color.x;
             if (ext_color.y >= 0.0f)
@@ -656,7 +658,7 @@ namespace Glitter {
     }
 
     bool EffectInstX::GetUseCamera() {
-        return !!(flags & EFFECT_INST_DEPENDS_ON_EXT_DATA);
+        return !!(flags & EFFECT_INST_CAMERA);
     }
 
     void EffectInstX::GetValue() {
@@ -716,7 +718,7 @@ namespace Glitter {
     }
 
     bool EffectInstX::GetExtAnimScale(vec3* ext_anim_scale, float_t* ext_scale) {
-        if (!(flags & EFFECT_INST_HAS_EXT_ANIM_SCALE))
+        if (!(flags & EFFECT_INST_EXT_SCALE))
             return false;
 
         if (ext_anim_scale)
@@ -767,12 +769,12 @@ namespace Glitter {
             ext_anim->translation.z = trans->z;
 
         if (set_flags) {
-            if (flags & EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE)
-                enum_and(flags, ~EFFECT_INST_GET_EXT_ANIM_THEN_UPDATE);
-            if (flags & EFFECT_INST_HAS_EXT_ANIM_NON_INIT)
-                enum_and(flags, ~EFFECT_INST_HAS_EXT_ANIM_NON_INIT);
+            if (flags & EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE)
+                enum_and(flags, ~EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE);
+            if (flags & EFFECT_INST_EXT_ANIM_NON_INIT)
+                enum_and(flags, ~EFFECT_INST_EXT_ANIM_NON_INIT);
         }
-        enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_TRANS);
+        enum_or(flags, EFFECT_INST_EXT_ANIM_TRANS);
         this->flags = flags;
     }
 
@@ -784,13 +786,13 @@ namespace Glitter {
         ext_anim->mat = *mat;
         ext_anim->translation = 0.0f;
 
-        if ((flags & EFFECT_INST_HAS_EXT_ANIM_NON_INIT))
-            enum_and(flags, ~EFFECT_INST_HAS_EXT_ANIM_NON_INIT);
-        if (!(flags & EFFECT_INST_HAS_EXT_ANIM_TRANS))
-            enum_or(flags, EFFECT_INST_HAS_EXT_ANIM_TRANS);
+        if ((flags & EFFECT_INST_EXT_ANIM_NON_INIT))
+            enum_and(flags, ~EFFECT_INST_EXT_ANIM_NON_INIT);
+        if (!(flags & EFFECT_INST_EXT_ANIM_TRANS))
+            enum_or(flags, EFFECT_INST_EXT_ANIM_TRANS);
 
-        enum_and(flags, ~(EFFECT_INST_GET_EXT_ANIM_MAT | EFFECT_INST_CHARA_ANIM));
-        enum_or(flags, EFFECT_INST_SET_EXT_ANIM_MAT);
+        enum_and(flags, ~(EFFECT_INST_EXT_ANIM_AUTH | EFFECT_INST_EXT_ANIM_CHARA));
+        enum_or(flags, EFFECT_INST_EXT_ANIM_MAT);
     }
 
     void EffectInstX::SetExtColor(float_t r, float_t g, float_t b, float_t a, bool set) {
@@ -799,14 +801,14 @@ namespace Glitter {
         ext_color.z = b;
         ext_color.w = a;
         if (set)
-            enum_or(flags, EFFECT_INST_SET_EXT_COLOR);
+            enum_or(flags, EFFECT_INST_EXT_COLOR_SET);
         else
-            enum_and(flags, ~EFFECT_INST_SET_EXT_COLOR);
+            enum_and(flags, ~EFFECT_INST_EXT_COLOR_SET);
         enum_or(flags, EFFECT_INST_EXT_COLOR);
     }
 
     void EffectInstX::SetExtScale(float_t scale) {
         ext_scale = scale;
-        enum_or(flags, EFFECT_INST_HAS_EXT_SCALE);
+        enum_or(flags, EFFECT_INST_EXT_SCALE);
     }
 }
