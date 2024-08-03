@@ -361,6 +361,8 @@ namespace mdl {
         void init_user(const mat4* mat, UserArgsFunc func, void* data);
     };
 
+    typedef prj::list<mdl::ObjData*> ObjList;
+
     struct CullingCheck {
         struct Info {
             int32_t objects;
@@ -415,7 +417,7 @@ namespace mdl {
         shadow_type_enum shadow_type;
         int32_t field_8;
         int32_t field_C;
-        prj::list<mdl::ObjData*> obj[mdl::OBJ_TYPE_MAX];
+        mdl::ObjList obj[mdl::OBJ_TYPE_MAX];
         mdl::CullingCheck culling;
         int32_t put_index;
         bool show_alpha_center;
@@ -485,7 +487,7 @@ namespace mdl {
         GLuint get_vertex_array(const ObjSubMeshArgs* args);
         GLuint get_vertex_array(const mdl::EtcObj* etc);
         bool get_chara_color();
-        prj::list<mdl::ObjData*>& get_obj_list(mdl::ObjType type);
+        mdl::ObjList& get_obj_list(mdl::ObjType type);
         void get_morph(object_info& object, float_t& weight);
         void get_obj_center(mat4& mat, const mdl::ObjSubMeshArgs* args, vec3& center);
         int32_t get_obj_count(ObjType type);

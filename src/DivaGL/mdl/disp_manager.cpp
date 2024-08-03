@@ -3029,7 +3029,7 @@ namespace mdl {
         return chara_color;
     }
 
-    prj::list<mdl::ObjData*>& DispManager::get_obj_list(mdl::ObjType type) {
+    mdl::ObjList& DispManager::get_obj_list(mdl::ObjType type) {
 #pragma warning(suppress: 33010)
 #pragma warning(suppress: 33011)
         return type >= mdl::OBJ_TYPE_MAX ? rctx->obj_local[type - mdl::OBJ_TYPE_MAX] : disp_manager->obj[type];
