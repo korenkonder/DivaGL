@@ -1434,9 +1434,6 @@ namespace Glitter {
         float_t init_delta_frame;
         float_t emission;
         float_t delta_frame;
-        bool draw_all;
-        bool draw_all_mesh;
-        bool draw_selected;
 
         GltParticleManagerX();
         virtual ~GltParticleManagerX() override;

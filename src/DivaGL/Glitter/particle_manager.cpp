@@ -35,15 +35,13 @@ namespace Glitter {
     }
 
     GltParticleManagerX::GltParticleManagerX() : frame_rate(),
-        flags(), scene_load_counter(), draw_selected() {
+        flags(), scene_load_counter() {
         init_buffers_base = 5;
         init_buffers = 5;
         init_delta_frame_base = 20.0f;
         init_delta_frame = 20.0f;
         emission = 1.5f;
         delta_frame = 2.0f;
-        draw_all = true;
-        draw_all_mesh = true;
         scenes.reserve(0x100);
         file_readers.reserve(0x100);
         app::TaskWork::add_task(this, "GLITTER_X_TASK", 2);
