@@ -46,7 +46,7 @@ static void object_data_get_vertex_attrib_buffer_bindings(const mdl::ObjSubMeshA
 static void sub_140436760(mat4* view);
 
 material_list_struct::material_list_struct() : blend_color(), has_blend_color(), emission(), has_emission() {
-    hash = (uint32_t)-1;
+    hash = (uint64_t)-1;
 }
 
 material_list_struct::material_list_struct(uint64_t hash, vec4& blend_color,
