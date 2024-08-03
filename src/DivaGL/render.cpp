@@ -285,12 +285,12 @@ namespace rndr {
     }
 
     void Render::calc_projection_matrix(mat4* mat, float_t fov, float_t aspect, float_t z_near, float_t z_far,
-        float_t left_scale, float_t right_scale, float_t bottom_scale, float_t top_scale) {
+        float_t left_offset, float_t right_offset, float_t bottom_offset, float_t top_offset) {
         float_t tan_fov = (float_t)tan(fov * M_PI * (1.0 / 360.0)) * z_near;
-        float_t left = -tan_fov * aspect + tan_fov * aspect * left_scale;
-        float_t right = tan_fov * aspect + tan_fov * aspect * right_scale;
-        float_t bottom = -tan_fov + tan_fov * bottom_scale;
-        float_t top = tan_fov + tan_fov * top_scale;
+        float_t left = -tan_fov * aspect + tan_fov * aspect * left_offset;
+        float_t right = tan_fov * aspect + tan_fov * aspect * right_offset;
+        float_t bottom = -tan_fov + tan_fov * bottom_offset;
+        float_t top = tan_fov + tan_fov * top_offset;
 
         if (taa) {
             float_t offset = taa_texture_selector == 1 ? -0.25f : 0.25f;
@@ -1140,8 +1140,8 @@ namespace rndr {
     }
 
     void Render::apply_mlaa(int32_t destination, int32_t source, int32_t mlaa) {
+        gl_state_begin_event("PostProcess::mlaa");
         if (mlaa) {
-            gl_state_begin_event("PostProcess::mlaa");
             mlaa_buffer.Bind();
             gl_state_active_bind_texture_2d(0, taa_tex[source]->glid);
             gl_state_bind_sampler(0, rctx->render_samplers[1]);
@@ -1177,7 +1177,6 @@ namespace rndr {
             uniform->arr[U_ALPHA_MASK] = 0;
             gl_state_active_bind_texture_2d(0, 0);
             gl_state_active_bind_texture_2d(1, 0);
-            gl_state_end_event();
         }
         else {
             taa_buffer[destination].Bind();
@@ -1189,6 +1188,7 @@ namespace rndr {
                 render_post_width_scale, render_post_height_scale,
                 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
         }
+        gl_state_end_event();
     }
 
     void Render::apply_tone_map(texture* light_proj_tex, int32_t npr_param) {

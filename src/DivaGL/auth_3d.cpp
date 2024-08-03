@@ -517,8 +517,6 @@ struct struc_8 {
     size_t data_size;
     bool field_18;
     CanonicalProperties CanProp;
-    bool field_58;
-    int32_t field_5C;
     int32_t field_60;
     int32_t field_64;
     int64_t field_68;
@@ -981,7 +979,7 @@ HOOK(void, FASTCALL, auth_3d_curve_array_free, 0x00000001401C2E30,
             auth_3d_material_list* ml = (auth_3d_material_list*)begin->curve.keys;
             auth_3d_rgba__free(&ml->blend_color);
             auth_3d_rgba__free(&ml->emission);
-            delete ml;
+            _operator_delete(ml);
         }
         else {
             if (((kft3**)&begin->curve.keys_vec)[0]) {
@@ -1290,13 +1288,17 @@ HOOK(bool, FASTCALL, auth_3d_curve_parse, 0x00000001401DA230,
 }
 
 void auth_3d_patch() {
+    // Move both auth_3d_curve's value and type
     WRITE_MEMORY_STRING(0x00000001401A3DBE, "\x48\x8B"
         "\x43\x60\x48\x83\xC3\x70\x48\x83\xC7\x70\x48\x89\x47\xF8\x48\x8D"
         "\x43\xF8\x48\x3B\xC6\x75\x8B\x48\x8B\x5C\x24\x30\x48\x8B\xC7\x48"
         "\x8B\x74\x24\x38\x48\x83\xC4\x20\x5F\xC3", 0x2C);
+    // Null both auth_3d_curve's value and type
     WRITE_MEMORY_STRING(0x00000001401A72FF, "\x4C\x89\x40\x38", 0x04);
+    // Move both auth_3d_curve's value and type
     WRITE_MEMORY_STRING(0x00000001401B316A, "\x48\x8B\x43\x68\x48\x89"
         "\x47\x68\x48\x8B\xC7\x48\x8B\x5C\x24\x48\x48\x83\xC4\x30\x5F\xC3", 0x16);
+    // Null both auth_3d's shadow and chara_item
     WRITE_MEMORY_STRING(0x00000001401D7A78, "\x44\x89\xBF\x98\x00\x00\x00", 0x07);
 
     INSTALL_HOOK(auth_3d_curve_array_free);

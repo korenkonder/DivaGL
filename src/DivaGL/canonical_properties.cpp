@@ -14,8 +14,8 @@ CanonicalProperties::~CanonicalProperties() {
 }
 
 void CanonicalProperties::Clear() {
-    key_value_pair_storage.clear();
-    key_value_pair_storage.shrink_to_fit();
+    key_value_pair_storage.first.clear();
+    key_value_pair_storage.first.shrink_to_fit();
     data.clear();
     data.shrink_to_fit();
 }

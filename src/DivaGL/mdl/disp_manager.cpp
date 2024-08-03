@@ -3204,7 +3204,7 @@ namespace mdl {
         texture_color_offset = value;
     }
 
-    void DispManager::set_texture_pattern(int32_t count, texture_pattern_struct* value) {
+    void DispManager::set_texture_pattern(int32_t count, const texture_pattern_struct* value) {
         if (count > TEXTURE_PATTERN_COUNT)
             return;
 
@@ -3226,7 +3226,7 @@ namespace mdl {
         texture_specular_offset = value;
     }
 
-    void DispManager::set_texture_transform(int32_t count, texture_transform_struct* value) {
+    void DispManager::set_texture_transform(int32_t count, const texture_transform_struct* value) {
         if (count > TEXTURE_TRANSFORM_COUNT)
             return;
 

@@ -286,7 +286,7 @@ extern size_t(FASTCALL* sprite_manager_get_reqlist_count)(int32_t index);
 extern void (FASTCALL* sprite_manager_read_file)(int32_t set_id, const prj::string mdata_dir);
 extern bool (FASTCALL* sprite_manager_load_file)(int32_t set_id);
 
-extern  const spr_db_spr* sprite_database_get_spr_by_id(int32_t id);
+extern const spr_db_spr* sprite_database_get_spr_by_id(int32_t id);
 extern int32_t sprite_database_get_spr_set_id_by_name(const prj::string& name);
 
 extern void sprite_manager_init();

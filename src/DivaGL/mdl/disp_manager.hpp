@@ -508,10 +508,10 @@ namespace mdl {
         void set_shadow_type(shadow_type_enum type = SHADOW_CHARA);
         void set_texture_color_coefficients(vec4& value);
         void set_texture_color_offset(vec4& value);
-        void set_texture_pattern(int32_t count = 0, texture_pattern_struct* value = 0);
+        void set_texture_pattern(int32_t count = 0, const texture_pattern_struct* value = 0);
         void set_texture_specular_coefficients(vec4& value);
         void set_texture_specular_offset(vec4& value);
-        void set_texture_transform(int32_t count = 0, texture_transform_struct* value = 0);
+        void set_texture_transform(int32_t count = 0, const texture_transform_struct* value = 0);
         void set_wet_param(float_t value = 0.0f);
     };
 

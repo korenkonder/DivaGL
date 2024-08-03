@@ -62,8 +62,8 @@ HOOK(void, FASTCALL, camera_data_update_projection, 0x00000001401F8E90) {
 
     render_get()->calc_projection_matrix(&camera_data->projection, camera_data->fov,
         (float_t)camera_data->aspect, camera_data->min_distance, camera_data->max_distance,
-        camera_data->projection_scale.x, camera_data->projection_scale.y,
-        camera_data->projection_scale.z, camera_data->projection_scale.w);
+        camera_data->proj_left_offset, camera_data->proj_right_offset,
+        camera_data->proj_bottom_offset, camera_data->proj_top_offset);
     camera_data->fov_horizontal_rad = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
 }
 

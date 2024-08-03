@@ -6,6 +6,8 @@
 #pragma once
 
 #include "../KKdLib/default.hpp"
+#include "../KKdLib/image.hpp"
+#include "object.hpp"
 #include "types.hpp"
 
 enum item_id {

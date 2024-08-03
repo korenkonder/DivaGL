@@ -10,7 +10,7 @@
 
 struct CanonicalProperties {
     prj::string data;
-    prj::vector_pair_alloc<prj::string_range, prj::string_range> key_value_pair_storage;
+    prj::pair<prj::vector_pair_alloc<prj::string_range, prj::string_range>, bool> key_value_pair_storage;
 
     CanonicalProperties();
     ~CanonicalProperties();
@@ -31,4 +31,4 @@ struct CanonicalProperties {
     }
 };
 
-static_assert(sizeof(CanonicalProperties) == 0x38, "\"CanonicalProperties\" struct should have a size of 0x38");
+static_assert(sizeof(CanonicalProperties) == 0x40, "\"CanonicalProperties\" struct should have a size of 0x40");

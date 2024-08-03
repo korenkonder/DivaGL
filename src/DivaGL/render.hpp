@@ -177,7 +177,7 @@ namespace rndr {
         void bind_render_texture(bool aet_back = false);
         void calc_exposure_chara_data();
         void calc_projection_matrix(mat4* mat, float_t fov, float_t aspect, float_t z_near, float_t z_far,
-            float_t left_scale, float_t right_scale, float_t bottom_scale, float_t top_scale);
+            float_t left_offset, float_t right_offset, float_t bottom_offset, float_t top_offset);
         void ctrl();
         void draw_quad(int32_t width, int32_t height, float_t s0, float_t t0, float_t s1, float_t t1,
             float_t scale, float_t param_x, float_t param_y, float_t param_z, float_t param_w);

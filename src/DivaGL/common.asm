@@ -28,27 +28,31 @@ popaq MACRO
     pop rax
 ENDM
 
-EXTERN ?pv_game_load_state_4_tail_impl@@YAX_K@Z : PROC
+EXTERN ?pv_game_load_state_4_tail_impl@@YA_NXZ : PROC
 EXTERN ?originalpv_game_load_state_4_tail@@3P6AXXZEA : QWORD
 
 EXTERN ?pv_game_load_state_6_head_impl@@YA_NXZ : PROC
 EXTERN ?originalpv_game_load_state_6_head@@3P6AXXZEA : QWORD
 
-EXTERN ?pv_game_load_state_9_mid_impl@@YA_NXZ : PROC
-EXTERN ?originalpv_game_load_state_9_mid@@3P6AXXZEA : QWORD
+EXTERN ?pv_game_load_state_10_head_impl@@YA_NXZ : PROC
+EXTERN ?originalpv_game_load_state_10_head@@3P6AXXZEA : QWORD
 
-EXTERN ?pv_game_load_state_13_tail_impl@@YAX_K@Z : PROC
-EXTERN ?originalpv_game_load_state_13_tail@@3P6AXXZEA : QWORD
+EXTERN ?pv_game_load_state_13_head_impl@@YA_NXZ : PROC
+EXTERN ?originalpv_game_load_state_13_head@@3P6AXXZEA : QWORD
 
 .DATA
-pv_game_load_state_6_head_jump_false QWORD 00000001401043ECh
+pv_game_load_jump_end QWORD 00000001401043ECh
 
 .CODE
 ?implOfpv_game_load_state_4_tail@@YAXXZ PROC PUBLIC
     pushaq
     mov rcx, r14
-    call ?pv_game_load_state_4_tail_impl@@YAX_K@Z
+    call ?pv_game_load_state_4_tail_impl@@YA_NXZ
+    test al, al
     popaq
+    jz end_func
+    jmp pv_game_load_jump_end
+end_func:
     jmp ?originalpv_game_load_state_4_tail@@3P6AXXZEA
 ?implOfpv_game_load_state_4_tail@@YAXXZ ENDP
 
@@ -59,25 +63,31 @@ pv_game_load_state_6_head_jump_false QWORD 00000001401043ECh
     test al, al
     popaq
     jz end_func
-    jmp pv_game_load_state_6_head_jump_false
+    jmp pv_game_load_jump_end
 end_func:
     jmp ?originalpv_game_load_state_6_head@@3P6AXXZEA
 ?implOfpv_game_load_state_6_head@@YAXXZ ENDP
 
-?implOfpv_game_load_state_9_mid@@YAXXZ PROC PUBLIC
+?implOfpv_game_load_state_10_head@@YAXXZ PROC PUBLIC
     pushaq
-    call ?pv_game_load_state_9_mid_impl@@YA_NXZ
+    call ?pv_game_load_state_10_head_impl@@YA_NXZ
     test al, al
     popaq
-    cmovne ebx,r15d
-    jmp ?originalpv_game_load_state_9_mid@@3P6AXXZEA
-?implOfpv_game_load_state_9_mid@@YAXXZ ENDP
+    jz end_func
+    jmp pv_game_load_jump_end
+end_func:
+    jmp ?originalpv_game_load_state_10_head@@3P6AXXZEA
+?implOfpv_game_load_state_10_head@@YAXXZ ENDP
 
-?implOfpv_game_load_state_13_tail@@YAXXZ PROC PUBLIC
+?implOfpv_game_load_state_13_head@@YAXXZ PROC PUBLIC
     pushaq
     mov rcx, r14
-    call ?pv_game_load_state_13_tail_impl@@YAX_K@Z
+    call ?pv_game_load_state_13_head_impl@@YA_NXZ
+    test al, al
     popaq
-    jmp ?originalpv_game_load_state_13_tail@@3P6AXXZEA
-?implOfpv_game_load_state_13_tail@@YAXXZ ENDP
+    jz end_func
+    jmp pv_game_load_jump_end
+end_func:
+    jmp ?originalpv_game_load_state_13_head@@3P6AXXZEA
+?implOfpv_game_load_state_13_head@@YAXXZ ENDP
 END

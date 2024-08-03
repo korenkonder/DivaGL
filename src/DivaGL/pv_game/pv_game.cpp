@@ -640,16 +640,14 @@ pv_disp2d& pv_disp2d_data = *(pv_disp2d*)0x0000000140C938E0;
 size_t pv_game_ptr = 0x0000000140CDD8D0;
 pv_game_parent& pv_game_parent_data = *(pv_game_parent*)0x0000000140D0B510;
 
-void pv_game_load_state_4_tail_impl(size_t pv_game) {
+bool pv_game_load_state_4_tail_impl() {
     if (task_pv_game_x->use) {
         bool wait_load = false;
-        wait_load |= task_pv_game_x->data.effect.state < 12;
         wait_load |= task_pv_game_x->stage_data.state < 11;
         if (wait_load)
-            return;
+            return true;
     }
-
-    *(uint32_t*)(pv_game + 0x08) = 5;
+    return false;
 }
 
 bool pv_game_load_state_6_head_impl() {
@@ -661,26 +659,25 @@ bool pv_game_load_state_6_head_impl() {
     return false;
 }
 
-bool pv_game_load_state_9_mid_impl() {
+bool pv_game_load_state_10_head_impl() {
     return task_pv_game_x->use ? task_pv_game_x->data.effect.state < 11 : false;
 }
 
-void pv_game_load_state_13_tail_impl(size_t pv_game) {
+bool pv_game_load_state_13_head_impl() {
     if (task_pv_game_x->use) {
         bool wait_load = false;
         wait_load |= task_pv_game_x->data.effect.state < 12;
         wait_load |= task_pv_game_x->stage_data.state < 11;
         if (wait_load)
-            return;
+            return true;
     }
-
-    *(uint32_t*)(pv_game + 0x08) = 14;
+    return false;
 }
 
 HOOK(void, FASTCALL, pv_game_load_state_4_tail, 0x00000001400FF55B);
 HOOK(void, FASTCALL, pv_game_load_state_6_head, 0x000000001400FF5ED);
-HOOK(void, FASTCALL, pv_game_load_state_9_mid, 0x000000014010280D);
-HOOK(void, FASTCALL, pv_game_load_state_13_tail, 0x000000014010386E);
+HOOK(void, FASTCALL, pv_game_load_state_10_head, 0x000000014010290D);
+HOOK(void, FASTCALL, pv_game_load_state_13_head, 0x000000014010356E);
 
 HOOK(int64_t, FASTCALL, pv_game_pv_data__ctrl, 0x00000001401230E0,
     size_t _this, float_t delta_time, int64_t curr_time, bool a4) {
@@ -830,8 +827,8 @@ HOOK(bool, FASTCALL, pv_game_pv_data__load, 0x000000014011B7E0, size_t _this,
 void pv_game_patch() {
     INSTALL_HOOK(pv_game_load_state_4_tail);
     INSTALL_HOOK(pv_game_load_state_6_head);
-    INSTALL_HOOK(pv_game_load_state_9_mid);
-    INSTALL_HOOK(pv_game_load_state_13_tail);
+    INSTALL_HOOK(pv_game_load_state_10_head);
+    INSTALL_HOOK(pv_game_load_state_13_head);
     INSTALL_HOOK(pv_game_pv_data__ctrl);
     INSTALL_HOOK(task_pv_game_del_task);
     INSTALL_HOOK(task_pv_game_add_task);
@@ -3191,8 +3188,8 @@ void x_pv_game_stage::ctrl(float_t delta_time) {
         state = 12;
     }
     case 12: {
-        //if (env.state && env.state != 20)
-        //    break;
+        if (env.state && env.state != 20)
+            break;
 
         bool wait_load = false;
         for (int32_t i = 0; i < X_PV_GAME_STAGE_EFFECT_COUNT; i++) {
