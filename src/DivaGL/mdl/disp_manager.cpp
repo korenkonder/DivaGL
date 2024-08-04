@@ -2480,7 +2480,7 @@ namespace mdl {
                     }
 
                 vec4 _blend_color = 1.0f;
-                vec4 _emission = 0.0f;
+                vec4 _emission = { 0.0f, 0.0f, 0.0f, 1.0f };
 
                 if (mat_list) {
                     bool has_blend_color = false;
