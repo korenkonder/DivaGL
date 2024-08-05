@@ -91,6 +91,17 @@ struct rob_chara_age_age {
 
 static_assert(sizeof(rob_chara_age_age) == 0x1658, "\"rob_chara_age_age\" struct should have a size of 0x1658");
 
+struct mothead_func_data {
+    rob_chara* rob_chr;
+    rob_chara_data* rob_chr_data;
+    rob_chara_data* field_10;
+    rob_chara* field_18;
+    rob_chara_data* field_20;
+    struc_223* field_28;
+};
+
+static_assert(sizeof(mothead_func_data) == 0x30, "\"mothead_func_data\" struct should have a size of 0x30");
+
 struct rob_chara_item_adjust_x {
     mat4 mat;
     vec3 pos;
@@ -139,6 +150,7 @@ size_t(FASTCALL* rob_chara_array_get_bone_data)(size_t rob_chr_smth, int32_t cha
 bool (FASTCALL* rob_chara_pv_data_array_check_chara_id)(size_t rob_chr_smth, int32_t chara_id)
     = (bool (FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x00000001405327B0;
 
+static rob_chara* rob_chara_array = (rob_chara*)0x00000001411B76A0;
 static rob_chara_age_age* rob_chara_age_age_array = (rob_chara_age_age*)0x00000001411E83C0;
 
 static bool& chara_reflect = *(bool*)0x00000001411ADAFC;
@@ -315,7 +327,7 @@ const mat4* rob_chara_get_adjust_data_mat(rob_chara* rob_chr) {
 }
 
 const mat4* rob_chara_get_item_adjust_data_mat(rob_chara* rob_chr) {
-    return &rob_chara_item_adjust_x_array[rob_chr->chara_id].mat;
+    return &rob_chara_item_adjust_x_array[rob_chr - rob_chara_array].mat;
 }
 
 HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh* mesh, obj_mesh_vertex_buffer* vertex_buffer,
@@ -468,8 +480,8 @@ HOOK(void, FASTCALL, RobCloth__UpdateVertexBuffer, 0x000000014021CF00, obj_mesh*
 }
 
 HOOK(void, FASTCALL, sub_1405044B0, 0x00000001405044B0, rob_chara* rob_chr) {
-    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr->chara_id];
-    rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr->chara_id];
+    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr - rob_chara_array];
+    rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr - rob_chara_array];
     if (arm_adjust.duration > 0) {
         float_t blend = 1.0f;
         if (fabsf(arm_adjust.duration) > 0.000001f)
@@ -543,7 +555,7 @@ HOOK(void, FASTCALL, rob_chara_set_data_adjust_mat, 0x00000001405050D0,
     mat4_transpose(&mat, &mat);
     mat4_get_translation(&mat, &pos);
 
-    rob_chara_item_adjust_x* item_adjust = &rob_chara_item_adjust_x_array[rob_chr->chara_id];
+    rob_chara_item_adjust_x* item_adjust = &rob_chara_item_adjust_x_array[rob_chr - rob_chara_array];
 
     vec3* global_position = 0;
     if (rob_chr_adj->get_global_position) {
@@ -566,8 +578,8 @@ HOOK(void, FASTCALL, rob_chara_set_data_adjust_mat, 0x00000001405050D0,
 }
 
 HOOK(void, FASTCALL, rob_chara_reset_data, 0x0000000140507210, rob_chara* rob_chr, rob_chara_pv_data* pv_data) {
-    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr->chara_id];
-    rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr->chara_id];
+    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr - rob_chara_array];
+    rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr - rob_chara_array];
 
     item_adjust.reset();
     arm_adjust.reset();
@@ -693,7 +705,7 @@ HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
 
 HOOK(void, FASTCALL, rob_chara_set_chara_size, 0x0000000140516810, rob_chara* rob_chr, float_t value) {
     originalrob_chara_set_chara_size(rob_chr, value);
-    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr->chara_id];
+    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr - rob_chara_array];
     item_adjust.scale = value;
 }
 
@@ -753,11 +765,11 @@ HOOK(void, FASTCALL, sub_140526FD0, 0x0000000140526FD0,
 
 HOOK(void, FASTCALL, sub_1405335C0, 0x0000001405335C0, struc_223* a1) {
     originalsub_1405335C0(a1);
-    int32_t chara_id = ((rob_chara*)((size_t)a1 - 0x19C8))->chara_id;
-    rob_chara_arm_adjust_x_array[chara_id].reset();
+    rob_chara* rob_chr = (rob_chara*)((size_t)a1 - 0x19C8);
+    rob_chara_arm_adjust_x_array[rob_chr - rob_chara_array].reset();
 }
 
-HOOK(void, FASTCALL, mothead_func_32, 0x0000000140533C00, struct mothead_func_data* func_data,
+HOOK(void, FASTCALL, mothead_func_32, 0x0000000140533C00, mothead_func_data* func_data,
     void* data, const struct mothead_data* mhd_data, int64_t frame) {
     float_t v8 = (float_t)((int16_t*)data)[0];
     int32_t v5 = ((int32_t*)data)[1];
@@ -769,12 +781,11 @@ HOOK(void, FASTCALL, mothead_func_32, 0x0000000140533C00, struct mothead_func_da
         return;
     }
 
-    rob_chara_data* rob_chr_data = (rob_chara_data*)((size_t)func_data + 0x08);
-    rob_chara* rob_chr = ((rob_chara*)((size_t)rob_chr_data - 0x440));
+    rob_chara* rob_chr = func_data->rob_chr;
 
     float_t value = v9;
     float_t duration = (float_t)v5;
-    rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr->chara_id];
+    rob_chara_arm_adjust_x& arm_adjust = rob_chara_arm_adjust_x_array[rob_chr - rob_chara_array];
     arm_adjust.next_value = value;
     arm_adjust.prev_value = arm_adjust.scale;
     arm_adjust.start_frame = (int32_t)frame;
@@ -786,7 +797,7 @@ HOOK(bool, FASTCALL, sub_14053ACA0, 0x000000014053ACA0, rob_chara* rob_chr, int3
     if (hand >= 2 || !rob_chr->data.motion.hand_adjust[hand].enable)
         return false;
 
-    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr->chara_id];
+    rob_chara_item_adjust_x& item_adjust = rob_chara_item_adjust_x_array[rob_chr - rob_chara_array];
     rob_chara_item_adjust_x item_adjust_temp = item_adjust;
     float_t chara_scale = rob_chr->data.adjust_data.scale;
     float_t adjust_scale = rob_chr->data.motion.hand_adjust[hand].current_scale;
@@ -807,7 +818,8 @@ HOOK(void, FASTCALL, rob_chara_set_hand_adjust, 0x000000014053C070, rob_chara* r
         = (float_t(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140531F90;
 
     float_t chara_scale = rob_chr->data.adjust_data.scale;
-    float_t opposite_chara_scale = rob_chara_array_get_data_adjust_scale(get_rob_chara_smth(), rob_chr->chara_id ? 0 : 1);
+    float_t opposite_chara_scale = rob_chara_array_get_data_adjust_scale(
+        get_rob_chara_smth(), rob_chr - rob_chara_array ? 0 : 1);
     bool chara_opposite_chara_same = fabsf(chara_scale - opposite_chara_scale) <= 0.000001f;
 
     switch (adjust->type) {
@@ -842,7 +854,7 @@ HOOK(void, FASTCALL, rob_chara_set_hand_adjust, 0x000000014053C070, rob_chara* r
         adjust->scale = rob_chara_array_get_data_adjust_scale(get_rob_chara_smth(), 3);
         break;
     case ROB_CHARA_DATA_HAND_ADJUST_ITEM: // X
-        adjust->scale = rob_chara_item_adjust_x_array[rob_chr->chara_id].scale;
+        adjust->scale = rob_chara_item_adjust_x_array[rob_chr - rob_chara_array].scale;
         break;
     }
 
