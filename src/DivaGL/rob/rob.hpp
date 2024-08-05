@@ -883,18 +883,18 @@ struct rob_chara_item_equip_object;
 class ExNodeBlock;
 
 struct ExNodeBlock_vtbl {
-    ExNodeBlock* (FASTCALL* Dispose)(ExNodeBlock* _this, uint8_t);
-    void(FASTCALL* Field_8)(ExNodeBlock* _this);
-    void(FASTCALL* Field_10)(ExNodeBlock* _this);
-    void(FASTCALL* Field_18)(ExNodeBlock* _this, int32_t stage, bool disable_external_force);
-    void(FASTCALL* Field_20)(ExNodeBlock* _this);
-    void(FASTCALL* SetOsagePlayData)(ExNodeBlock* _this);
-    void(FASTCALL* Disp)(ExNodeBlock* _this);
-    void(FASTCALL* Reset)(ExNodeBlock* _this);
-    void(FASTCALL* Field_40)(ExNodeBlock* _this);
-    void(FASTCALL* Field_48)(ExNodeBlock* _this);
-    void(FASTCALL* Field_50)(ExNodeBlock* _this);
-    void(FASTCALL* Field_58)(ExNodeBlock* _this);
+    ExNodeBlock* (FASTCALL* Dispose)(ExNodeBlock* This, uint8_t);
+    void(FASTCALL* Field_8)(ExNodeBlock* This);
+    void(FASTCALL* Field_10)(ExNodeBlock* This);
+    void(FASTCALL* Field_18)(ExNodeBlock* This, int32_t stage, bool disable_external_force);
+    void(FASTCALL* Field_20)(ExNodeBlock* This);
+    void(FASTCALL* SetOsagePlayData)(ExNodeBlock* This);
+    void(FASTCALL* Disp)(ExNodeBlock* This);
+    void(FASTCALL* Reset)(ExNodeBlock* This);
+    void(FASTCALL* Field_40)(ExNodeBlock* This);
+    void(FASTCALL* Field_48)(ExNodeBlock* This);
+    void(FASTCALL* Field_50)(ExNodeBlock* This);
+    void(FASTCALL* Field_58)(ExNodeBlock* This);
 };
 
 static_assert(sizeof(ExNodeBlock_vtbl) == 0x60, "\"ExNodeBlock_vtbl\" struct should have a size of 0x60");
@@ -1173,18 +1173,18 @@ static_assert(sizeof(struc_341) == 0x18, "\"struc_341\" struct should have a siz
 class CLOTH;
 
 struct CLOTH_vtbl {
-    CLOTH* (FASTCALL* Dispose)(CLOTH* _this, uint8_t);
-    void(FASTCALL* Field_8)(CLOTH* _this);
-    void(FASTCALL* Field_10)(CLOTH* _this);
-    void(FASTCALL* Field_18)(CLOTH* _this, int32_t stage, bool disable_external_force);
-    void(FASTCALL* Field_20)(CLOTH* _this);
-    void(FASTCALL* SetOsagePlayData)(CLOTH* _this);
-    void(FASTCALL* Disp)(CLOTH* _this);
-    void(FASTCALL* Reset)(CLOTH* _this);
-    void(FASTCALL* Field_40)(CLOTH* _this);
-    void(FASTCALL* Field_48)(CLOTH* _this);
-    void(FASTCALL* Field_50)(CLOTH* _this);
-    void(FASTCALL* Field_58)(CLOTH* _this);
+    CLOTH* (FASTCALL* Dispose)(CLOTH* This, uint8_t);
+    void(FASTCALL* Field_8)(CLOTH* This);
+    void(FASTCALL* Field_10)(CLOTH* This);
+    void(FASTCALL* Field_18)(CLOTH* This, int32_t stage, bool disable_external_force);
+    void(FASTCALL* Field_20)(CLOTH* This);
+    void(FASTCALL* SetOsagePlayData)(CLOTH* This);
+    void(FASTCALL* Disp)(CLOTH* This);
+    void(FASTCALL* Reset)(CLOTH* This);
+    void(FASTCALL* Field_40)(CLOTH* This);
+    void(FASTCALL* Field_48)(CLOTH* This);
+    void(FASTCALL* Field_50)(CLOTH* This);
+    void(FASTCALL* Field_58)(CLOTH* This);
 };
 
 static_assert(sizeof(CLOTH_vtbl) == 0x60, "\"CLOTH_vtbl\" struct should have a size of 0x60");

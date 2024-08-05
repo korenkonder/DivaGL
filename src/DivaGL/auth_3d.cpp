@@ -607,11 +607,11 @@ static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, 
 static void auth_3d_set_material_list(auth_3d* auth);
 
 auth_3d_id::auth_3d_id(int32_t uid) : id() {
-    ((auth_3d_id * (FASTCALL*)(auth_3d_id * _this, int32_t uid))0x00000001401CDC80)(this, uid);
+    ((auth_3d_id * (FASTCALL*)(auth_3d_id * This, int32_t uid))0x00000001401CDC80)(this, uid);
 }
 
 auth_3d_id::auth_3d_id(const char* name) : id() {
-    ((auth_3d_id * (FASTCALL*)(auth_3d_id * _this, int32_t uid))0x00000001401CDC80)(
+    ((auth_3d_id * (FASTCALL*)(auth_3d_id * This, int32_t uid))0x00000001401CDC80)(
         this, auth_3d_data_get_uid_by_name(name));
 }
 
@@ -773,7 +773,7 @@ int32_t auth_3d_id::get_uid() {
 }
 
 void auth_3d_id::read_file() {
-    ((void (FASTCALL*)(auth_3d_id * _this))0x00000001401E0F80)(this);
+    ((void (FASTCALL*)(auth_3d_id * This))0x00000001401E0F80)(this);
 }
 
 void auth_3d_id::set_alpha_obj_flags(float_t alpha, mdl::ObjFlags obj_flags) {
@@ -922,7 +922,7 @@ void auth_3d_id::set_visibility(bool value) {
 }
 
 void auth_3d_id::unload() {
-    ((void (FASTCALL*)(auth_3d_id * _this))0x00000001401D0190)(this);
+    ((void (FASTCALL*)(auth_3d_id * This))0x00000001401D0190)(this);
 }
 
 int32_t auth_3d_data_get_auth_3d_id(uint32_t uid, object_info obj_info,

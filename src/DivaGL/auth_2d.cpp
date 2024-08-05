@@ -48,11 +48,11 @@ struct aet_layer {
 struct AetSet;
 
 struct AetSet_vtbl {
-    AetSet* (__fastcall* Dispose)(AetSet* _this, uint8_t flags);
-    void(__fastcall* ReadFile)(AetSet* _this, const char* file_path);
-    bool(__fastcall* LoadFile)(AetSet* _this);
-    void(__fastcall* Unload)(AetSet* _this);
-    bool(__fastcall* Load)(AetSet* _this);
+    AetSet* (__fastcall* Dispose)(AetSet* This, uint8_t flags);
+    void(__fastcall* ReadFile)(AetSet* This, const char* file_path);
+    bool(__fastcall* LoadFile)(AetSet* This);
+    void(__fastcall* Unload)(AetSet* This);
+    bool(__fastcall* Load)(AetSet* This);
 };
 
 struct AetSet {
@@ -69,39 +69,39 @@ struct AetSet {
 struct AetObj;
 
 struct AetObj_vtbl {
-    AetObj*(FASTCALL * Dispose)(AetObj* _this, uint8_t flags);
-    void(FASTCALL* Init)(AetObj* _this, AetArgs* init_data, aet_scene* scene, aet_comp* comp,
+    AetObj*(FASTCALL * Dispose)(AetObj* This, uint8_t flags);
+    void(FASTCALL* Init)(AetObj* This, AetArgs* init_data, aet_scene* scene, aet_comp* comp,
         aet_layer* layer, aet_marker* start_marker, aet_marker* end_marker, resolution_mode mode);
-    void(FASTCALL* Ctrl)(AetObj* _this);
-    void(FASTCALL* Disp)(AetObj* _this);
-    bool(FASTCALL* StepFrame)(AetObj* _this);
-    void(FASTCALL* SetPlay)(AetObj* _this, bool value);
-    void(FASTCALL* SetVisible)(AetObj* _this, bool value);
-    void(FASTCALL* SetPosition)(AetObj* _this, vec3* value);
-    void(FASTCALL* SetScale)(AetObj* _this, vec3* value);
-    void(FASTCALL* SetRotation)(AetObj* _this, vec3* value);
-    void(FASTCALL* SetAlpha)(AetObj* _this, float_t value);
-    void(FASTCALL* SetSpriteReplace)(AetObj* _this, prj::map<uint32_t, uint32_t>& value);
-    void(FASTCALL* SetSpriteTexture)(AetObj* _this, prj::map<uint32_t, texture*>& value);
-    void(FASTCALL* SetSpriteDiscard)(AetObj* _this, prj::map<uint32_t, uint32_t>& value);
-    void(FASTCALL* SetColor)(AetObj* _this, vec4* value);
-    void(FASTCALL* SetEndTime)(AetObj* _this, float_t value);
-    void(FASTCALL* SetFrame)(AetObj* _this, float_t value);
-    void(FASTCALL* SetPrio)(AetObj* _this, spr::SprPrio value);
-    aet_info(FASTCALL* GetInfo)(AetObj* _this);
-    bool(FASTCALL* GetPlay)(AetObj* _this);
-    bool(FASTCALL* GetVisible)(AetObj* _this);
-    float_t(FASTCALL* GetFrame)(AetObj* _this);
-    bool(FASTCALL* GetEnd)(AetObj* _this);
-    void(FASTCALL* CtrlComp)(AetObj* _this, aet_comp* comp, float_t frame);
-    void(FASTCALL* DispComp)(AetObj* _this, mat4* mat, aet_comp* comp, float_t frame, float_t opacity);
-    void(FASTCALL* CtrlLayer)(AetObj* _this, aet_layer* layer, float_t frame);
-    void(FASTCALL* DispLayer)(AetObj* _this, mat4* mat, aet_layer* layer, float_t frame, float_t opacity);
-    void(FASTCALL* DispVideo)(AetObj* _this, mat4* mat, aet_layer* layer, float_t frame, float_t opacity);
-    void(FASTCALL* DispSprite)(AetObj* _this, mat4* mat, aet_layer* layer, float_t opacity);
-    void(FASTCALL* DispSpriteSource)(AetObj* _this, mat4* mat,
+    void(FASTCALL* Ctrl)(AetObj* This);
+    void(FASTCALL* Disp)(AetObj* This);
+    bool(FASTCALL* StepFrame)(AetObj* This);
+    void(FASTCALL* SetPlay)(AetObj* This, bool value);
+    void(FASTCALL* SetVisible)(AetObj* This, bool value);
+    void(FASTCALL* SetPosition)(AetObj* This, const vec3& value);
+    void(FASTCALL* SetScale)(AetObj* This, const vec3& value);
+    void(FASTCALL* SetRotation)(AetObj* This, const vec3& value);
+    void(FASTCALL* SetAlpha)(AetObj* This, float_t value);
+    void(FASTCALL* SetSpriteReplace)(AetObj* This, prj::map<uint32_t, uint32_t>& value);
+    void(FASTCALL* SetSpriteTexture)(AetObj* This, prj::map<uint32_t, texture*>& value);
+    void(FASTCALL* SetSpriteDiscard)(AetObj* This, prj::map<uint32_t, uint32_t>& value);
+    void(FASTCALL* SetColor)(AetObj* This, const vec4& value);
+    void(FASTCALL* SetEndTime)(AetObj* This, float_t value);
+    void(FASTCALL* SetFrame)(AetObj* This, float_t value);
+    void(FASTCALL* SetPrio)(AetObj* This, spr::SprPrio value);
+    aet_info(FASTCALL* GetInfo)(AetObj* This);
+    bool(FASTCALL* GetPlay)(AetObj* This);
+    bool(FASTCALL* GetVisible)(AetObj* This);
+    float_t(FASTCALL* GetFrame)(AetObj* This);
+    bool(FASTCALL* GetEnd)(AetObj* This);
+    void(FASTCALL* CtrlComp)(AetObj* This, aet_comp* comp, float_t frame);
+    void(FASTCALL* DispComp)(AetObj* This, mat4* mat, aet_comp* comp, float_t frame, float_t opacity);
+    void(FASTCALL* CtrlLayer)(AetObj* This, aet_layer* layer, float_t frame);
+    void(FASTCALL* DispLayer)(AetObj* This, mat4* mat, aet_layer* layer, float_t frame, float_t opacity);
+    void(FASTCALL* DispVideo)(AetObj* This, mat4* mat, aet_layer* layer, float_t frame, float_t opacity);
+    void(FASTCALL* DispSprite)(AetObj* This, mat4* mat, aet_layer* layer, float_t opacity);
+    void(FASTCALL* DispSpriteSource)(AetObj* This, mat4* mat,
         aet_layer* layer, uint32_t source_index, float_t opacity);
-    void(FASTCALL* CalcMat)(AetObj* _this, mat4* mat, aet_layer* layer, float_t frame);
+    void(FASTCALL* CalcMat)(AetObj* This, mat4* mat, aet_layer* layer, float_t frame);
 };
 
 struct AetObj {
@@ -150,8 +150,8 @@ public:
     prj::list<prj::map<uint32_t, AetObj>::iterator> free_objects;
     uint32_t load_counter;
 
-    AetObj* get_obj(uint32_t id);
-    void set_obj_frame_rate_control(uint32_t id, FrameRateControl* value);
+    AetObj* GetObj(uint32_t id);
+    void SetObjFrameRateControl(uint32_t id, FrameRateControl* value);
 };
 
 void (FASTCALL* aet_manager_unload_set)(int32_t set_id)
@@ -289,22 +289,22 @@ int32_t aet_database_get_aet_set_id_by_name(const prj::string& name) {
 }
 
 void aet_manager_set_obj_frame_rate_control(uint32_t id, FrameRateControl* value) {
-    aet_manager.set_obj_frame_rate_control(id, value);
+    aet_manager.SetObjFrameRateControl(id, value);
 }
 
 void AetObj::SetFrameRateControl(FrameRateControl* value) {
     frame_rate_control = value;
 }
 
-AetObj* AetMgr::get_obj(uint32_t id) {
+AetObj* AetMgr::GetObj(uint32_t id) {
     auto elem = objects.find(id);
     if (elem != objects.end())
         return &elem->second;
     return 0;
 }
 
-void AetMgr::set_obj_frame_rate_control(uint32_t id, FrameRateControl* value) {
-    AetObj* obj = get_obj(id);
+void AetMgr::SetObjFrameRateControl(uint32_t id, FrameRateControl* value) {
+    AetObj* obj = GetObj(id);
     if (obj)
         obj->SetFrameRateControl(value);
 }

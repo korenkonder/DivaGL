@@ -70,22 +70,22 @@ ColorChangeDw*& color_change_dw = *(ColorChangeDw**)0x000000014118FF00;
 
 prj::vector<prj::vector<void*>>* color_change_dw_textures; // Added
 
-HOOK(void, FASTCALL, ColorChangeDw__ReloadData, 0x00000001402C20B0, ColorChangeDw* _this) {
-    _this->ReloadData();
+HOOK(void, FASTCALL, ColorChangeDw__ReloadData, 0x00000001402C20B0, ColorChangeDw* This) {
+    This->ReloadData();
 }
 
-HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* _this) {
-    _this->UpdateData();
+HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* This) {
+    This->UpdateData();
 
-    void (FASTCALL * ColorChangeDw__UpdateTextureInfo)(ColorChangeDw * _this)
-        = (void (FASTCALL*)(ColorChangeDw * _this))0x00000001402C2C60;
-    ColorChangeDw__UpdateTextureInfo(_this);
+    void (FASTCALL * ColorChangeDw__UpdateTextureInfo)(ColorChangeDw * This)
+        = (void (FASTCALL*)(ColorChangeDw * This))0x00000001402C2C60;
+    ColorChangeDw__UpdateTextureInfo(This);
 
-    _this->GetSetColorTone();
+    This->GetSetColorTone();
 
-    ::texture* org_tex = _this->GetOrgTex();
-    ::texture* chg_tex = _this->GetChgTex();
-    ::color_tone* col_tone = _this->GetColorTone();
+    ::texture* org_tex = This->GetOrgTex();
+    ::texture* chg_tex = This->GetChgTex();
+    ::color_tone* col_tone = This->GetColorTone();
 
     //if (org_tex && chg_tex && col_tone)
     //    texture_apply_color_tone(org_tex, chg_tex, col_tone);
@@ -96,7 +96,7 @@ HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* _th
         && chg_tex->width == org_tex->width
         && chg_tex->height == org_tex->height
         && chg_tex->max_mipmap_level == org_tex->max_mipmap_level) {
-        prj::vector<void*>& vec_data = color_change_dw_textures->data()[_this->color_change_index];
+        prj::vector<void*>& vec_data = color_change_dw_textures->data()[This->color_change_index];
 
         for (int32_t i = 0; i <= org_tex->max_mipmap_level; i++) {
             int32_t size = org_tex->get_size_mip_level(i);
@@ -139,11 +139,11 @@ HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* _th
         gl_state_bind_texture_2d(0);
     }
 
-    if (_this->show) {
+    if (This->show) {
         if (org_tex) {
             spr::SprArgs args;
             args.texture = org_tex;
-            if (_this->auto_resize)
+            if (This->auto_resize)
                 args.SetSpriteSize({ 256.0f, 256.0f });
             spr::put_sprite(&args);
         }
@@ -152,7 +152,7 @@ HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* _th
             spr::SprArgs args;
             args.texture = chg_tex;
             args.trans.x = (float_t)chg_tex->width;
-            if (_this->auto_resize) {
+            if (This->auto_resize) {
                 args.SetSpriteSize({ 256.0f, 256.0f });
                 args.trans.x = 266.0f;
             }
@@ -160,11 +160,11 @@ HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* _th
         }
     }
 
-    _this->dw::Shell::Draw();
+    This->dw::Shell::Draw();
 }
 
-HOOK(void, FASTCALL, ColorChangeDw__ResetData, 0x00000001402C4130, ColorChangeDw* _this) {
-    _this->ResetData();
+HOOK(void, FASTCALL, ColorChangeDw__ResetData, 0x00000001402C4130, ColorChangeDw* This) {
+    This->ResetData();
 }
 
 void color_change_dw_patch() {

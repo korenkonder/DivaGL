@@ -21,8 +21,8 @@ void CanonicalProperties::Clear() {
 }
 
 prj::string_range* CanonicalProperties::GetValue(const prj::string_range& key) {
-    prj::string_range* (FASTCALL * CanonicalProperties__GetValueStringRange)(CanonicalProperties * _this, const prj::string_range * key)
-        = (prj::string_range * (FASTCALL*)(CanonicalProperties * _this, const prj::string_range * key))0x00000001400AE4F0;
+    prj::string_range* (FASTCALL * CanonicalProperties__GetValueStringRange)(CanonicalProperties * This, const prj::string_range * key)
+        = (prj::string_range * (FASTCALL*)(CanonicalProperties * This, const prj::string_range * key))0x00000001400AE4F0;
     return CanonicalProperties__GetValueStringRange(this, &key);
 }
 
@@ -63,28 +63,28 @@ prj::string CanonicalProperties::GetValueString(const prj::string_range& key) {
 
 void CanonicalProperties::Parse(const char* str, size_t size) {
     void(FASTCALL * CanonicalProperties__ParseCharPtrLength)(
-        CanonicalProperties * _this, const char* str, size_t size)
-        = (void(FASTCALL*)(CanonicalProperties * _this, const char* str, size_t size))0x00000001400B52C0;
+        CanonicalProperties * This, const char* str, size_t size)
+        = (void(FASTCALL*)(CanonicalProperties * This, const char* str, size_t size))0x00000001400B52C0;
     CanonicalProperties__ParseCharPtrLength(this, str, size);
 }
 
 void CanonicalProperties::Parse(const prj::string_range& data) {
     void(FASTCALL * CanonicalProperties__ParseStringRange)(
-        CanonicalProperties * _this, const prj::string_range * data)
-        = (void(FASTCALL*)(CanonicalProperties * _this, const prj::string_range * data))0x000000014008E710;
+        CanonicalProperties * This, const prj::string_range * data)
+        = (void(FASTCALL*)(CanonicalProperties * This, const prj::string_range * data))0x000000014008E710;
     CanonicalProperties__ParseStringRange(this, &data);
 }
 
 void CanonicalProperties::ParseEscapeSeq(const char* str, size_t size) {
     void(FASTCALL * CanonicalProperties__ParseCharPtrLengthEscapeSeq)(
-        CanonicalProperties * _this, const char* str, size_t size)
-        = (void(FASTCALL*)(CanonicalProperties * _this, const char* str, size_t size))0x00000001400B5020;
+        CanonicalProperties * This, const char* str, size_t size)
+        = (void(FASTCALL*)(CanonicalProperties * This, const char* str, size_t size))0x00000001400B5020;
     CanonicalProperties__ParseCharPtrLengthEscapeSeq(this, str, size);
 }
 
 void CanonicalProperties::ParseEscapeSeq(const prj::string_range& data) {
     void(FASTCALL * CanonicalProperties__ParseStringRangeEscapeSeq)(
-        CanonicalProperties * _this, const prj::string_range * data)
-        = (void(FASTCALL*)(CanonicalProperties * _this, const prj::string_range * data))0x000000014008E5A0;
+        CanonicalProperties * This, const prj::string_range * data)
+        = (void(FASTCALL*)(CanonicalProperties * This, const prj::string_range * data))0x000000014008E5A0;
     CanonicalProperties__ParseStringRangeEscapeSeq(this, &data);
 }

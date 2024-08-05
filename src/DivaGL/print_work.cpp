@@ -20,15 +20,15 @@ font_char::font_char() : glyph_offset(), glyph_width(), field_18() {
 
 font_info::font_info() : font_ptr(), type() {
     font_handler_index = -1;
-    static font_info* (FASTCALL * font_info__font_info)(font_info * _this)
-        = (font_info * (FASTCALL*)(font_info * _this))0x00000001401965C0;
+    static font_info* (FASTCALL * font_info__font_info)(font_info * This)
+        = (font_info * (FASTCALL*)(font_info * This))0x00000001401965C0;
     font_info__font_info(this);
 }
 
 font_info::font_info(int32_t font_handler_index) : font_ptr(), type() {
     this->font_handler_index = -1;
-    static font_info* (FASTCALL * font_info__font_info)(font_info * _this, int32_t font_handler_index)
-        = (font_info * (FASTCALL*)(font_info * _this, int32_t font_handler_index))0x0000000140196510;
+    static font_info* (FASTCALL * font_info__font_info)(font_info * This, int32_t font_handler_index)
+        = (font_info * (FASTCALL*)(font_info * This, int32_t font_handler_index))0x0000000140196510;
     font_info__font_info(this, font_handler_index);
 }
 
@@ -254,8 +254,8 @@ vec2 PrintWork::GetStringSize(const wchar_t* str_begin, const wchar_t* str_end) 
 }
 
 vec2 PrintWork::GetTextSize(const wchar_t* str, size_t length) {
-    vec2* (FASTCALL * PrintWork__GetTextSize)(PrintWork * _this, vec2 * size, const prj::wstring_range& str)
-        = (vec2 * (FASTCALL*)(PrintWork * _this, vec2 * size, const prj::wstring_range & str))0x000000014019A0A0;
+    vec2* (FASTCALL * PrintWork__GetTextSize)(PrintWork * This, vec2 * size, const prj::wstring_range& str)
+        = (vec2 * (FASTCALL*)(PrintWork * This, vec2 * size, const prj::wstring_range & str))0x000000014019A0A0;
 
     vec2 size;
     return *PrintWork__GetTextSize(this, &size, prj::wstring_range(str, length));
@@ -300,9 +300,9 @@ void PrintWork::PrintText(app::text_flags flags, const char* str, size_t length)
 }
 
 void PrintWork::PrintText(app::text_flags flags, const wchar_t* str_begin, const wchar_t* str_end) {
-    void (FASTCALL * PrintWork__PrintText)(PrintWork * _this,
+    void (FASTCALL * PrintWork__PrintText)(PrintWork * This,
         app::text_flags flags, const prj::wstring_range& str)
-        = (void (FASTCALL*)(PrintWork * _this,
+        = (void (FASTCALL*)(PrintWork * This,
             app::text_flags flags, const prj::wstring_range & str))0x0000000140198380;
     PrintWork__PrintText(this, flags, prj::wstring_range(str_begin, str_end));
 }

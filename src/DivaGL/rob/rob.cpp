@@ -299,8 +299,8 @@ bone_node* rob_chara_item_equip_object::get_bone_node(const char* name) {
 }
 
 void rob_chara_item_equip_object::skp_load(void* can_prop) {
-    void (FASTCALL * rob_chara_item_equip_object__skp_load)(rob_chara_item_equip_object * _this, void* can_prop)
-        = (void (FASTCALL*)(rob_chara_item_equip_object * _this, void* can_prop))0x00000001405F43E0;
+    void (FASTCALL * rob_chara_item_equip_object__skp_load)(rob_chara_item_equip_object * This, void* can_prop)
+        = (void (FASTCALL*)(rob_chara_item_equip_object * This, void* can_prop))0x00000001405F43E0;
     rob_chara_item_equip_object__skp_load(this, can_prop);
 }
 
