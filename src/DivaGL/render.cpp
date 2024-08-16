@@ -1332,9 +1332,6 @@ namespace rndr {
     void Render::calc_exposure() {
         bool v2 = false;
         if (!reset_exposure) {
-            for (int32_t i = 0; i < ROB_CHARA_COUNT; i++)
-                exposure_chara_data[i].reset();
-
             ExposureCharaData* chara_data = exposure_chara_data;
             size_t rob_chara_smth = get_rob_chara_smth();
             for (int32_t i = 0; i < ROB_CHARA_COUNT; i++, chara_data++) {
