@@ -18,6 +18,10 @@ namespace GL {
 
         }
 
+        inline ShaderStorageBuffer(GLuint buffer) : buffer(buffer) {
+
+        }
+
         inline ~ShaderStorageBuffer() {
 
         }
@@ -27,7 +31,6 @@ namespace GL {
         void Create(size_t size, const void* data, bool dynamic = false);
         void Destroy();
         void* MapMemory();
-        void* MapMemory(size_t offset, size_t length);
         void UnmapMemory();
         void WriteMemory(size_t offset, size_t size, const void* data);
 

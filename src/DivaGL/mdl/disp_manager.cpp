@@ -1989,11 +1989,6 @@ namespace mdl {
         uniform_value_reset();
         gl_state_get();
 
-        rctx->obj_shader_ubo.Bind(0);
-        rctx->obj_scene_ubo.Bind(1);
-        rctx->obj_batch_ubo.Bind(2);
-        rctx->obj_skinning_ubo.Bind(4);
-
         switch (type) {
         case OBJ_TYPE_TRANSLUCENT:
         case OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS:
@@ -2148,11 +2143,6 @@ namespace mdl {
         gl_state_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         uniform_value_reset();
         gl_state_get();
-
-        rctx->obj_shader_ubo.Bind(0);
-        rctx->obj_scene_ubo.Bind(1);
-        rctx->obj_batch_ubo.Bind(2);
-        rctx->obj_skinning_ubo.Bind(4);
 
         switch (type) {
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1:

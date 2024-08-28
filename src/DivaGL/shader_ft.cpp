@@ -1468,7 +1468,7 @@ static void glass_eye_set(glass_eye_struct* glass_eye) {
     glass_eye_batch.g_tex_scale = temp;
 
     rctx->glass_eye_batch_ubo.WriteMemory(glass_eye_batch);
-    rctx->glass_eye_batch_ubo.Bind(5);
+    rctx->glass_eye_batch_ubo.Bind(3);
 }
 
 static void shader_bind_blinn(shader_set_data* set, shader* shad) {

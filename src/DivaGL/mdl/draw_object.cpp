@@ -56,6 +56,10 @@ namespace mdl {
         rctx->obj_shader_ubo.WriteMemory(rctx->obj_shader);
         rctx->obj_batch_ubo.WriteMemory(rctx->obj_batch);
 
+        rctx->obj_shader_ubo.Bind(0);
+        rctx->obj_scene_ubo.Bind(1);
+        rctx->obj_batch_ubo.Bind(2);
+
         if (primitive_type == OBJ_PRIMITIVE_TRIANGLE_STRIP && index_format == OBJ_INDEX_U16)
             shaders_ft.draw_range_elements(GL_TRIANGLE_STRIP,
                 start, end, count, GL_UNSIGNED_SHORT, (void*)indices);
@@ -206,7 +210,9 @@ namespace mdl {
                 g_joint_transforms[2] = mat.row2;
             }
 
-            rctx->obj_skinning_ubo.WriteMemory(rctx->obj_skinning);
+            rctx->obj_skinning_ssbo.WriteMemory(rctx->obj_skinning);
+
+            rctx->obj_skinning_ssbo.Bind(0);
 
             rctx->obj_batch.set_transforms(mat4_identity, rctx->view_mat, rctx->proj_mat);
 

@@ -25,7 +25,7 @@ static GLuint shader_compile(const char* vert, const char* frag, const char* vp,
 static GLuint shader_compile_binary(const char* vert, const char* frag, const char* vp, const char* fp,
     program_binary* bin, GLsizei* buffer_size, void** binary);
 static bool shader_load_binary_shader(program_binary* bin, GLuint* program, const char* vp, const char* fp);
-static void shader_update_data(shader_set_data* set);
+static bool shader_update_data(shader_set_data* set);
 
 int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
     set->curr_program = 0;
@@ -62,104 +62,79 @@ int32_t shader::bind(shader_set_data* set, uint32_t sub_index) {
     return 0;
 }
 
-bool shader::parse_define(const char* data, char** temp, size_t* temp_size) {
+static void parse_define_inner(std::string& temp) {
+    size_t off = 0;
+    while (true) {
+        size_t pos_set = temp.find("set = ", off);
+        size_t pos_binding = temp.find("binding = ", off);
+        if (pos_set == -1 || pos_binding == -1)
+            break;
+
+        temp.erase(pos_set, pos_binding - pos_set);
+        off = pos_set + 10;
+    }
+}
+
+bool shader::parse_define(const char* data, std::string& temp) {
     if (!data)
         return false;
 
     const char* def = strstr(data, "//DEF\n");
-    if (!def) {
-        size_t len = utf8_length(data);
-        if (len + 1 > *temp_size) {
-            free_def(*temp);
-            *temp_size = len + 1;
-            *temp = force_malloc<char>(*temp_size);
-        }
+    if (def) {
+        temp.clear();
 
-        memcpy(*temp, data, len);
-        (*temp)[len] = 0;
-        return true;
+        size_t len_a = def - data;
+        def += 5;
+        if (*def == '\n')
+            def++;
+
+        size_t len_b = utf8_length(def);
+
+        size_t pos = 0;
+        temp.insert(pos, data, len_a);
+        pos += len_a;
+        temp.insert(pos, def, len_b);
+        pos += len_b;
     }
+    else
+        temp.assign(data);
 
-    size_t len_a = def - data;
-    def += 5;
-    if (*def == '\n')
-        def++;
-
-    size_t len_b = utf8_length(def);
-    size_t len = 0;
-    len += len_a + len_b;
-
-    if (len + 1 > *temp_size) {
-        free_def(*temp);
-        *temp_size = len + 1;
-        *temp = force_malloc<char>(*temp_size);
-    }
-
-    size_t pos = 0;
-    memcpy(*temp + pos, data, len_a);
-    pos += len_a;
-    memcpy(*temp + pos, def, len_b);
-    pos += len_b;
-    (*temp)[pos] = 0;
+    parse_define_inner(temp);
     return true;
 }
 
 bool shader::parse_define(const char* data, int32_t num_uniform,
-    int32_t* uniform_value, char** temp, size_t* temp_size) {
+    int32_t* uniform_value, std::string& temp) {
     if (!data)
         return false;
 
     const char* def = strstr(data, "//DEF\n");
-    if (!def) {
-        size_t len = utf8_length(data);
-        if (len + 1 > *temp_size) {
-            free_def(*temp);
-            *temp_size = len + 1;
-            *temp = force_malloc<char>(*temp_size);
+    if (def) {
+        temp.clear();
+
+        size_t len_a = def - data;
+        def += 5;
+        if (*def == '\n')
+            def++;
+
+        size_t len_b = utf8_length(def);
+
+        size_t pos = 0;
+        temp.insert(pos, data, len_a);
+        pos += len_a;
+        for (int32_t i = 0; i < num_uniform; i++) {
+            char t[0x100];
+            int32_t len = sprintf_s(t, sizeof(t), "#define _%d %d\n", i, uniform_value[i]);
+            temp.insert(pos, t, len);
+            pos += len;
         }
-
-        memcpy(*temp, data, len);
-        (*temp)[len] = 0;
-        return true;
+        temp.insert(pos, def, len_b);
+        pos += len_b;
     }
+    else
+        temp.assign(data);
 
-    const int32_t s = min_def(0x100, num_uniform);
-
-    size_t t_len[0x100];
-    char t[0x100] = {};
-
-    for (int32_t i = 0; i < s; i++) {
-        sprintf_s(t, sizeof(t), "#define _%d %d\n", i, uniform_value[i]);
-        t_len[i] = utf8_length(t);
-    }
-
-    size_t len_a = def - data;
-    def += 5;
-    size_t len_b = utf8_length(def);
-    size_t len = 0;
-    for (int32_t i = 0; i < s; i++)
-        len += t_len[i];
-    if (!len)
-        def++;
-    len += len_a + len_b;
-
-    if (len + 1 > *temp_size) {
-        free_def(*temp);
-        *temp_size = len + 1;
-        *temp = force_malloc<char>(*temp_size);
-    }
-
-    size_t pos = 0;
-    memcpy(*temp + pos, data, len_a);
-    pos += len_a;
-    for (int32_t i = 0; i < s; i++) {
-        sprintf_s(t, sizeof(t), "#define _%d %d\n", i, uniform_value[i]);
-        memcpy(*temp + pos, t, t_len[i]);
-        pos += t_len[i];
-    }
-    memcpy(*temp + pos, def, len_b);
-    pos += len_b;
-    (*temp)[pos] = 0;
+    parse_define_inner(temp);
     return true;
 }
 
@@ -288,7 +263,9 @@ void shader_set_data::disable_primitive_restart() {
 }
 
 void shader_set_data::draw_arrays(GLenum mode, GLint first, GLsizei count) {
-    shader_update_data(this);
+    if (!shader_update_data(this))
+        return;
+
     glDrawArraysDLL(mode, first, count);
 }
 
@@ -317,7 +294,9 @@ void shader_set_data::draw_elements(GLenum mode,
         break;
     }
 
-    shader_update_data(this);
+    if (!shader_update_data(this))
+        return;
+
     glDrawElementsDLL(mode, count, type, indices);
 
     switch (mode) {
@@ -352,7 +331,9 @@ void shader_set_data::draw_range_elements(GLenum mode,
         break;
     }
 
-    shader_update_data(this);
+    if (!shader_update_data(this))
+        return;
+
     glDrawRangeElements(mode, start, end, count, type, indices);
 
     switch (mode) {
@@ -411,10 +392,8 @@ void shader_set_data::load(farc* f, bool ignore_cache,
 
     GLsizei buffer_size = 0x100000;
     void* binary = force_malloc(buffer_size);
-    size_t temp_vert_size = 0x10000;
-    char* temp_vert = force_malloc<char>(temp_vert_size);
-    size_t temp_frag_size = 0x10000;
-    char* temp_frag = force_malloc<char>(temp_frag_size);
+    std::string temp_vert;
+    std::string temp_frag;
     std::vector<int32_t> vec_vert;
     std::vector<int32_t> vec_frag;
     std::vector<program_binary> program_data_binary;
@@ -589,18 +568,18 @@ void shader_set_data::load(farc* f, bool ignore_cache,
 
                         if (!bin || !bin->binary_format || !bin->length
                             || !shader_load_binary_shader(bin, &programs[k], vert_buf, frag_buf)) {
-                            bool vert_succ = shader::parse_define(vert_data, num_uniform,
-                                vec_vert_data, &temp_vert, &temp_vert_size);
-                            bool frag_succ = shader::parse_define(frag_data, num_uniform,
-                                vec_frag_data, &temp_frag, &temp_frag_size);
+                            bool vert_succ = shader::parse_define(vert_data,
+                                num_uniform, vec_vert_data, temp_vert);
+                            bool frag_succ = shader::parse_define(frag_data,
+                                num_uniform, vec_frag_data, temp_frag);
 
                             if (ignore_cache)
-                                programs[k] = shader_compile(vert_succ ? temp_vert : 0,
-                                    frag_succ ? temp_frag : 0, vert_buf, frag_buf);
+                                programs[k] = shader_compile(vert_succ ? temp_vert.c_str() : 0,
+                                    frag_succ ? temp_frag.c_str() : 0, vert_buf, frag_buf);
                             else {
                                 program_data_binary.push_back({});
-                                programs[k] = shader_compile_binary(vert_succ ? temp_vert : 0,
-                                    frag_succ ? temp_frag : 0, vert_buf, frag_buf,
+                                programs[k] = shader_compile_binary(vert_succ ? temp_vert.c_str() : 0,
+                                    frag_succ ? temp_frag.c_str() : 0, vert_buf, frag_buf,
                                     &program_data_binary.back(), &buffer_size, &binary);
                             }
                             shader_cache_changed |= programs[k] ? true : false;
@@ -631,16 +610,16 @@ void shader_set_data::load(farc* f, bool ignore_cache,
 
                     if (!bin || !bin->binary_format || !bin->length
                         || !shader_load_binary_shader(bin, &programs[0], vert_buf, frag_buf)) {
-                        bool vert_succ = shader::parse_define(vert_data, &temp_vert, &temp_vert_size);
-                        bool frag_succ = shader::parse_define(frag_data, &temp_frag, &temp_frag_size);
+                        bool vert_succ = shader::parse_define(vert_data, temp_vert);
+                        bool frag_succ = shader::parse_define(frag_data, temp_frag);
 
                         if (ignore_cache)
-                            programs[0] = shader_compile(vert_succ ? temp_vert : 0,
-                                frag_succ ? temp_frag : 0, vert_buf, frag_buf);
+                            programs[0] = shader_compile(vert_succ ? temp_vert.c_str() : 0,
+                                frag_succ ? temp_frag.c_str() : 0, vert_buf, frag_buf);
                         else {
                             program_data_binary.push_back({});
-                            programs[0] = shader_compile_binary(vert_succ ? temp_vert : 0,
-                                frag_succ ? temp_frag : 0, vert_buf, frag_buf,
+                            programs[0] = shader_compile_binary(vert_succ ? temp_vert.c_str() : 0,
+                                frag_succ ? temp_frag.c_str() : 0, vert_buf, frag_buf,
                                 &program_data_binary.back(), &buffer_size, &binary);
                         }
                         shader_cache_changed |= programs[0] ? true : false;
@@ -710,8 +689,6 @@ void shader_set_data::load(farc* f, bool ignore_cache,
             }
     }
     free_def(binary);
-    free_def(temp_vert);
-    free_def(temp_frag);
 
     if (shader_cache_changed)
         shader_cache_farc.write(temp_buf, FARC_FArC, FARC_NONE, true, false);
@@ -1010,9 +987,9 @@ static bool shader_load_binary_shader(program_binary* bin, GLuint* program, cons
     return true;
 }
 
-static void shader_update_data(shader_set_data* set) {
-    if (!set)
-        return;
+static bool shader_update_data(shader_set_data* set) {
+    if (!set || !set->curr_program)
+        return false;
 
     if (set->primitive_restart) {
         gl_state_enable_primitive_restart();
@@ -1020,4 +997,6 @@ static void shader_update_data(shader_set_data* set) {
     }
     else
         gl_state_disable_primitive_restart();
+
+    return true;
 }

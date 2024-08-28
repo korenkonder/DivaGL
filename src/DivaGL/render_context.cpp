@@ -349,7 +349,7 @@ samplers(), render_samplers(), sprite_samplers(), screen_width(), screen_height(
     obj_shader_ubo.Create(sizeof(obj_shader_shader_data));
     obj_scene_ubo.Create(sizeof(obj_scene_shader_data));
     obj_batch_ubo.Create(sizeof(obj_batch_shader_data));
-    obj_skinning_ubo.Create(sizeof(obj_skinning_shader_data));
+    obj_skinning_ssbo.Create(sizeof(obj_skinning_shader_data));
 
     static const vec4 border_color = 0.0f;
 
@@ -449,7 +449,7 @@ render_context::~render_context() {
     glDeleteSamplers(4, render_samplers);
     glDeleteSamplers(18, samplers);
 
-    obj_skinning_ubo.Destroy();
+    obj_skinning_ssbo.Destroy();
     obj_batch_ubo.Destroy();
     obj_scene_ubo.Destroy();
     obj_shader_ubo.Destroy();

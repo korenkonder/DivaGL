@@ -61,9 +61,9 @@ struct shader {
 
     int32_t bind(shader_set_data* set, uint32_t sub_index);
 
-    static bool parse_define(const char* data, char** temp, size_t* temp_size);
+    static bool parse_define(const char* data, std::string& temp);
     static bool parse_define(const char* data, int32_t num_uniform,
-        int32_t* uniform_value, char** temp, size_t* temp_size);
+        int32_t* uniform_value, std::string& temp);
     static char* parse_include(char* data, farc* f);
     static void unbind();
 };
