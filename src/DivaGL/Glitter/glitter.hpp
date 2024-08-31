@@ -1083,6 +1083,7 @@ namespace Glitter {
         };
 
         ParticleX::Data data;
+        Buffer* buffer;
         GLuint vao;
         GL::ArrayBuffer vbo;
         GL::ElementArrayBuffer ebo;
@@ -1206,6 +1207,7 @@ namespace Glitter {
         mat4 mat_rot;
         mat4 mat_draw;
         RenderElementX* elements;
+        Buffer* buffer;
         size_t max_count;
         RandomX* random_ptr;
         DispType disp_type;
@@ -1486,8 +1488,8 @@ namespace Glitter {
     extern void axis_angle_from_vectors(vec3* axis, float_t* angle, const vec3* vec0, const vec3* vec1);
 
     extern void CreateBuffer(size_t max_count, bool is_quad,
-        GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
-    extern void DeleteBuffer(GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
+        Buffer*& buffer, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
+    extern void DeleteBuffer(Buffer*& buffer, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
 
     extern void Patch();
 }

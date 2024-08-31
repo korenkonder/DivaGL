@@ -54,7 +54,7 @@ namespace Glitter {
     }
 
     void RenderGroup::CreateBuffer(RenderGroup* rend_group, Particle* ptcl) {
-        if (ptcl && ptcl->vao && ptcl->vbo && !ptcl->buffer_used) {
+        if (ptcl && ptcl->buffer && !ptcl->buffer_used) {
             rend_group->max_count = ptcl->max_count;
             rend_group->vao = ptcl->vao;
             rend_group->vbo = ptcl->vbo;
@@ -70,7 +70,7 @@ namespace Glitter {
                 rend_group->max_count = 0;
 
             Glitter::CreateBuffer(rend_group->max_count, rend_group->type == PARTICLE_QUAD,
-                rend_group->vao, rend_group->vbo, rend_group->ebo);
+                rend_group->buffer, rend_group->vao, rend_group->vbo, rend_group->ebo);
             rend_group->draw_list = new DrawListData;
         }
     }
@@ -85,9 +85,9 @@ namespace Glitter {
                 rend_group->draw_list = 0;
             }
 
-            Glitter::DeleteBuffer(rend_group->vao, rend_group->vbo, rend_group->ebo);
+            Glitter::DeleteBuffer(rend_group->buffer, rend_group->vao, rend_group->vbo, rend_group->ebo);
         }
-        else if (ptcl && ptcl->vao && ptcl->vbo)
+        else if (ptcl && ptcl->buffer)
             ptcl->buffer_used = false;
     }
 
@@ -104,8 +104,8 @@ namespace Glitter {
         rend_group->draw_list = 0;
     }
 
-    RenderGroupX::RenderGroupX(ParticleInstX* ptcl_inst) : flags(), type(), draw_type(), pivot(),
-        z_offset(), count(), ctrl(), disp(), texture(), mask_texture(), frame(), elements(), max_count(),
+    RenderGroupX::RenderGroupX(ParticleInstX* ptcl_inst) : flags(), type(), draw_type(), pivot(), z_offset(),
+        count(), ctrl(), disp(), texture(), mask_texture(), frame(), elements(), buffer(), max_count(),
         random_ptr(), disp_type(), fog_type(), vao(), vbo(), ebo(), particle(), use_culling(), use_camera() {
         split_u = 1;
         split_v = 1;
@@ -164,7 +164,7 @@ namespace Glitter {
         bool is_quad = ptcl_inst->data.data.type == PARTICLE_QUAD;
 
         ParticleX* ptcl = particle->data.particle;
-        if (ptcl && ptcl->vao && ptcl->vbo && !ptcl->buffer_used) {
+        if (ptcl && ptcl->buffer && !ptcl->buffer_used) {
             max_count = ptcl->max_count;
             vao = ptcl->vao;
             vbo = ptcl->vbo;
@@ -174,7 +174,7 @@ namespace Glitter {
         }
 
         if (use_own_buffer)
-            Glitter::CreateBuffer(max_count, is_quad, vao, vbo, ebo);
+            Glitter::CreateBuffer(max_count, is_quad, buffer, vao, vbo, ebo);
 
         if (!is_quad)
             draw_list.reserve(count);
@@ -362,8 +362,8 @@ namespace Glitter {
         }
 
         if (use_own_buffer)
-            Glitter::DeleteBuffer(vao, vbo, ebo);
-        else if (ptcl && ptcl->vao && ptcl->vbo)
+            Glitter::DeleteBuffer(buffer, vao, vbo, ebo);
+        else if (ptcl && ptcl->buffer)
             ptcl->buffer_used = false;
 
         if (!a2 && elements) {

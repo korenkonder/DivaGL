@@ -28,7 +28,15 @@ namespace Glitter {
             *angle = (float_t)M_PI - *angle;
     }
 
-    void CreateBuffer(size_t max_count, bool is_quad, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo) {
+    void CreateBuffer(size_t max_count, bool is_quad,
+        Buffer*& buffer, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo) {
+        if (buffer) {
+            _operator_delete(buffer);
+            buffer = 0;
+        }
+
+        buffer = (Buffer*)_operator_new(sizeof(Buffer) * max_count);
+
         glGenVertexArrays(1, &vao);
         gl_state_bind_vertex_array(vao, true);
 
@@ -69,13 +77,18 @@ namespace Glitter {
             gl_state_bind_element_array_buffer(0);
     }
 
-    void DeleteBuffer(GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo) {
+    void DeleteBuffer(Buffer*& buffer, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo) {
         ebo.Destroy();
         vbo.Destroy();
 
         if (vao) {
             glDeleteVertexArrays(1, &vao);
             vao = 0;
+        }
+
+        if (buffer) {
+            _operator_delete(buffer);
+            buffer = 0;
         }
     }
 

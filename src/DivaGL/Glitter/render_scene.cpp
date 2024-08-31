@@ -273,7 +273,7 @@ namespace Glitter {
         else
             rend_group->mat_draw = mat4_identity;
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -318,7 +318,7 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderScene::CalcDispLocus(RenderGroup* rend_group) {
@@ -391,7 +391,7 @@ namespace Glitter {
         mat3_invert(&cam_inv_view_mat3, &cam_inv_view_mat3);
         mat3_transform_vector(&cam_inv_view_mat3, &x_vec, &x_vec);
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -478,7 +478,7 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderScene::CalcDispQuad(RenderGroup* rend_group) {
@@ -592,7 +592,7 @@ namespace Glitter {
         vec3 scale;
         mat4_get_scale(model_mat, &scale);
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -676,7 +676,7 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderScene::CalcDispQuadNormal(
@@ -747,7 +747,7 @@ namespace Glitter {
         mat4_transform_vector(&inv_model_mat, &x_vec, &x_vec);
         mat4_transform_vector(&inv_model_mat, &y_vec, &y_vec);
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -903,7 +903,7 @@ namespace Glitter {
             }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderScene::CalcDispLocusSetPivot(Pivot pivot,
@@ -1089,7 +1089,7 @@ namespace Glitter {
         else
             rend_group->mat_draw = mat4_identity;
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -1133,7 +1133,7 @@ namespace Glitter {
             }
         }
         rend_group->disp = disp;
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderSceneX::CalcDispLocus(RenderGroupX* rend_group) {
@@ -1197,7 +1197,7 @@ namespace Glitter {
         mat3_invert(&cam_inv_view_mat3, &cam_inv_view_mat3);
         mat3_transform_vector(&cam_inv_view_mat3, &x_vec, &x_vec);
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -1283,7 +1283,7 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderSceneX::CalcDispMesh(RenderGroupX* rend_group) {
@@ -1580,7 +1580,7 @@ namespace Glitter {
             y_vec_base.y *= scale.y;
         }
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -1662,7 +1662,7 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     void RenderSceneX::CalcDispQuadNormal(RenderGroupX* rend_group, mat4* model_mat, mat4* dir_mat) {
@@ -1724,7 +1724,7 @@ namespace Glitter {
         mat4_transform_vector(&inv_model_mat, &x_vec, &x_vec);
         mat4_transform_vector(&inv_model_mat, &y_vec, &y_vec);
 
-        Buffer* buf = (Buffer*)rend_group->vbo.MapMemory();
+        Buffer* buf = rend_group->buffer;
         if (!buf)
             return;
 
@@ -1874,7 +1874,7 @@ namespace Glitter {
             }
         rend_group->disp = disp;
 
-        rend_group->vbo.UnmapMemory();
+        rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
     bool RenderSceneX::CanDisp(DispType disp_type, bool a3) {

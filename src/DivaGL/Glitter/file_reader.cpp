@@ -89,12 +89,12 @@ namespace Glitter {
                         continue;
 
                     for (ParticleX*& k : j->particles) {
-                        if (!k || k->vao || k->vbo)
+                        if (!k || k->buffer)
                             continue;
                         else if (k->data.type == PARTICLE_MESH || k->max_count <= 0 || init_buffers <= 0)
                             continue;
 
-                        CreateBuffer(k->max_count, k->data.type == PARTICLE_QUAD, k->vao, k->vbo, k->ebo);
+                        CreateBuffer(k->max_count, k->data.type == PARTICLE_QUAD, k->buffer, k->vao, k->vbo, k->ebo);
                         init_buffers--;
                         glt_particle_manager_x->DecrementInitBuffersByCount();
                     }
