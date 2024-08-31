@@ -80,16 +80,55 @@ void fog::data_set(fog_id id) {
     extern render_context* rctx;
 
     switch (id) {
-    case FOG_DEPTH:
-        get_color(rctx->obj_scene.g_fog_depth_color);
-        rctx->obj_scene.g_fog_state_params = params;
-        break;
-    case FOG_HEIGHT:
-        get_color(rctx->obj_scene.g_fog_height_color);
-        rctx->obj_scene.g_fog_height_params = params;
-        break;
-    case FOG_BUMP:
-        rctx->obj_scene.g_fog_bump_params = params;
-        break;
+    case FOG_DEPTH: {
+        float_t density = get_density();
+        float_t start = get_start();
+        float_t end = get_end();
+        if (start >= end)
+            start = end - 0.01f;
+        vec4 color;
+        get_color(color);
+
+        render_context::fog_params params = {};
+        rctx->get_scene_fog_params(params);
+        params.density = density;
+        params.start = start;
+        params.end = end;
+        params.depth_color = color;
+        rctx->set_scene_fog_params(params);
+    } break;
+    case FOG_HEIGHT: {
+        float_t density = get_density();
+        float_t start = get_start();
+        float_t end = get_end();
+        if (start >= end)
+            start = end - 0.01f;
+        vec4 color;
+        get_color(color);
+
+        render_context::fog_params params = {};
+        rctx->get_scene_fog_params(params);
+        params.height_params.x = density;
+        params.height_params.y = start;
+        params.height_params.z = end;
+        params.height_params.w = 1.0f / (end - start);
+        params.height_color = color;
+        rctx->set_scene_fog_params(params);
+    } break;
+    case FOG_BUMP: {
+        float_t density = get_density();
+        float_t start = get_start();
+        float_t end = get_end();
+        if (start >= end)
+            start = end - 0.01f;
+
+        render_context::fog_params params = {};
+        rctx->get_scene_fog_params(params);
+        params.bump_params.x = density;
+        params.bump_params.y = start;
+        params.bump_params.z = end;
+        params.bump_params.w = 1.0f / (end - start);
+        rctx->set_scene_fog_params(params);
+    } break;
     }
 }

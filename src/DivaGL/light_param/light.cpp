@@ -318,28 +318,30 @@ void light_set::data_set(light_set_id id) {
     static const float_t spec_coef = (float_t)(1.0 / (1.0 - cos(18.0 * DEG_TO_RAD)));
     static const float_t luce_coef = (float_t)(1.0 / (1.0 - cos(45.0 * DEG_TO_RAD)));
 
-    extern render_context* rctx;
-    obj_scene_shader_data& obj_scene = rctx->obj_scene;
-
     light_data_color light_color[LIGHT_MAX];
     for (int32_t i = 0; i < LIGHT_MAX; i++)
         light_get_light_color(&lights[i], light_color[i], (light_id)i);
 
-    obj_scene.g_light_env_stage_diffuse = light_color[LIGHT_STAGE].diffuse;
-    obj_scene.g_light_env_stage_specular = light_color[LIGHT_STAGE].specular;
+    vec4 light_env_stage_diffuse = light_color[LIGHT_STAGE].diffuse;
+    vec4 light_env_stage_specular = light_color[LIGHT_STAGE].specular;
 
-    obj_scene.g_light_env_chara_diffuse = light_color[LIGHT_CHARA].diffuse;
-    obj_scene.g_light_env_chara_ambient = light_color[LIGHT_CHARA].ambient;
-    obj_scene.g_light_env_chara_specular = light_color[LIGHT_CHARA].specular;
+    vec4 light_env_chara_diffuse = light_color[LIGHT_CHARA].diffuse;
+    vec4 light_env_chara_ambient = light_color[LIGHT_CHARA].ambient;
+    vec4 light_env_chara_specular = light_color[LIGHT_CHARA].specular;
 
-    lights[LIGHT_REFLECT].get_diffuse(obj_scene.g_light_env_reflect_diffuse);
-    lights[LIGHT_REFLECT].get_ambient(obj_scene.g_light_env_reflect_ambient);
+    vec4 light_env_reflect_diffuse;
+    vec4 light_env_reflect_ambient;
+    lights[LIGHT_REFLECT].get_diffuse(light_env_reflect_diffuse);
+    lights[LIGHT_REFLECT].get_ambient(light_env_reflect_ambient);
 
-    lights[LIGHT_PROJECTION].get_diffuse(obj_scene.g_light_env_proj_diffuse);
-    lights[LIGHT_PROJECTION].get_specular(obj_scene.g_light_env_proj_specular);
-    lights[LIGHT_PROJECTION].get_position(obj_scene.g_light_env_proj_position);
+    vec4 light_env_proj_diffuse;
+    vec4 light_env_proj_specular;
+    vec4 light_env_proj_position;
+    lights[LIGHT_PROJECTION].get_diffuse(light_env_proj_diffuse);
+    lights[LIGHT_PROJECTION].get_specular(light_env_proj_specular);
+    lights[LIGHT_PROJECTION].get_position(light_env_proj_position);
     if (lights[LIGHT_PROJECTION].get_type() == LIGHT_PARALLEL)
-        light_get_direction_from_position(&obj_scene.g_light_env_proj_position, 0, true);
+        light_get_direction_from_position(&light_env_proj_position, 0, true);
 
     vec4 light_chara_dir;
     vec4 light_chara_ibl_color0;
@@ -351,10 +353,9 @@ void light_set::data_set(light_set_id id) {
     lights[LIGHT_CHARA].get_ibl_color1(light_chara_ibl_color1);
     lights[LIGHT_CHARA].get_specular(light_chara_specular);
 
-    obj_scene.g_light_chara_dir = light_chara_dir;
-    obj_scene.g_light_chara_spec = light_chara_specular * light_chara_ibl_color0 * spec_coef;
-    obj_scene.g_light_chara_luce = light_chara_ibl_color0 * luce_coef;
-    obj_scene.g_light_chara_back = light_chara_specular * light_chara_ibl_color1 * spec_coef;
+    vec4 light_chara_spec = light_chara_specular * light_chara_ibl_color0 * spec_coef;
+    vec4 light_chara_luce = light_chara_ibl_color0 * luce_coef;
+    vec4 light_chara_back = light_chara_specular * light_chara_ibl_color1 * spec_coef;
 
     vec4 light_stage_dir;
     vec4 light_stage_ibl_color;
@@ -366,44 +367,42 @@ void light_set::data_set(light_set_id id) {
     lights[LIGHT_STAGE].get_diffuse(light_stage_diffuse);
     lights[LIGHT_STAGE].get_specular(light_stage_specular);
 
-    obj_scene.g_light_stage_dir = light_stage_dir;
-    obj_scene.g_light_stage_diff = light_stage_diffuse * light_stage_ibl_color;
-    obj_scene.g_light_stage_spec = light_stage_specular * light_stage_ibl_color * spec_coef;
+    vec4 light_stage_diff = light_stage_diffuse * light_stage_ibl_color;
+    vec4 light_stage_spec = light_stage_specular * light_stage_ibl_color * spec_coef;
 
     mat4 irradiance_r_transforms;
     mat4 irradiance_g_transforms;
     mat4 irradiance_b_transforms;
     get_irradiance(irradiance_r_transforms, irradiance_g_transforms, irradiance_b_transforms);
-    obj_scene.set_g_irradiance_r_transforms(irradiance_r_transforms);
-    obj_scene.set_g_irradiance_g_transforms(irradiance_g_transforms);
-    obj_scene.set_g_irradiance_b_transforms(irradiance_b_transforms);
-
 
     float_t* (FASTCALL * face_data_get)() = (float_t * (FASTCALL*)())0x00000001403D8310;
-    float_t offset = face_data_get()[0];
-    float_t v28 = (float_t)(1.0 - exp(offset * -0.44999999)) * 2.0f;
-    offset = max_def(offset, 0.0f);
-    obj_scene.g_light_face_diff = { v28 * 0.1f, offset * 0.06f, 1.0f, 1.0f };
+    float_t v27 = face_data_get()[0];
+    float_t v28 = (float_t)(1.0 - exp(v27 * -0.44999999)) * 2.0f;
+    v27 = max_def(v27, 0.0f);
+    vec4 light_face_diff = { v28 * 0.1f, v27 * 0.06f, 1.0f, 1.0f };
 
+    vec4 chara_color_rim;
+    vec4 chara_color0;
+    vec4 chara_color1;
     if (lights[LIGHT_CHARA_COLOR].get_type() == LIGHT_PARALLEL) {
-        lights[LIGHT_CHARA_COLOR].get_ambient(obj_scene.g_chara_color_rim);
-        lights[LIGHT_CHARA_COLOR].get_diffuse(obj_scene.g_chara_color0);
-        lights[LIGHT_CHARA_COLOR].get_specular(obj_scene.g_chara_color1);
-        if (obj_scene.g_chara_color1.w > 1.0f)
-            obj_scene.g_chara_color1.w = 1.0f;
+        lights[LIGHT_CHARA_COLOR].get_ambient(chara_color_rim);
+        lights[LIGHT_CHARA_COLOR].get_diffuse(chara_color0);
+        lights[LIGHT_CHARA_COLOR].get_specular(chara_color1);
+        if (chara_color1.w > 1.0f)
+            chara_color1.w = 1.0f;
     }
     else {
-        obj_scene.g_chara_color_rim = 0.0f;
-        obj_scene.g_chara_color0 = 0.0f;
-        obj_scene.g_chara_color1 = 0.0f;
+        chara_color_rim = 0.0f;
+        chara_color0 = 0.0f;
+        chara_color1 = 0.0f;
     }
 
+    vec4 chara_f_dir;
+    vec4 chara_f_ambient;
+    vec4 chara_f_diffuse;
+    vec4 chara_tc_param;
     if (lights[LIGHT_TONE_CURVE].get_type() == LIGHT_PARALLEL) {
         uniform->arr[U_TONE_CURVE] = 1;
-        vec4 chara_f_dir;
-        vec4 chara_f_ambient;
-        vec4 chara_f_diffuse;
-        vec4 chara_tc_param;
         lights[LIGHT_TONE_CURVE].get_position(chara_f_dir);
         light_get_direction_from_position(&chara_f_dir, &lights[LIGHT_TONE_CURVE]);
         lights[LIGHT_TONE_CURVE].get_ambient(chara_f_ambient);
@@ -419,18 +418,13 @@ void light_set::data_set(light_set_id id) {
             chara_tc_param.y = 0.0f;
         chara_tc_param.z = tone_curve.coefficient;
         chara_tc_param.w = 0.0f;
-
-        obj_scene.g_chara_f_dir = chara_f_dir;
-        obj_scene.g_chara_f_ambient = chara_f_ambient;
-        obj_scene.g_chara_f_diffuse = chara_f_diffuse;
-        obj_scene.g_chara_tc_param = chara_tc_param;
     }
     else {
         uniform->arr[U_TONE_CURVE] = 0;
-        obj_scene.g_chara_f_dir = { 0.0f, 1.0f, 0.0f, 0.0f };
-        obj_scene.g_chara_f_ambient = 0.0f;
-        obj_scene.g_chara_f_diffuse = 0.0f;
-        obj_scene.g_chara_tc_param = 0.0f;
+        chara_f_dir = { 0.0f, 1.0f, 0.0f, 0.0f };
+        chara_f_ambient = 0.0f;
+        chara_f_diffuse = 0.0f;
+        chara_tc_param = 0.0f;
     }
 
     vec4 light_reflect_dir;
@@ -445,24 +439,20 @@ void light_set::data_set(light_set_id id) {
     }
     light_reflect_dir.w = 1.0f;
 
-    obj_scene.g_light_reflect_dir = light_reflect_dir;
-
+    vec4 clip_plane;
     if (lights[LIGHT_REFLECT].get_type() == LIGHT_SPOT) {
         vec3 spot_direction;
         vec4 position;
         lights[LIGHT_REFLECT].get_spot_direction(spot_direction);
         lights[LIGHT_REFLECT].get_position(position);
-        vec4 clip_plane;
         *(vec3*)&clip_plane =  -spot_direction;
         light_get_direction_from_position(&clip_plane, &lights[LIGHT_REFLECT], true);
         clip_plane.w = -vec3::dot(*(vec3*)&position, *(vec3*)&clip_plane);
-
-        obj_scene.g_clip_plane = clip_plane;
     }
     else if (lights[LIGHT_REFLECT].get_type() == LIGHT_POINT)
-        obj_scene.g_clip_plane = { 0.0f, -1.0f, 0.0f, 9999.0f };
+        clip_plane = { 0.0f, -1.0f, 0.0f, 9999.0f };
     else
-        obj_scene.g_clip_plane = { 0.0f, -1.0f, 0.0f, 0.0f };
+        clip_plane = { 0.0f, -1.0f, 0.0f, 0.0f };
 
     vec4 light_chara_ibl_direction;
     vec4 light_chara_position;
@@ -493,8 +483,18 @@ void light_set::data_set(light_set_id id) {
         }
     }
 
-    obj_scene.set_g_normal_tangent_transforms(normal_tangent_transforms);
-    obj_scene.g_npr_cloth_spec_color = npr_cloth_spec_color;
+    extern render_context* rctx;
+    rctx->set_scene_light(irradiance_r_transforms, irradiance_g_transforms, irradiance_b_transforms,
+        light_env_stage_diffuse, light_env_stage_specular, light_env_chara_diffuse,
+        light_env_chara_ambient, light_env_chara_specular,
+        light_env_reflect_diffuse, light_env_reflect_ambient,
+        light_env_proj_diffuse, light_env_proj_specular,
+        light_env_proj_position, light_stage_dir, light_stage_diff,
+        light_stage_spec, light_chara_dir, light_chara_spec,
+        light_chara_luce, light_chara_back, light_face_diff,
+        chara_color0, chara_color1, chara_f_dir, chara_f_ambient,
+        chara_f_diffuse, chara_tc_param, normal_tangent_transforms,
+        light_reflect_dir, clip_plane, npr_cloth_spec_color);
 }
 
 static void light_get_direction_from_position(vec4* pos_dir, light_data* light, bool force) {

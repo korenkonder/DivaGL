@@ -95,7 +95,7 @@ namespace GL {
     }
 
     void ElementArrayBuffer::WriteMemory(size_t offset, size_t size, const void* data) {
-        if (!buffer)
+        if (!buffer || !size)
             return;
 
         if (GL_VERSION_4_5)

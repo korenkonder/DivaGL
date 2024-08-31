@@ -32,7 +32,7 @@ enum uniform_name {
     U_FOG_CHARA     = 0x15,
     U16             = 0x16,
     U_GAUSS         = 0x17,
-    U_EYEBALL       = 0x18,
+    U_EYE_LENS      = 0x18,
     U_IMAGE_FILTER  = 0x19,
     U_INSTANCE      = 0x1A,
     U_TONE_CURVE    = 0x1B,

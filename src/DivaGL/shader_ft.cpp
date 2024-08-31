@@ -1486,7 +1486,7 @@ static void shader_bind_hair(shader_set_data* set, shader* shad) {
 }
 
 static void shader_bind_glass_eye(shader_set_data* set, shader* shad) {
-    uniform->arr[U_EYEBALL] = 0;
+    uniform->arr[U_EYE_LENS] = 0;
     if (set->shaders[SHADER_FT_GLASEYE].bind(set, SHADER_FT_SUB_GLASS_EYE) >= 0) {
         glass_eye_calc(&glass_eye);
         glass_eye_set(&glass_eye);

@@ -53,6 +53,7 @@ struct camera_struct {
     bool fast_change_hist1;
     int32_t field_22C;
 
+    void get_view_point(vec3& value);
     void get_view_point(vec4& value);
 
     static void update_data();

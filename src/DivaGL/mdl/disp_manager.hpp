@@ -451,8 +451,7 @@ namespace mdl {
         void check_index_buffer(GLuint buffer);
         void check_vertex_arrays();
         void check_vertex_buffer(GLuint buffer);
-        void draw(mdl::ObjType type, int32_t depth_mask = 0, bool reflect_texture_mask = true);
-        void draw_translucent(mdl::ObjType type, int32_t alpha);
+        void draw(mdl::ObjType type, int32_t depth_mask = 0, bool reflect_texture_mask = true, int32_t alpha = -1);
         /*void draw_show_vector(mdl::ObjType type, int32_t show_vector);*/
         void entry_list(ObjType type, ObjData* data);
         bool entry_obj(::obj* object, obj_mesh_vertex_buffer* obj_vertex_buf,

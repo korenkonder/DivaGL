@@ -206,11 +206,11 @@ HOOK(int32_t, FASTCALL, shader_get_index_by_name, 0x00000001405E4ED0, const char
 }
 
 HOOK(void, FASTCALL, env_set_blend_color, 0x00000001405E5600, float_t r, float_t g, float_t b, float_t a) {
-    rctx->obj_batch.g_blend_color = { r, g, b, a };
+    rctx->set_batch_blend_color({ r, g, b, a });
 }
 
 HOOK(void, FASTCALL, env_set_offset_color, 0x00000001405E5630, float_t r, float_t g, float_t b, float_t a) {
-    rctx->obj_batch.g_offset_color = { r, g, b, a };
+    rctx->set_batch_offset_color({ r, g, b, a });
 }
 
 HOOK(void, FASTCALL, set_render_defaults, 0x00000001401948B0) {
