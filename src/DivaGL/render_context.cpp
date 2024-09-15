@@ -629,7 +629,7 @@ void render_context::ctrl(bool change_res) {
         };
 
         RenderTexture& render_buffer = render->rend_texture[0];
-        RenderTexture& reflect_buffer = render_manager->get_render_texture(1);
+        RenderTexture& reflect_buffer = render_manager->get_render_texture(0);
         RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
         init_copy_buffer(reflect_buffer, this->reflect_buffer);
         init_copy_buffer(render_buffer, this->render_buffer);
@@ -683,7 +683,7 @@ void render_context::init() {
     };
 
     RenderTexture& render_buffer = render_get()->rend_texture[0];
-    RenderTexture& reflect_buffer = render_manager->get_render_texture(1);
+    RenderTexture& reflect_buffer = render_manager->get_render_texture(0);
     RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
     init_copy_buffer(reflect_buffer, this->reflect_buffer);
     init_copy_buffer(render_buffer, this->render_buffer);

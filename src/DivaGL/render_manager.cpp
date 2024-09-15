@@ -65,30 +65,15 @@ namespace rndr {
         GLenum depth_format;
     };
 
-    static const RenderTextureData render_manager_render_texture_data_array[] = {
-        { GL_TEXTURE_2D, 0x200, 0x100, 0, GL_RGBA8  , GL_DEPTH_COMPONENT24 },
-        { GL_TEXTURE_2D, 0x200, 0x100, 0, GL_RGBA16F, GL_DEPTH_COMPONENT24 },
-        { GL_TEXTURE_2D, 0x400, 0x400, 0, GL_RGBA8  , GL_ZERO },
-        { GL_TEXTURE_2D, 0x400, 0x400, 0, GL_RGBA8  , GL_ZERO },
-        { GL_TEXTURE_2D, 0x400, 0x400, 0, GL_RGBA8  , GL_ZERO },
-        { GL_TEXTURE_2D, 0x100, 0x100, 0, GL_RGBA8  , GL_ZERO },
-        { GL_TEXTURE_2D, 0x100, 0x100, 0, GL_RGBA32F, GL_ZERO },
-        { GL_TEXTURE_2D, 0x100, 0x100, 0, GL_RGBA8  , GL_ZERO },
+    struct RenderTextureIndex {
+        int32_t arr[3];
     };
 
-    static const int32_t render_manager_render_texture_index_array[][3] = {
-        { 1, 1, 1 },
-        { 0, 0, 0 },
-        { 6, 6, 6 },
-        { 6, 6, 6 },
-        { 6, 6, 6 },
-        { 2, 2, 2 },
-        { 3, 3, 3 },
-        { 4, 4, 4 },
-        { 5, 5, 5 },
-        { 6, 6, 6 },
-        { 7, 7, 7 },
-    };
+    static const RenderTextureData* render_manager_render_texture_data_array
+        = (const RenderTextureData*)0x0000000140A24420;
+
+    static const RenderTextureIndex* render_manager_render_texture_index_array
+        = (const RenderTextureIndex*)0x0000000140A244E0;
 
     void RenderManager::add_pre_process(int32_t type, void(*func)(void*), void* data) {
         pre_process.push_back({ type, func, data });
@@ -103,7 +88,7 @@ namespace rndr {
     }
 
     RenderTexture& RenderManager::get_render_texture(int32_t index) {
-        return render_textures[render_manager_render_texture_index_array[index][tex_index[index]]];
+        return render_textures[render_manager_render_texture_index_array[index].arr[tex_index[index]]];
     }
 
     void RenderManager::reset() {
@@ -1101,56 +1086,7 @@ void draw_pass_set_camera() {
 }
 
 HOOK(void, FASTCALL, render_manager_init_render_textures, 0x0000000140502560, int32_t multisample) {
-    rndr::RenderManager& render_manager = *::render_manager;
-
-    if (multisample) {
-        glGenFramebuffers(1, &render_manager.multisample_framebuffer);
-        glGenRenderbuffers(1, &render_manager.multisample_renderbuffer);
-
-        gl_state_bind_framebuffer(render_manager.multisample_framebuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, render_manager.multisample_renderbuffer);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8,
-            GL_RGBA8, render_manager.width, render_manager.height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-            GL_RENDERBUFFER, render_manager.multisample_renderbuffer);
-        glDrawBufferDLL(GL_COLOR_ATTACHMENT0);
-        glDrawBufferDLL(GL_COLOR_ATTACHMENT0);
-        gl_state_bind_framebuffer(0);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-        if (glGetErrorDLL()) {
-            glDeleteRenderbuffers(1, &render_manager.multisample_renderbuffer);
-            render_manager.multisample_renderbuffer = 0;
-            glDeleteFramebuffers(1, &render_manager.multisample_framebuffer);
-            render_manager.multisample_framebuffer = 0;
-        }
-    }
-
-    struct RenderTextureData {
-        GLenum type;
-        int32_t width;
-        int32_t height;
-        int32_t max_level;
-        GLenum color_format;
-        GLenum depth_format;
-    };
-
-    const RenderTextureData* render_manager_render_texture_data_array
-        = (const RenderTextureData*)0x0000000140A24420;
-
-    for (int32_t i = 0; i < 9; i++) {
-        const RenderTextureData* tex_data = &render_manager_render_texture_data_array[i];
-        if (tex_data->type != GL_TEXTURE_2D)
-            continue;
-
-        RenderTexture& rt = render_manager.render_textures[i];
-        rt.Init(tex_data->width, tex_data->height, tex_data->max_level,
-            tex_data->color_format, tex_data->depth_format);
-        rt.Bind();
-        glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
-        glClearDLL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-    gl_state_bind_framebuffer(0);
+    render_manager_init_render_textures(multisample);
 }
 
 HOOK(void, FASTCALL, render_manager_free_data, 0x0000000140502770) {
@@ -1163,20 +1099,7 @@ HOOK(void, FASTCALL, render_manager_free_data, 0x0000000140502770) {
 }
 
 HOOK(void, FASTCALL, render_manager_free_render_textures, 0x00000001405027A0) {
-    rndr::RenderManager& render_manager = *::render_manager;
-
-    if (render_manager.multisample_renderbuffer) {
-        glDeleteRenderbuffers(1, &render_manager.multisample_renderbuffer);
-        render_manager.multisample_renderbuffer = 0;
-    }
-
-    if (render_manager.multisample_framebuffer) {
-        glDeleteFramebuffers(1, &render_manager.multisample_framebuffer);
-        render_manager.multisample_framebuffer = 0;
-    }
-
-    for (RenderTexture& i : render_manager.render_textures)
-        i.Free();
+    render_manager_free_render_textures();
 }
 
 HOOK(void, FASTCALL, render_manager_init_data, 0x0000000140502A2A, int32_t ssaa, int32_t hd_res, int32_t ss_alpha_mask, bool npr) {
