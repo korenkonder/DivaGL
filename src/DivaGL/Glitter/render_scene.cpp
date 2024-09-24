@@ -111,20 +111,29 @@ namespace Glitter {
         shader_data.g_state_material_emission = { emission, emission, emission, 1.0f };
         rctx->glitter_batch_ubo.WriteMemory(shader_data);
 
-        GLenum blend_src = GL_SRC_ALPHA;
-        GLenum blend_dst = GL_ONE_MINUS_SRC_ALPHA;
+        GLenum blend_src;
+        GLenum blend_dst;
+        bool alpha_test = false;
         switch (rend_group->blend_mode) {
         case PARTICLE_BLEND_ADD:
             blend_src = GL_SRC_ALPHA;
             blend_dst = GL_ONE;
             break;
+        case PARTICLE_BLEND_SUBTRACT:
+            blend_src = GL_SRC_ALPHA;
+            blend_dst = GL_ONE_MINUS_SRC_ALPHA;
+            break;
         case PARTICLE_BLEND_MULTIPLY:
             blend_src = GL_ZERO;
             blend_dst = GL_SRC_COLOR;
             break;
+        default:
+            blend_src = GL_SRC_ALPHA;
+            blend_dst = GL_ONE_MINUS_SRC_ALPHA;
+            alpha_test = rend_group->blend_mode == PARTICLE_BLEND_PUNCH_THROUGH;
+            break;
         }
 
-        gl_state_enable_blend();
         gl_state_set_blend_func(blend_src, blend_dst);
         gl_state_set_blend_equation(GL_FUNC_ADD);
 
@@ -175,15 +184,26 @@ namespace Glitter {
                 break;
             }
 
-            if (rend_group->blend_mode == PARTICLE_BLEND_PUNCH_THROUGH) {
+            gl_state_enable_depth_test();
+
+            if (alpha_test) {
+                uniform->arr[U_ALPHA_TEST] = 1;
+                rctx->set_batch_alpha_threshold(0.5f);
                 uniform->arr[U_ALPHA_BLEND] = 1;
-                gl_state_enable_depth_test();
                 gl_state_set_depth_mask(GL_TRUE);
+                gl_state_disable_blend();
+            }
+            else if (rend_group->disp_type) {
+                uniform->arr[U_ALPHA_TEST] = 0;
+                uniform->arr[U_ALPHA_BLEND] = 2;
+                gl_state_set_depth_mask(GL_FALSE);
+                gl_state_enable_blend();
             }
             else {
-                uniform->arr[U_ALPHA_BLEND] = rend_group->disp_type ? 2 : 0;
-                gl_state_enable_depth_test();
-                gl_state_set_depth_mask(GL_FALSE);
+                uniform->arr[U_ALPHA_TEST] = 0;
+                uniform->arr[U_ALPHA_BLEND] = 0;
+                gl_state_set_depth_mask(GL_TRUE);
+                gl_state_disable_blend();
             }
 
             if (rend_group->draw_type == DIRECTION_BILLBOARD) {
@@ -194,8 +214,9 @@ namespace Glitter {
                 gl_state_disable_cull_face();
             break;
         case PARTICLE_LINE:
-            uniform->arr[U_FOG_STAGE] = 0;
+            uniform->arr[U_ALPHA_TEST] = 0;
             uniform->arr[U_ALPHA_BLEND] = 2;
+            uniform->arr[U_FOG_STAGE] = 0;
 
             gl_state_enable_depth_test();
             gl_state_set_depth_mask(GL_FALSE);
@@ -203,8 +224,9 @@ namespace Glitter {
             gl_state_set_cull_face_mode(GL_BACK);
             break;
         case PARTICLE_LOCUS:
-            uniform->arr[U_FOG_STAGE] = 0;
+            uniform->arr[U_ALPHA_TEST] = 0;
             uniform->arr[U_ALPHA_BLEND] = 2;
+            uniform->arr[U_FOG_STAGE] = 0;
 
             gl_state_enable_depth_test();
             gl_state_set_depth_mask(GL_FALSE);
@@ -1960,20 +1982,29 @@ namespace Glitter {
         shader_data.g_state_material_emission = { emission, emission, emission, 1.0f };
         rctx->glitter_batch_ubo.WriteMemory(shader_data);
 
-        GLenum blend_src = GL_SRC_ALPHA;
-        GLenum blend_dst = GL_ONE_MINUS_SRC_ALPHA;
+        GLenum blend_src;
+        GLenum blend_dst;
+        bool alpha_test = false;
         switch (rend_group->blend_mode) {
         case PARTICLE_BLEND_ADD:
             blend_src = GL_SRC_ALPHA;
             blend_dst = GL_ONE;
             break;
+        case PARTICLE_BLEND_SUBTRACT:
+            blend_src = GL_SRC_ALPHA;
+            blend_dst = GL_ONE_MINUS_SRC_ALPHA;
+            break;
         case PARTICLE_BLEND_MULTIPLY:
             blend_src = GL_ZERO;
             blend_dst = GL_SRC_COLOR;
             break;
+        default:
+            blend_src = GL_SRC_ALPHA;
+            blend_dst = GL_ONE_MINUS_SRC_ALPHA;
+            alpha_test = rend_group->blend_mode == PARTICLE_BLEND_PUNCH_THROUGH;
+            break;
         }
 
-        gl_state_enable_blend();
         gl_state_set_blend_func(blend_src, blend_dst);
         gl_state_set_blend_equation(GL_FUNC_ADD);
 
@@ -2022,20 +2053,30 @@ namespace Glitter {
             break;
         }
 
-        if (rend_group->blend_mode == PARTICLE_BLEND_PUNCH_THROUGH)
-            uniform->arr[U_ALPHA_BLEND] = rend_group->disp_type ? 3 : 1;
-        else
-            uniform->arr[U_ALPHA_BLEND] = rend_group->disp_type ? 2 : 0;
-
         if (!(rend_group->flags & PARTICLE_DEPTH_TEST))
             gl_state_enable_depth_test();
         else
             gl_state_disable_depth_test();
 
-        if (rend_group->blend_mode == PARTICLE_BLEND_PUNCH_THROUGH)
+        if (alpha_test) {
+            uniform->arr[U_ALPHA_TEST] = 1;
+            rctx->set_batch_alpha_threshold(0.5f);
+            uniform->arr[U_ALPHA_BLEND] = rend_group->disp_type ? 3 : 1;
             gl_state_set_depth_mask(GL_TRUE);
-        else
+            gl_state_disable_blend();
+        }
+        else if (rend_group->disp_type) {
+            uniform->arr[U_ALPHA_TEST] = 0;
+            uniform->arr[U_ALPHA_BLEND] = 2;
             gl_state_set_depth_mask(GL_FALSE);
+            gl_state_enable_blend();
+        }
+        else {
+            uniform->arr[U_ALPHA_TEST] = 0;
+            uniform->arr[U_ALPHA_BLEND] = 0;
+            gl_state_set_depth_mask(GL_TRUE);
+            gl_state_disable_blend();
+        }
 
         if (rend_group->draw_type == DIRECTION_BILLBOARD && !rend_group->use_culling) {
             gl_state_enable_cull_face();
