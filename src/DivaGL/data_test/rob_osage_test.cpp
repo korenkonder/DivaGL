@@ -1219,7 +1219,6 @@ void RobOsageTest::disp_line() {
         if (!i || i->rob.nodes.size() < i->rob.root_count)
             continue;
 
-
         const color4u8 color_line = i == ex_node ? color_red : color_dark_red;
 
         const color4u8 color_tangent = i == ex_node ? color_green : color_dark_green;
