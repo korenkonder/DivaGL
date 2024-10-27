@@ -1200,12 +1200,12 @@ void RobOsageTest::disp_line() {
         const color4u8 line_color = i == ex_node ? color_white : color_dark_cyan;
         const color4u8 rect_color = i == ex_node ? color_red : color_dark_red;
 
-        RobOsageNode* j_begin = i->rob.nodes.data() + 1;
-        RobOsageNode* j_end = i->rob.nodes.data() + i->rob.nodes.size();
-        for (RobOsageNode* j = j_begin; j != j_end; j++)
+        const RobOsageNode* j_begin = i->rob.nodes.data() + 1;
+        const RobOsageNode* j_end = i->rob.nodes.data() + i->rob.nodes.size();
+        for (const RobOsageNode* j = j_begin; j != j_end; j++)
             spr::put_sprite_3d_line(j[-1].pos, j[0].pos, line_color);
 
-        for (RobOsageNode* j = j_begin; j != j_end; j++)
+        for (const RobOsageNode* j = j_begin; j != j_end; j++)
             spr::put_sprite_rect({ spr::proj_sprite_3d_line(j->pos, true) - 2.0f, 4.0f },
                 RESOLUTION_MODE_MAX, spr::SPR_PRIO_DEBUG, rect_color, 0);
 
@@ -1220,36 +1220,22 @@ void RobOsageTest::disp_line() {
             continue;
 
 
-        int64_t root_count = i->rob.root_count;
-        CLOTHNode* j_begin = i->rob.nodes.data() + root_count;
-        CLOTHNode* j_end = i->rob.nodes.data() + i->rob.nodes.size();
-
         const color4u8 color_line = i == ex_node ? color_red : color_dark_red;
 
-        const color4u8 color_x = i == ex_node ? color_white : color_grey;
-        const color4u8 color_y = i == ex_node ? color_cyan : color_dark_cyan;
-        const color4u8 color_z = i == ex_node ? color_green : color_dark_green;
+        const color4u8 color_tangent = i == ex_node ? color_green : color_dark_green;
+        const color4u8 color_binormal = i == ex_node ? color_cyan : color_dark_cyan;
+        const color4u8 color_normal = i == ex_node ? color_white : color_grey;
 
-        for (CLOTHNode* j = j_begin; j != j_end; j++) {
-            spr::put_sprite_3d_line(j[-root_count].pos, j[0].pos, color_line);
-            if ((j - j_begin) % root_count)
-                spr::put_sprite_3d_line(j[-1].pos, j[0].pos, color_line);
-        }
+        const CLOTHNode* nodes = i->rob.nodes.data();
+        for (const CLOTHLine& j : i->rob.lines)
+            spr::put_sprite_3d_line(nodes[j.idx[0]].pos, nodes[j.idx[1]].pos, color_line);
 
-        for (CLOTHNode* j = j_begin; j != j_end; j++) {
-            const vec3 dir = vec3::normalize(j[0].pos - j[-root_count].pos);
-            const vec3 up = { 0.0f, 1.0f, 0.0f };
-            vec3 axis;
-            float_t angle;
-            Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
-
-            mat4 mat = mat4_identity;
-            mat4_mul_rotation(&mat, &axis, angle, &mat);
-            mat4_scale_rot(&mat, 0.025f, &mat);
-            mat4_set_translation(&mat, &j->pos);
-            mat4_transpose(&mat, &mat);
-
-            spr::put_cross(&mat, color_x, color_y, color_z);
+        const CLOTHNode* j_begin = i->rob.nodes.data() + i->rob.root_count;
+        const CLOTHNode* j_end = i->rob.nodes.data() + i->rob.nodes.size();
+        for (const CLOTHNode* j = j_begin; j != j_end; j++) {
+            spr::put_sprite_3d_line(j->pos, j->tangent * 0.05f + j->pos, color_tangent);
+            spr::put_sprite_3d_line(j->pos, j->binormal * 0.05f + j->pos, color_binormal);
+            spr::put_sprite_3d_line(j->pos, j->normal * 0.05f + j->pos, color_normal);
         }
     }
 

@@ -1162,13 +1162,12 @@ struct CLOTHNode {
 
 static_assert(sizeof(CLOTHNode) == 0xF0, "\"CLOTHNode\" struct should have a size of 0xF0");
 
-struct struc_341 {
-    size_t field_0;
-    size_t field_8;
+struct CLOTHLine {
+    size_t idx[2];
     float_t length;
 };
 
-static_assert(sizeof(struc_341) == 0x18, "\"struc_341\" struct should have a size of 0x18");
+static_assert(sizeof(CLOTHLine) == 0x18, "\"CLOTHLine\" struct should have a size of 0x18");
 
 class CLOTH;
 
@@ -1200,7 +1199,7 @@ public:
     float_t field_44;
     bool set_external_force;
     vec3 external_force;
-    prj::vector<struc_341> field_58;
+    prj::vector<CLOTHLine> lines;
     skin_param* skin_param_ptr;
     skin_param skin_param;
     OsageCollision::Work coli[64];
