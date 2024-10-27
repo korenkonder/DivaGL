@@ -2539,7 +2539,7 @@ void RobOsageTestDw::Node::Weight::Update(bool value) {
         slider = dw::Slider::Create(comp);
         slider->SetText("");
         slider->format = "% 2.3f";
-        slider->SetParams(rob_osage_test->node.weight, 0.0f, 1.0f, 0.1f, 0.01f, 0.1f);
+        slider->SetParams(rob_osage_test->node.weight, 0.0f, 10.0f, 0.1f, 0.1f, 1.0f);
         slider->AddSelectionListener(new dw::SelectionListenerOnHook(
             RobOsageTestDw::Node::Weight::Callback));
     }
