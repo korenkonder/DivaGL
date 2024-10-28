@@ -1209,7 +1209,7 @@ void RobOsageTest::disp_line() {
             spr::put_sprite_rect({ spr::proj_sprite_3d_line(j->pos, true) - 2.0f, 4.0f },
                 RESOLUTION_MODE_MAX, spr::SPR_PRIO_DEBUG, rect_color, 0);
 
-        mat4_transpose(i->rob.nodes.data()[0].bone_node_mat, &mat);
+        mat4_transpose(i->rob.end_node.bone_node_mat, &mat);
         mat4_scale_rot(&mat, 0.05f, &mat);
         mat4_transpose(&mat, &mat);
         spr::put_cross(&mat, color_dark_red, color_dark_green, color_dark_blue);
