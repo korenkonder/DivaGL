@@ -1994,7 +1994,7 @@ void RobOsageTestDw::Root::ColiType::Update(bool value) {
 
         list_box = new dw::ListBox(comp, dw::MULTISELECT);
         list_box->AddItem("coli_type: End");
-        list_box->AddItem("coli_type: Ball");
+        list_box->AddItem("coli_type: Capsule");
         list_box->AddItem("coli_type: Capsule(+root)");
         list_box->SetItemIndex(rob_osage_test->root.coli_type);
         list_box->AddSelectionListener(new dw::SelectionListenerOnHook(

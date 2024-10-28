@@ -792,10 +792,10 @@ namespace SkinParam {
     };
 
     enum RootCollisionType {
-        RootCollisionTypeEnd     = 0x0,
-        RootCollisionTypeBall    = 0x1,
-        RootCollisionTypeCapsule = 0x2,
-        RootCollisionTypeMax     = 0x3,
+        RootCollisionTypeEnd             = 0x00,
+        RootCollisionTypeCapsule         = 0x01,
+        RootCollisionTypeCapsuleWithRoot = 0x02,
+        RootCollisionTypeMax             = 0x03,
     };
 }
 
