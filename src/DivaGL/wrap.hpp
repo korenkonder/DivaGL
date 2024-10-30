@@ -3416,7 +3416,6 @@ extern void GLAPIENTRY glVertex3fvGLUT(GLfloat const * v);
 extern HGLRC GLAPIENTRY wglCreateContextGLUT(HDC hDc);
 
 extern void GLAPIENTRY glTexParameteriv(GLenum target, GLenum pname, const GLint* params);
-extern void GLAPIENTRY glStencilMask(GLuint mask);
 extern void GLAPIENTRY glPrimitiveRestartIndex(GLuint index);
 extern void GLAPIENTRY glClearDepthf(GLfloat d);
 extern void GLAPIENTRY glGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, void* binary);

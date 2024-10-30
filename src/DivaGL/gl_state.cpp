@@ -536,7 +536,7 @@ void gl_state_set_stencil_func(GLenum func, GLint ref, GLuint mask, bool force) 
 
 void gl_state_set_stencil_mask(GLuint mask, bool force) {
     if (force || gl_state.stencil_mask != mask) {
-        glStencilMask(mask);
+        glStencilMaskSeparate(GL_FRONT_AND_BACK, mask);
         gl_state.stencil_mask = mask;
     }
 }

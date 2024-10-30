@@ -2491,7 +2491,6 @@ HGLRC GLAPIENTRY wglCreateContextGLUT(HDC hDc) {
 }
 
 typedef void (GLAPIENTRY* PFNGLTEXPARAMETERIVPROC)(GLenum target, GLenum pname, const GLint* params);
-typedef void (GLAPIENTRY* PFNGLSTENCILMASKPROC)(GLuint mask);
 typedef void (GLAPIENTRY* PFNGLPRIMITIVERESTARTINDEXPROC)(GLuint index);
 typedef void (GLAPIENTRY* PFNGLCLEARDEPTHFPROC)(GLfloat d);
 typedef void (GLAPIENTRY* PFNGLGETPROGRAMBINARYPROC)(GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, void* binary);
@@ -2509,7 +2508,6 @@ typedef void (GLAPIENTRY* PFNGLPUSHDEBUGGROUPPROC)(GLenum source, GLuint id, GLs
 typedef void (GLAPIENTRY* PFNGLPOPDEBUGGROUPPROC)();
 
 static PFNGLTEXPARAMETERIVPROC _glTexParameteriv = 0;
-static PFNGLSTENCILMASKPROC _glStencilMask = 0;
 static PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex = 0;
 static PFNGLCLEARDEPTHFPROC _glClearDepthf = 0;
 static PFNGLGETPROGRAMBINARYPROC _glGetProgramBinary = 0;
@@ -2530,12 +2528,6 @@ void GLAPIENTRY glTexParameteriv(GLenum target, GLenum pname, const GLint* param
     if (!_glTexParameteriv)
         _glTexParameteriv = (PFNGLTEXPARAMETERIVPROC)GetProcAddress((HMODULE)opengl32_handle, "glTexParameteriv");
     _glTexParameteriv(target, pname, params);
-}
-
-void GLAPIENTRY glStencilMask(GLuint mask) {
-    if (!_glStencilMask)
-        _glStencilMask = (PFNGLSTENCILMASKPROC)wglGetProcAddressDLL("glStencilMask");
-    _glStencilMask(mask);
 }
 
 void GLAPIENTRY glPrimitiveRestartIndex(GLuint index) {
