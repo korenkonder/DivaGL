@@ -54,6 +54,16 @@ struct sss_data {
 
 static_assert(sizeof(sss_data) == 0xD8, "\"sss_data\" struct should have a size of 0xD8");
 
+struct global_material_struct {
+    float_t bump_depth;
+    float_t intensity;
+    float_t reflectivity;
+    float_t reflect_uv_scale;
+    float_t refract_uv_scale;
+};
+
+static_assert(sizeof(global_material_struct) == 0x14, "\"global_material_struct\" struct should have a size of 0x14");
+
 struct draw_state_struct {
     draw_state_stats stats;
     draw_state_stats stats_prev;
@@ -68,11 +78,7 @@ struct draw_state_struct {
     bool back_display;
     int32_t shader_index;
     int32_t show;
-    float_t bump_depth;
-    float_t intensity;
-    float_t reflectivity;
-    float_t reflect_uv_scale;
-    float_t refract_uv_scale;
+    global_material_struct global_material;
     int32_t field_68;
     void* curr_obj_sub_mesh_args;
     float_t fresnel;

@@ -119,11 +119,11 @@ namespace mdl {
             shaders_ft.draw_elements(GL_TRIANGLES, etc->count, GL_UNSIGNED_INT, 0);
             break;
         case mdl::ETC_OBJ_GRID:
-            glLineWidthDLL(0.2f);
+            gl_state_set_line_width(0.2f);
             shaders_ft.draw_arrays(GL_LINES, 0, etc->count);
-            glLineWidthDLL(2.0f);
+            gl_state_set_line_width(2.0f);
             shaders_ft.draw_arrays(GL_LINES, (GLint)etc->count, 4);
-            glLineWidthDLL(1.0f);
+            gl_state_set_line_width(1.0f);
             break;
         case mdl::ETC_OBJ_CUBE:
             if (etc->data.sphere.wire)
@@ -855,20 +855,20 @@ static void draw_object_material_set_parameter(const obj_material_data* mat_data
     float_t inv_bump_depth;
     bool has_specular;
     if (draw_state.use_global_material) {
-        bump_depth = draw_state.bump_depth;
-        intensity = draw_state.intensity;
-        reflect_uv_scale = draw_state.reflect_uv_scale;
-        refract_uv_scale = draw_state.refract_uv_scale;
-        inv_bump_depth = (1.0f - draw_state.bump_depth) * 64.0f + 1.0f;
+        bump_depth = draw_state.global_material.bump_depth;
+        intensity = draw_state.global_material.intensity;
+        reflect_uv_scale = draw_state.global_material.reflect_uv_scale;
+        refract_uv_scale = draw_state.global_material.refract_uv_scale;
+        inv_bump_depth = (1.0f - draw_state.global_material.bump_depth) * 64.0f + 1.0f;
 
         specular = mat_data->material.color.specular;
-        specular.w = draw_state.reflectivity;
+        specular.w = draw_state.global_material.reflectivity;
         has_specular = true;
     }
     else {
         bump_depth = mat_data->material.bump_depth;
-        reflect_uv_scale = 0.1f;
         intensity = mat_data->material.color.intensity;
+        reflect_uv_scale = 0.1f;
         refract_uv_scale = 0.1f;
         inv_bump_depth = (1.0f - bump_depth) * 256.0f + 1.0f;
         has_specular = false;

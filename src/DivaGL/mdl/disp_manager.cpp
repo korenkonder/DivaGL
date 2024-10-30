@@ -2066,7 +2066,7 @@ namespace mdl {
         case OBJ_TYPE_REFRACT_TRANSPARENT:
             alpha_test = 1;
             min_alpha = 0.1f;
-            alpha_threshold = 0.0f;
+            alpha_threshold = 0.5f;
             break;
         case OBJ_TYPE_SSS:
             func = draw_sub_mesh_sss;

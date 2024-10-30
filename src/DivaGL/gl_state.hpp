@@ -29,6 +29,7 @@ struct gl_state_struct {
     GLenum blend_dst_alpha;
     GLenum blend_mode_rgb;
     GLenum blend_mode_alpha;
+    GLuint framebuffer_binding;
     GLuint read_framebuffer_binding;
     GLuint draw_framebuffer_binding;
     GLuint vertex_array_binding;
@@ -48,15 +49,21 @@ struct gl_state_struct {
     GLboolean depth_test;
     GLenum depth_func;
     GLboolean depth_mask;
-    GLenum polygon_front_face_mode;
-    GLenum polygon_back_face_mode;
+    GLfloat line_width;
+    GLenum polygon_mode;
     GLboolean multisample;
     GLboolean primitive_restart;
     GLuint primitive_restart_index;
     gl_state_rect scissor_box;
     GLboolean scissor_test;
     GLboolean stencil_test;
+    GLenum stencil_func;
+    GLenum stencil_fail;
+    GLenum stencil_dpfail;
+    GLenum stencil_dppass;
     GLuint stencil_mask;
+    GLint stencil_ref;
+    GLuint stencil_value_mask;
     gl_state_rect viewport;
 };
 
@@ -122,11 +129,14 @@ extern void gl_state_set_color_mask(GLboolean red, GLboolean green,
 extern void gl_state_set_cull_face_mode(GLenum mode, bool force = false);
 extern void gl_state_set_depth_func(GLenum func, bool force = false);
 extern void gl_state_set_depth_mask(GLboolean flag, bool force = false);
+extern void gl_state_set_line_width(GLfloat width, bool force = false);
 extern void gl_state_set_polygon_mode(GLenum face, GLenum mode, bool force = false);
 extern void gl_state_set_primitive_restart_index(GLuint index, bool force = false);
 extern void gl_state_set_scissor(const gl_state_rect& rect, bool force = false);
 extern void gl_state_set_scissor(GLint x, GLint y, GLsizei width, GLsizei height, bool force = false);
+extern void gl_state_set_stencil_func(GLenum func, GLint ref, GLuint mask, bool force = false);
 extern void gl_state_set_stencil_mask(GLuint mask, bool force = false);
+extern void gl_state_set_stencil_op(GLenum sfail, GLenum dpfail, GLenum dppass, bool force = false);
 extern void gl_state_set_viewport(const gl_state_rect& rect, bool force = false);
 extern void gl_state_set_viewport(GLint x, GLint y, GLsizei width, GLsizei height, bool force = false);
 extern void gl_state_use_program(GLuint program, bool force = false);

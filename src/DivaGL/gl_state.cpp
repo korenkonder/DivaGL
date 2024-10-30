@@ -41,9 +41,11 @@ void gl_state_active_texture(size_t index, bool force) {
 }
 
 void gl_state_bind_framebuffer(GLuint framebuffer, bool force) {
-    if (force || gl_state.read_framebuffer_binding != framebuffer
+    if (force || gl_state.framebuffer_binding != framebuffer
+        || gl_state.read_framebuffer_binding != framebuffer
         || gl_state.draw_framebuffer_binding != framebuffer) {
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        gl_state.framebuffer_binding = framebuffer;
         gl_state.read_framebuffer_binding = framebuffer;
         gl_state.draw_framebuffer_binding = framebuffer;
     }
@@ -307,6 +309,7 @@ void gl_state_get() {
     glGetIntegervDLL(GL_BLEND_EQUATION_RGB, (GLint*)&gl_state.blend_mode_rgb);
     glGetIntegervDLL(GL_BLEND_EQUATION_ALPHA, (GLint*)&gl_state.blend_mode_alpha);
 
+    glGetIntegervDLL(GL_FRAMEBUFFER_BINDING, (GLint*)&gl_state.framebuffer_binding);
     glGetIntegervDLL(GL_READ_FRAMEBUFFER_BINDING, (GLint*)&gl_state.read_framebuffer_binding);
     glGetIntegervDLL(GL_DRAW_FRAMEBUFFER_BINDING, (GLint*)&gl_state.draw_framebuffer_binding);
     glGetIntegervDLL(GL_VERTEX_ARRAY_BINDING, (GLint*)&gl_state.vertex_array_binding);
@@ -333,18 +336,24 @@ void gl_state_get() {
     glGetBooleanvDLL(GL_DEPTH_TEST, &gl_state.depth_test);
     glGetIntegervDLL(GL_DEPTH_FUNC, (GLint*)&gl_state.depth_func);
     glGetBooleanvDLL(GL_DEPTH_WRITEMASK, &gl_state.depth_mask);
+    glGetFloatvDLL(GL_LINE_WIDTH, &gl_state.line_width);
     glGetBooleanvDLL(GL_MULTISAMPLE, &gl_state.multisample);
     glGetBooleanvDLL(GL_PRIMITIVE_RESTART, &gl_state.primitive_restart);
     glGetIntegervDLL(GL_PRIMITIVE_RESTART_INDEX, (GLint*)&gl_state.primitive_restart_index);
     glGetIntegervDLL(GL_SCISSOR_BOX, (GLint*)&gl_state.scissor_box);
     glGetBooleanvDLL(GL_SCISSOR_TEST, &gl_state.scissor_test);
     glGetBooleanvDLL(GL_STENCIL_TEST, &gl_state.stencil_test);
+    glGetIntegervDLL(GL_STENCIL_FUNC, (GLint*)&gl_state.stencil_func);
+    glGetIntegervDLL(GL_STENCIL_VALUE_MASK, (GLint*)&gl_state.stencil_value_mask);
+    glGetIntegervDLL(GL_STENCIL_FAIL, (GLint*)&gl_state.stencil_fail);
+    glGetIntegervDLL(GL_STENCIL_PASS_DEPTH_FAIL, (GLint*)&gl_state.stencil_dpfail);
+    glGetIntegervDLL(GL_STENCIL_PASS_DEPTH_PASS, (GLint*)&gl_state.stencil_dppass);
+    glGetIntegervDLL(GL_STENCIL_REF, &gl_state.stencil_ref);
     glGetIntegervDLL(GL_STENCIL_WRITEMASK, (GLint*)&gl_state.stencil_mask);
     glGetIntegervDLL(GL_VIEWPORT, (GLint*)&gl_state.viewport);
 
     glPolygonModeDLL(GL_FRONT_AND_BACK, GL_FILL);
-    gl_state.polygon_front_face_mode = GL_FILL;
-    gl_state.polygon_back_face_mode = GL_FILL;
+    gl_state.polygon_mode = GL_FILL;
 }
 
 void gl_state_get_all_gl_errors() {
@@ -458,34 +467,32 @@ void gl_state_set_depth_mask(GLboolean flag, bool force) {
     }
 }
 
+void gl_state_set_line_width(GLfloat width, bool force) {
+    if (force || gl_state.line_width != width) {
+        glLineWidthDLL(width);
+        gl_state.line_width = width;
+    }
+}
+
 void gl_state_set_polygon_mode(GLenum face, GLenum mode, bool force) {
     switch (face) {
     case GL_FRONT:
-        if (force || gl_state.polygon_front_face_mode != mode) {
+        if (force || gl_state.polygon_mode != mode) {
             glPolygonModeDLL(GL_FRONT, mode);
-            gl_state.polygon_front_face_mode = mode;
+            gl_state.polygon_mode = mode;
         }
         break;
     case GL_BACK:
-        if (force || gl_state.polygon_back_face_mode != mode) {
+        if (force || gl_state.polygon_mode != mode) {
             glPolygonModeDLL(GL_BACK, mode);
-            gl_state.polygon_back_face_mode = mode;
+            gl_state.polygon_mode = mode;
         }
         break;
     case GL_FRONT_AND_BACK:
-        if (force || gl_state.polygon_front_face_mode != mode
-            && gl_state.polygon_back_face_mode != mode) {
+        if (force || gl_state.polygon_mode != mode) {
             glPolygonModeDLL(GL_FRONT_AND_BACK, mode);
-            gl_state.polygon_front_face_mode = mode;
-            gl_state.polygon_back_face_mode = mode;
-        }
-        else if (gl_state.polygon_front_face_mode != mode) {
-            glPolygonModeDLL(GL_FRONT, mode);
-            gl_state.polygon_front_face_mode = mode;
-        }
-        else if (gl_state.polygon_back_face_mode != mode) {
-            glPolygonModeDLL(GL_BACK, mode);
-            gl_state.polygon_back_face_mode = mode;
+            gl_state.polygon_mode = mode;
+            gl_state.polygon_mode = mode;
         }
         break;
     }
@@ -517,10 +524,30 @@ void gl_state_set_scissor(GLint x, GLint y, GLsizei width, GLsizei height, bool 
     }
 }
 
+void gl_state_set_stencil_func(GLenum func, GLint ref, GLuint mask, bool force) {
+    if (force || gl_state.stencil_func != func
+        || gl_state.stencil_ref != ref || gl_state.stencil_value_mask != mask) {
+        glStencilFuncSeparate(GL_FRONT_AND_BACK, func, ref, mask);
+        gl_state.stencil_func = func;
+        gl_state.stencil_ref = ref;
+        gl_state.stencil_value_mask = mask;
+    }
+}
+
 void gl_state_set_stencil_mask(GLuint mask, bool force) {
     if (force || gl_state.stencil_mask != mask) {
         glStencilMask(mask);
         gl_state.stencil_mask = mask;
+    }
+}
+
+void gl_state_set_stencil_op(GLenum sfail, GLenum dpfail, GLenum dppass, bool force) {
+    if (force || gl_state.stencil_fail != sfail
+        || gl_state.stencil_dpfail != dpfail || gl_state.stencil_dppass != dppass) {
+        glStencilOpSeparate(GL_FRONT_AND_BACK, sfail, dpfail, dppass);
+        gl_state.stencil_fail = sfail;
+        gl_state.stencil_dpfail = dpfail;
+        gl_state.stencil_dppass = dppass;
     }
 }
 
