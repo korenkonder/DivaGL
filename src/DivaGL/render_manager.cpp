@@ -1568,7 +1568,7 @@ static void draw_pass_sss_filter(sss_data* sss) {
         shaders_ft.set(SHADER_FT_REDUCE);
         gl_state_bind_texture_2d(rend->rend_texture[0].GetColorTex());
         gl_state_bind_sampler(0, rctx->render_samplers[0]);
-        render_get()->draw_quad(640, 360, 1.0f, 1.0f,
+        render_get()->draw_quad(rt.GetWidth(), rt.GetHeight(), 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
     }
     sss->textures[2].Bind();
@@ -1577,8 +1577,8 @@ static void draw_pass_sss_filter(sss_data* sss) {
     shaders_ft.set(SHADER_FT_SSS_FILT);
     gl_state_bind_texture_2d(sss->textures[0].GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
-    render_get()->draw_quad(640, 360, 1.0f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
+    render_get()->draw_quad(sss->textures[0].GetWidth(), sss->textures[0].GetHeight(),
+        1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
 
     sss_filter_gaussian_coef_shader_data shader_data = {};
     shader_data.g_param = { (float_t)(sss_count - 1), 0.0f, 1.0f, 1.0f };
@@ -1597,8 +1597,8 @@ static void draw_pass_sss_filter(sss_data* sss) {
     gl_state_bind_texture_2d(sss->textures[2].GetColorTex());
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
     rctx->sss_filter_gaussian_coef_ubo.Bind(1);
-    render_get()->draw_quad(320, 180, 1.0f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f, 0.96f, 1.0f, 0.0f);
+    render_get()->draw_quad(sss->textures[2].GetWidth(), sss->textures[2].GetHeight(),
+        1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.96f, 1.0f, 0.0f);
     gl_state_bind_texture_2d(0);
 }
 
@@ -1613,9 +1613,6 @@ static int32_t draw_pass_3d_get_translucent_count() {
     count += disp_manager->get_obj_count(mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_3);
     count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3);
     count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3);
-    count += disp_manager->get_obj_count(mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL);
-    count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL);
-    count += disp_manager->get_obj_count(mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL);
     return count;
 }
 
