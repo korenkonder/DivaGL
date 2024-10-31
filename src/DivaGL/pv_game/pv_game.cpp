@@ -824,6 +824,27 @@ HOOK(bool, FASTCALL, pv_game_pv_data__load, 0x000000014011B7E0, size_t _this,
     return false;
 }
 
+void pv_game_init() {
+    if (!task_pv_game_x)
+        task_pv_game_x = new (_operator_new(sizeof(TaskPvGameX))) TaskPvGameX;
+    if (!x_pv_game_str_array_ptr)
+        x_pv_game_str_array_ptr = new (_operator_new(sizeof(x_pv_game_str_array))) x_pv_game_str_array;
+}
+
+void pv_game_free() {
+    if (x_pv_game_str_array_ptr) {
+        x_pv_game_str_array_ptr->~x_pv_game_str_array();
+        _operator_delete(x_pv_game_str_array_ptr);
+        x_pv_game_str_array_ptr = 0;
+    }
+
+    if (task_pv_game_x) {
+        task_pv_game_x->~TaskPvGameX();
+        _operator_delete(task_pv_game_x);
+        task_pv_game_x = 0;
+    }
+}
+
 void pv_game_patch() {
     INSTALL_HOOK(pv_game_load_state_4_tail);
     INSTALL_HOOK(pv_game_load_state_6_head);
@@ -838,9 +859,6 @@ void pv_game_patch() {
     INSTALL_HOOK(pv_game_pv_data__load);
 
     WRITE_MEMORY_STRING(0x00000001401027D8, "\x41\x0F\x45\xDF\x75\x2F", 0x06);
-
-    task_pv_game_x = new (_operator_new(sizeof(TaskPvGameX))) TaskPvGameX;
-    x_pv_game_str_array_ptr = new (_operator_new(sizeof(x_pv_game_str_array))) x_pv_game_str_array;
 }
 
 bool x_pv_bar_beat_data::compare_bar_time_less(float_t time) {

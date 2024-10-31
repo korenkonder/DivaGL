@@ -8,4 +8,7 @@
 #include "../../KKdLib/default.hpp"
 #include "../dw.hpp"
 
+extern void color_change_dw_init();
+extern void color_change_dw_free();
+
 extern void color_change_dw_patch();

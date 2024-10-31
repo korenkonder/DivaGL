@@ -108,6 +108,18 @@ namespace Glitter {
     const char* _00000001403A8541_patch_data
         = "\x48\x89\xD9\x48\x8B\xD7\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x3B";
 
+    void Init() {
+        glt_particle_manager_x = new (_operator_new(sizeof(GltParticleManagerX))) GltParticleManagerX;
+    }
+
+    void Free() {
+        if (glt_particle_manager_x) {
+            glt_particle_manager_x->~GltParticleManagerX();
+            _operator_delete(glt_particle_manager_x);
+            glt_particle_manager_x = 0;
+        }
+    }
+
     void Patch() {
         uint8_t buf[0x100];
 
@@ -143,7 +155,5 @@ namespace Glitter {
 
         // GltParticleManager
         WRITE_MEMORY(0x00000001409EB880 + 0x20, uint64_t, (uint64_t)GltParticleManager::Disp);
-
-        glt_particle_manager_x = new (_operator_new(sizeof(GltParticleManagerX))) GltParticleManagerX;
     }
 }

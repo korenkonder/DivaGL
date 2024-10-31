@@ -1491,5 +1491,8 @@ namespace Glitter {
         Buffer*& buffer, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
     extern void DeleteBuffer(Buffer*& buffer, GLuint& vao, GL::ArrayBuffer& vbo, GL::ElementArrayBuffer& ebo);
 
+    extern void Init();
+    extern void Free();
+
     extern void Patch();
 }

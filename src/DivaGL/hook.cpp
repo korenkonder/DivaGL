@@ -81,13 +81,20 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     diva_handle = (size_t)WindowFromDC(wglGetCurrentDC());
 
     rctx->init();
+    Glitter::Init();
     sprite_manager_init();
+    pv_game_init();
+    color_change_dw_init();
     rob_osage_test_init();
     return ret;
 }
 
 HOOK(int32_t, FASTCALL, data_free, 0x000000140192490) {
+    rob_osage_test_free();
+    color_change_dw_free();
+    pv_game_free();
     sprite_manager_free();
+    Glitter::Free();
     rctx->free();
 
     int32_t ret = originaldata_free();

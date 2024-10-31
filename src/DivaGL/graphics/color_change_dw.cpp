@@ -167,9 +167,20 @@ HOOK(void, FASTCALL, ColorChangeDw__ResetData, 0x00000001402C4130, ColorChangeDw
     This->ResetData();
 }
 
-void color_change_dw_patch() {
-    color_change_dw_textures = new prj::vector<prj::vector<void*>>(); // Added
+void color_change_dw_init() { // Added
+    if (!color_change_dw_textures)
+        color_change_dw_textures = new (_operator_new(sizeof(prj::vector<prj::vector<void*>>))) prj::vector<prj::vector<void*>>;
+}
 
+void color_change_dw_free() { // Added
+    if (color_change_dw_textures) {
+        color_change_dw_textures->~vector();
+        _operator_delete(color_change_dw_textures);
+        color_change_dw_textures = 0;
+    }
+}
+
+void color_change_dw_patch() {
     INSTALL_HOOK(ColorChangeDw__ReloadData);
     INSTALL_HOOK(ColorChangeDw__Draw);
     INSTALL_HOOK(ColorChangeDw__ResetData);
