@@ -109,7 +109,8 @@ namespace Glitter {
         = "\x48\x89\xD9\x48\x8B\xD7\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x80\xFF\xD0\xEB\x3B";
 
     void Init() {
-        glt_particle_manager_x = new (_operator_new(sizeof(GltParticleManagerX))) GltParticleManagerX;
+        if (!glt_particle_manager_x)
+            glt_particle_manager_x = new (_operator_new(sizeof(GltParticleManagerX))) GltParticleManagerX;
     }
 
     void Free() {
