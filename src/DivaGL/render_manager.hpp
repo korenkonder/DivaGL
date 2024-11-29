@@ -9,6 +9,7 @@
 #include "../KKdLib/vec.hpp"
 #include "render.hpp"
 #include "shadow.hpp"
+#include "stage.hpp"
 #include "types.hpp"
 #include "wrap.hpp"
 
@@ -17,19 +18,6 @@ enum draw_pass_3d_type {
     DRAW_PASS_3D_TRANSLUCENT,
     DRAW_PASS_3D_TRANSPARENT,
     DRAW_PASS_3D_MAX,
-};
-
-enum reflect_refract_resolution_mode {
-    REFLECT_REFRACT_RESOLUTION_256x256 = 0,
-    REFLECT_REFRACT_RESOLUTION_512x256,
-    REFLECT_REFRACT_RESOLUTION_512x512,
-    REFLECT_REFRACT_RESOLUTION_MAX,
-};
-
-enum stage_data_reflect_type {
-    STAGE_DATA_REFLECT_DISABLE     = 0x00,
-    STAGE_DATA_REFLECT_NORMAL      = 0x01,
-    STAGE_DATA_REFLECT_REFLECT_MAP = 0x02,
 };
 
 struct draw_pre_process {

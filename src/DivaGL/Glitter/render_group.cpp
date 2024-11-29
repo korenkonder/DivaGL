@@ -55,6 +55,7 @@ namespace Glitter {
 
     void RenderGroup::CreateBuffer(RenderGroup* rend_group, Particle* ptcl) {
         if (ptcl && ptcl->buffer && !ptcl->buffer_used) {
+            rend_group->buffer = ptcl->buffer;
             rend_group->max_count = ptcl->max_count;
             rend_group->vao = ptcl->vao;
             rend_group->vbo = ptcl->vbo;

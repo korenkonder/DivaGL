@@ -89,6 +89,7 @@ namespace rndr {
         if (taa_blend < 0.0f || taa_blend >= 1.0f)
             taa_texture = taa_texture_selector;
         else {
+            gl_state_begin_event("taa_or_blur");
             bool blur;
             GLuint sampler;
             if (taa_blend > 0.99f) {
@@ -137,6 +138,7 @@ namespace rndr {
             draw_quad(render_post_width[0], render_post_height[0],
                 render_post_width_scale, render_post_height_scale,
                 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, taa_blend);
+            gl_state_end_event();
         }
 
         if (taa) {
@@ -306,66 +308,13 @@ namespace rndr {
         mat4_transpose(mat, mat);
     }
 
-    void Render::ctrl() {
-        static int32_t(FASTCALL * task_stage_get_current_stage_index)()
-            = (int32_t(FASTCALL*)())0x000000014064ADA0;
-
-        view_point_prev = view_point;
-        interest_prev = interest;
-        view_point = camera_data->view_point;
-        interest = camera_data->interest;
-
-        stage_index_prev = stage_index;
-        stage_index = task_stage_get_current_stage_index();
-
-        cam_view_projection_prev = cam_view_projection;
-        cam_view_projection = camera_data->view_projection;
-
-        reset_exposure = camera_data->fast_change_hist1 && !camera_data->fast_change_hist0;
-        if (reset_exposure) {
-            float_t view_point_dist = vec3::distance(view_point, view_point_prev);
-
-            vec3 dir = vec3::normalize(interest - view_point);
-            vec3 dir_prev = vec3::normalize(interest_prev - view_point_prev);
-
-            float_t dir_diff_angle = vec3::dot(dir, dir_prev);
-            if (dir_diff_angle < 0.5f)
-                dir_diff_angle = 0.0f;
-            if (view_point_dist < dir_diff_angle * 0.4f)
-                reset_exposure = false;
-        }
-        else if (stage_index != stage_index_prev)
-            reset_exposure = true;
-
-        if (movie_textures_data[0]) {
-            static size_t(FASTCALL * task_movie_get)(int32_t index)
-                = (size_t(FASTCALL*)(int32_t index))0x000000014041ED30;
-            size_t task_movie = task_movie_get(0);
-            if (task_movie) {
-                static texture*(FASTCALL * sub_14041ED80)(size_t task_movie)
-                    = (texture*(FASTCALL*)(size_t task_movie))0x000000014041ED80;
-                texture* movie_texture = sub_14041ED80(task_movie);
-                if (movie_texture) {
-                    movie_textures[0].Bind();
-                    gl_state_set_viewport(0, 0, movie_textures_data[0]->width, movie_textures_data[0]->height);
-                    gl_state_active_bind_texture_2d(0, movie_texture->glid);
-                    uniform->arr[U_REDUCE] = 0;
-                    shaders_ft.set(SHADER_FT_REDUCE);
-                    draw_quad(movie_texture->width, movie_texture->height,
-                        1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
-                    gl_state_bind_framebuffer(0);
-                }
-            }
-        }
-    }
-
     void Render::draw_quad(int32_t width, int32_t height, float_t s0, float_t t0, float_t s1, float_t t1,
         float_t scale, float_t param_x, float_t param_y, float_t param_z, float_t param_w) {
         s0 -= s1;
         t0 -= t1;
 
-        float_t w = (float_t)max_def(width, 1);
-        float_t h = (float_t)max_def(height, 1);
+        const float_t w = (float_t)max_def(width, 1);
+        const float_t h = (float_t)max_def(height, 1);
         quad_shader_data quad = {};
         quad.g_texcoord_modifier = { 0.5f * s0, 0.5f * t0, 0.5f * s0 + s1, 0.5f * t0 + t1 }; // x * 0.5 * y0 + 0.5 * y0 + y1
         quad.g_texel_size = { scale / w, scale / h, w, h };
@@ -858,6 +807,64 @@ namespace rndr {
 
         movie_textures_data[index] = 0;
         movie_textures[index].Free();
+    }
+
+    void Render::post_proc() {
+        lens_flare_texture = 0;
+        aet_back = 0;
+    }
+
+    void Render::pre_proc() {
+        static int32_t(FASTCALL * task_stage_get_current_stage_index)()
+            = (int32_t(FASTCALL*)())0x000000014064ADA0;
+
+        view_point_prev = view_point;
+        interest_prev = interest;
+        view_point = camera_data->view_point;
+        interest = camera_data->interest;
+
+        stage_index_prev = stage_index;
+        stage_index = task_stage_get_current_stage_index();
+
+        cam_view_projection_prev = cam_view_projection;
+        cam_view_projection = camera_data->view_projection;
+
+        reset_exposure = camera_data->fast_change_hist1 && !camera_data->fast_change_hist0;
+        if (reset_exposure) {
+            float_t view_point_dist = vec3::distance(view_point, view_point_prev);
+
+            vec3 dir = vec3::normalize(interest - view_point);
+            vec3 dir_prev = vec3::normalize(interest_prev - view_point_prev);
+
+            float_t dir_diff_angle = vec3::dot(dir, dir_prev);
+            if (dir_diff_angle < 0.5f)
+                dir_diff_angle = 0.0f;
+            if (view_point_dist < dir_diff_angle * 0.4f)
+                reset_exposure = false;
+        }
+        else if (stage_index != stage_index_prev)
+            reset_exposure = true;
+
+        if (movie_textures_data[0]) {
+            static size_t(FASTCALL * task_movie_get)(int32_t index)
+                = (size_t(FASTCALL*)(int32_t index))0x000000014041ED30;
+            size_t task_movie = task_movie_get(0);
+            if (task_movie) {
+                static texture* (FASTCALL * sub_14041ED80)(size_t task_movie)
+                    = (texture * (FASTCALL*)(size_t task_movie))0x000000014041ED80;
+                texture* movie_texture = sub_14041ED80(task_movie);
+                if (movie_texture) {
+                    movie_textures[0].Bind();
+                    gl_state_set_viewport(0, 0, movie_textures_data[0]->width, movie_textures_data[0]->height);
+                    gl_state_active_bind_texture_2d(0, movie_texture->glid);
+                    uniform->arr[U_REDUCE] = 0;
+                    shaders_ft.set(SHADER_FT_REDUCE);
+                    draw_quad(movie_texture->width, movie_texture->height,
+                        1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+                    gl_state_bind_framebuffer(0);
+                }
+            }
+        }
     }
 
     int32_t Render::render_texture_set(texture* render_texture, bool task_photo) {

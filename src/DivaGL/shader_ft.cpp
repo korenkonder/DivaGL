@@ -1169,13 +1169,13 @@ struct glass_eye_struct {
     const float_t n_2;
     const float_t scale_const;
     const float_t trsmit_coef_const;
-    const vec3 ellipsoid_radius_const;
+    const vec3 cornea_radius_const;
     const vec3 iris_radius_const;
     const vec3 pupil_radius_const;
     const float_t lens_depth_const;
     const vec3 eb_radius_const;
     float_t trsmit_coef;
-    vec3 ellipsoid_radius;
+    vec3 cornea_radius;
     vec3 iris_radius;
     vec3 pupil_radius;
     float_t lens_depth;
@@ -1383,7 +1383,7 @@ static void glass_eye_calc(glass_eye_struct* glass_eye) {
     const float_t scale_const = glass_eye->scale_const;
     glass_eye->trsmit_coef = glass_eye->trsmit_coef_const / scale_const;
     glass_eye->eb_radius = glass_eye->eb_radius_const;
-    glass_eye->ellipsoid_radius = glass_eye->ellipsoid_radius_const * scale_const;
+    glass_eye->cornea_radius = glass_eye->cornea_radius_const * scale_const;
     glass_eye->iris_radius = glass_eye->iris_radius_const * scale_const;
     glass_eye->pupil_radius = glass_eye->pupil_radius_const * scale_const;
     glass_eye->lens_depth = glass_eye->lens_depth_const * scale_const;
@@ -1416,23 +1416,19 @@ static void glass_eye_calc(glass_eye_struct* glass_eye) {
 static void glass_eye_set(glass_eye_struct* glass_eye) {
     glass_eye_batch_shader_data glass_eye_batch = {};
 
-    vec4 temp;
-    *(vec3*)&temp = glass_eye->ellipsoid_radius * glass_eye->ellipsoid_radius;
-    temp.w = temp.z;
-    *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
-    glass_eye_batch.g_ellipsoid_radius = temp;
+    vec3 ellipsoid_radius = glass_eye->cornea_radius * glass_eye->cornea_radius;
+    *(vec3*)&glass_eye_batch.g_ellipsoid_radius = vec3::rcp(ellipsoid_radius);
+    glass_eye_batch.g_ellipsoid_radius.w = ellipsoid_radius.z;
 
-    *(vec3*)&temp = glass_eye->ellipsoid_radius;
-    temp.w = 1.0f;
-    glass_eye_batch.g_ellipsoid_scale = temp;
+    *(vec3*)&glass_eye_batch.g_ellipsoid_scale = glass_eye->cornea_radius;
+    glass_eye_batch.g_ellipsoid_scale.w = 1.0f;
 
     glass_eye_batch.g_tex_model_param = glass_eye->tex_model_param;
     glass_eye_batch.g_tex_offset = glass_eye->tex_offset;
 
-    *(vec3*)&temp = glass_eye->eb_radius * glass_eye->eb_radius;
-    temp.w = temp.z;
-    *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
-    glass_eye_batch.g_eb_radius = temp;
+    vec3 eb_radius = glass_eye->eb_radius * glass_eye->eb_radius;
+    *(vec3*)&glass_eye_batch.g_eb_radius = vec3::rcp(eb_radius);
+    glass_eye_batch.g_eb_radius.w = eb_radius.z;
 
     glass_eye_batch.g_eb_tex_model_param = glass_eye->eb_tex_model_param;
 
@@ -1440,33 +1436,30 @@ static void glass_eye_set(glass_eye_struct* glass_eye) {
     r_0 *= r_0;
     glass_eye_batch.g_fresnel = { 1.0f - r_0, r_0, 0.0f, 0.0f };
 
-    float_t v3 = (glass_eye->n_1 * glass_eye->n_1) / (glass_eye->n_2 * glass_eye->n_2);
-    glass_eye_batch.g_refract1 = { v3, 1.0f - v3, glass_eye->n_1 / glass_eye->n_2, 0.0f };
+    float_t n12 = (glass_eye->n_1 * glass_eye->n_1) / (glass_eye->n_2 * glass_eye->n_2);
+    glass_eye_batch.g_refract1 = { n12, 1.0f - n12, glass_eye->n_1 / glass_eye->n_2, 0.0f };
 
-    float_t v4 = (glass_eye->n_2 * glass_eye->n_2) / (glass_eye->n_1 * glass_eye->n_1);
-    glass_eye_batch.g_refract2 = { v4, 1.0f - v4, glass_eye->n_2 / glass_eye->n_1, 0.0f };
+    float_t n21 = (glass_eye->n_2 * glass_eye->n_2) / (glass_eye->n_1 * glass_eye->n_1);
+    glass_eye_batch.g_refract2 = { n21, 1.0f - n21, glass_eye->n_2 / glass_eye->n_1, 0.0f };
 
-    *(vec3*)&temp = glass_eye->iris_radius * glass_eye->iris_radius;
-    temp.w = -1.0f;
-    *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
-    glass_eye_batch.g_iris_radius = temp;
+    *(vec3*)&glass_eye_batch.g_iris_radius
+        = vec3::rcp(glass_eye->iris_radius * glass_eye->iris_radius);
+    glass_eye_batch.g_iris_radius.w = -1.0f;
 
-    *(vec3*)&temp = glass_eye->ellipsoid_radius * glass_eye->ellipsoid_radius;
-    temp.w = -1.0f;
-    *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
-    glass_eye_batch.g_cornea_radius = temp;
+    *(vec3*)&glass_eye_batch.g_cornea_radius
+        = vec3::rcp(glass_eye->cornea_radius * glass_eye->cornea_radius);
+    glass_eye_batch.g_cornea_radius.w = -1.0f;
 
-    *(vec3*)&temp = glass_eye->pupil_radius * glass_eye->pupil_radius;
-    temp.w = -1.0f;
-    *(vec3*)&temp = vec3::rcp(*(vec3*)&temp);
-    glass_eye_batch.g_pupil_radius = temp;
+    *(vec3*)&glass_eye_batch.g_pupil_radius
+        = vec3::rcp(glass_eye->pupil_radius * glass_eye->pupil_radius);
+    glass_eye_batch.g_pupil_radius.w = -1.0f;
 
-    *(vec2*)&temp = *(vec2*)&glass_eye->tex_model_param * *(vec2*)&glass_eye->iris_radius;
-    temp.z = glass_eye->trsmit_coef * 1.442695f;
-    temp.w = glass_eye->lens_depth;
-    *(vec2*)&temp = vec2::rcp(*(vec2*)&temp);
-    glass_eye_batch.g_tex_scale = temp;
+    *(vec2*)&glass_eye_batch.g_tex_scale
+        = vec2::rcp(*(vec2*)&glass_eye->tex_model_param * *(vec2*)&glass_eye->iris_radius);
+    glass_eye_batch.g_tex_scale.z = glass_eye->trsmit_coef * 1.442695f;
+    glass_eye_batch.g_tex_scale.w = glass_eye->lens_depth;
 
+    extern render_context* rctx;
     rctx->glass_eye_batch_ubo.WriteMemory(glass_eye_batch);
     rctx->glass_eye_batch_ubo.Bind(3);
 }

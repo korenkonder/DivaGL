@@ -463,6 +463,10 @@ struct object_info {
     inline bool not_null() const {
         return id != (uint16_t)-1 || set_id != (uint16_t)-1;
     }
+
+    inline operator uint32_t() {
+        return ((uint32_t)set_id << 16) | id;
+    }
 };
 
 inline bool operator >(const object_info& left, const object_info& right) {
@@ -583,14 +587,14 @@ static_assert(sizeof(obj_vertex_buffer) == 0x10, "\"obj_vertex_buffer\" struct s
 #endif
 
 extern void (FASTCALL* objset_info_storage_unload_set)(int32_t set);
-extern obj_mesh* (FASTCALL* objset_info_storage_get_obj_mesh_by_index)(object_info obj_info, int32_t mesh_index);
-extern int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(object_info obj_info, const char* mesh_name);
-extern const char* (FASTCALL* object_database_get_obj_name)(object_info obj_info);
+extern obj_mesh* (FASTCALL* objset_info_storage_get_obj_mesh_by_index)(uint32_t obj_info, int32_t mesh_index);
+extern int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(uint32_t obj_info, const char* mesh_name);
+extern const char* (FASTCALL* object_database_get_obj_name)(uint32_t obj_info);
 extern uint32_t(FASTCALL* object_database_get_object_info)(const char* name);
-extern obj* (FASTCALL* objset_info_storage_get_obj)(object_info obj_info);
-extern obj_mesh_index_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_index_buffer)(object_info obj_info, int32_t a2);
-extern obj_skin* (FASTCALL* objset_info_storage_get_obj_skin)(object_info obj_info);
-extern obj_mesh_vertex_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_vertex_buffer)(object_info obj_info, int32_t a2);
+extern obj* (FASTCALL* objset_info_storage_get_obj)(uint32_t obj_info);
+extern obj_mesh_index_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_index_buffer)(uint32_t obj_info, int32_t a2);
+extern obj_skin* (FASTCALL* objset_info_storage_get_obj_skin)(uint32_t obj_info);
+extern obj_mesh_vertex_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_vertex_buffer)(uint32_t obj_info, int32_t a2);
 extern int32_t(FASTCALL* objset_info_storage_get_set_obj_id)(int32_t set_index, int32_t obj_index);
 extern GLuint(FASTCALL* objset_info_storage_get_set_texture)(int32_t set, int32_t tex_id);
 extern prj::vector<GLuint>* (FASTCALL* objset_info_storage_get_set_gentex)(int32_t set);

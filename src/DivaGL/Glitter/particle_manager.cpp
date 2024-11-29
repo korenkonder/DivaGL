@@ -11,6 +11,15 @@ namespace Glitter {
     GltParticleManager* glt_particle_manager = (GltParticleManager*)0x000000141199BB0;
     GltParticleManagerX* glt_particle_manager_x;
 
+    void GltParticleManager::CalcDisp() {
+        if (flags & PARTICLE_MANAGER_NOT_DISP)
+            return;
+
+        for (Scene*& i : scenes)
+            if (i)
+                i->CalcDisp();
+    }
+
     void GltParticleManager::DispScenes(DispType disp_type) {
         if (flags & PARTICLE_MANAGER_NOT_DISP)
             return;
@@ -23,15 +32,6 @@ namespace Glitter {
         gl_state_disable_blend();
         gl_state_enable_cull_face();
         gl_state_disable_depth_test();
-    }
-
-    void GltParticleManager::Disp(GPM) {
-        if (GPM_VAL->flags & PARTICLE_MANAGER_NOT_DISP)
-            return;
-
-        for (Scene*& i : GPM_VAL->scenes)
-            if (i)
-                Scene::CalcDisp(i);
     }
 
     GltParticleManagerX::GltParticleManagerX() : frame_rate(),
@@ -108,7 +108,7 @@ namespace Glitter {
 
         for (SceneX*& i : scenes)
             if (i)
-                i->CalcDisp();
+                i->DispMesh();
     }
 
     void GltParticleManagerX::basic() {
@@ -190,6 +190,15 @@ namespace Glitter {
             enum_or(flags, PARTICLE_MANAGER_LOCAL);
         else
             enum_and(flags, ~PARTICLE_MANAGER_LOCAL);
+    }
+
+    void GltParticleManagerX::CalcDisp() {
+        if (flags & PARTICLE_MANAGER_NOT_DISP)
+            return;
+
+        for (SceneX*& i : scenes)
+            if (i)
+                i->CalcDisp();
     }
 
     bool GltParticleManagerX::CheckHasLocalEffect() {

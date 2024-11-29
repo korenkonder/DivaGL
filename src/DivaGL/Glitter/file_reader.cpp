@@ -186,7 +186,7 @@ namespace Glitter {
     }
 
     void FileReaderX::ParseAnimation(f2_struct* st, AnimationX* anim) {
-        if (!st || !st->header.data_size
+        if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('ANIM'))
             return;
 
@@ -195,7 +195,7 @@ namespace Glitter {
     }
 
     void FileReaderX::ParseCurve(f2_struct* st, AnimationX* anim) {
-        if (!st || !st->header.data_size
+        if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('CURV'))
             return;
 
@@ -226,7 +226,7 @@ namespace Glitter {
         }
 
         for (f2_struct& i : st->sub_structs)
-            if (i.header.data_size && i.header.signature == reverse_endianness_uint32_t('KEYS')) {
+            if (i.header.get_raw_data_size() && i.header.signature == reverse_endianness_uint32_t('KEYS')) {
                 UnpackCurve(i.data.data(), anim, c, keys_count, i.header.version);
                 break;
             }
@@ -234,7 +234,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::ParseDivaEffect(f2_struct* st) {
-        if (!st || !st->header.data_size
+        if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('DVEF'))
             return false;
 
@@ -282,7 +282,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::ParseDivaResource(f2_struct* st, EffectGroupX* eff_group) {
-        if (!st || !st->header.data_size)
+        if (!st || !st->header.get_raw_data_size())
             return false;
 
         for (f2_struct& i : st->sub_structs)
@@ -292,7 +292,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::ParseEffect(f2_struct* st, EffectGroupX* eff_group) {
-        if (!st || !st->header.data_size
+        if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('EFCT'))
             return false;
 
@@ -312,12 +312,12 @@ namespace Glitter {
 
     bool FileReaderX::ParseEffectGroup(f2_struct* st, prj::vector<EffectX*>* vec,
         EffectGroupX* eff_group) {
-        if (!st || !st->header.data_size
+        if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('DVEF'))
             return false;
 
         for (f2_struct& i : st->sub_structs) {
-            if (!i.header.data_size)
+            if (!i.header.get_raw_data_size())
                 continue;
 
             if (i.header.signature == reverse_endianness_uint32_t('EFCT')) {
@@ -332,7 +332,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::ParseEmitter(f2_struct* st, EffectX* eff, EffectGroupX* eff_group) {
-        if (!st || !st->header.data_size || st->header.signature != reverse_endianness_uint32_t('EMIT'))
+        if (!st || !st->header.get_raw_data_size() || st->header.signature != reverse_endianness_uint32_t('EMIT'))
             return false;
 
         EmitterX* emit = new EmitterX;
@@ -350,7 +350,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::ParseParticle(f2_struct* st, EmitterX* emit, EffectX* eff, EffectGroupX* eff_group) {
-        if (!st || !st->header.data_size || st->header.signature != reverse_endianness_uint32_t('PTCL'))
+        if (!st || !st->header.get_raw_data_size() || st->header.signature != reverse_endianness_uint32_t('PTCL'))
             return false;
 
         ParticleX* ptcl = new ParticleX;
@@ -539,7 +539,7 @@ namespace Glitter {
     }
 
     bool FileReaderX::UnpackDivaResource(f2_struct* st, EffectGroupX* eff_group) {
-        if (!st || !st->header.data_size
+        if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('TXPC'))
             return false;
 
@@ -590,7 +590,7 @@ namespace Glitter {
     bool FileReaderX::UnpackDivaResourceHashes(f2_struct* st, EffectGroupX* eff_group) {
         if (resource_hashes)
             return true;
-        else if (!st || !st->header.data_size
+        else if (!st || !st->header.get_raw_data_size()
             || st->header.signature != reverse_endianness_uint32_t('DVRS'))
             return false;
 

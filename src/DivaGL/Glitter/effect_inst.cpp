@@ -281,6 +281,10 @@ namespace Glitter {
         render_scene.Disp(disp_type);
     }
 
+    void EffectInstX::DispMesh() {
+        render_scene.DispMesh();
+    }
+
     void EffectInstX::Emit(float_t delta_frame, float_t emission) {
         if (flags & EFFECT_INST_EXT_ANIM_GET_THEN_UPDATE)
             return;

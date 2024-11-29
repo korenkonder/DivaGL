@@ -11,9 +11,9 @@ namespace Glitter {
             render_scene.Disp(disp_type);
     }
 
-    void Scene::CalcDisp(Scene* sc) {
-        if (!(sc->flags & SCENE_NOT_DISP))
-            sc->render_scene.CalcDisp();
+    void Scene::CalcDisp() {
+        if (!(flags & SCENE_NOT_DISP))
+            render_scene.CalcDisp();
     }
 
     SceneX::SceneX(SceneCounter counter, uint32_t hash, EffectGroupX* eff_group, bool a5) {
@@ -41,6 +41,9 @@ namespace Glitter {
     }
 
     void SceneX::CalcDisp() {
+        if (flags & SCENE_NOT_DISP)
+            return;
+
         for (SceneEffectX& i : effects)
             if (i.ptr && i.disp)
                 i.ptr->CalcDisp();
@@ -126,6 +129,15 @@ namespace Glitter {
         for (SceneEffectX& i : effects)
             if (i.ptr && i.disp)
                 i.ptr->Disp(disp_type);
+    }
+
+    void SceneX::DispMesh() {
+        if (flags & SCENE_NOT_DISP)
+            return;
+
+        for (SceneEffectX& i : effects)
+            if (i.ptr && i.disp)
+                i.ptr->DispMesh();
     }
 
     size_t SceneX::GetCtrlCount(ParticleType ptcl_type) {

@@ -36,9 +36,7 @@ static void draw_pass_sss_filter(sss_data* sss);
 static int32_t draw_pass_3d_get_translucent_count();
 static void draw_pass_3d_shadow_reset();
 static void draw_pass_3d_shadow_set(Shadow* shad);
-extern void draw_pass_3d_translucent(bool opaque_enable,
-    bool transparent_enable, bool translucent_enable, mdl::ObjType opaque,
-    mdl::ObjType transparent, mdl::ObjType translucent);
+extern void draw_pass_3d_translucent(mdl::ObjType opaque, mdl::ObjType transparent, mdl::ObjType translucent);
 static int32_t draw_pass_3d_translucent_count_layers(int32_t* alpha_array,
     mdl::ObjType opaque, mdl::ObjType transparent, mdl::ObjType translucent);
 static void draw_pass_3d_translucent_has_objects(bool* arr, mdl::ObjType type);
@@ -787,9 +785,6 @@ namespace rndr {
         star_catalog_draw();
 
         draw_pass_3d_translucent(
-            draw_pass_3d[DRAW_PASS_3D_OPAQUE],
-            draw_pass_3d[DRAW_PASS_3D_TRANSPARENT],
-            draw_pass_3d[DRAW_PASS_3D_TRANSLUCENT],
             mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_3,
             mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3,
             mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3);
@@ -829,9 +824,6 @@ namespace rndr {
 
         gl_state_set_depth_mask(GL_TRUE);
         draw_pass_3d_translucent(
-            draw_pass_3d[DRAW_PASS_3D_OPAQUE],
-            draw_pass_3d[DRAW_PASS_3D_TRANSPARENT],
-            draw_pass_3d[DRAW_PASS_3D_TRANSLUCENT],
             mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_2,
             mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2,
             mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2);
@@ -845,14 +837,13 @@ namespace rndr {
         gl_state_enable_depth_test();
         gl_state_set_depth_mask(GL_TRUE);
         draw_pass_3d_translucent(
-            draw_pass_3d[DRAW_PASS_3D_OPAQUE],
-            draw_pass_3d[DRAW_PASS_3D_TRANSPARENT],
-            draw_pass_3d[DRAW_PASS_3D_TRANSLUCENT],
             mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_1,
             mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1,
             mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1);
 
         if (Glitter::glt_particle_manager_x->CheckHasLocalEffect()) { // X
+            gl_state_begin_event("local");
+
             float_t fov = camera_data->fov;
             camera_data->fov = 32.2673416137695f;
             draw_pass_set_camera();
@@ -864,9 +855,6 @@ namespace rndr {
             gl_state_disable_blend();
 
             draw_pass_3d_translucent(
-                draw_pass_3d[DRAW_PASS_3D_OPAQUE],
-                draw_pass_3d[DRAW_PASS_3D_TRANSPARENT],
-                draw_pass_3d[DRAW_PASS_3D_TRANSLUCENT],
                 mdl::OBJ_TYPE_OPAQUE_ALPHA_ORDER_2_LOCAL,
                 mdl::OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2_LOCAL,
                 mdl::OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL);
@@ -875,6 +863,9 @@ namespace rndr {
             Glitter::glt_particle_manager_x->DispScenes(Glitter::DISP_LOCAL);
             gl_state_set_color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
             camera_data->fov = fov;
+
+            gl_state_end_event();
+
             draw_pass_set_camera();
         }
 
@@ -1080,7 +1071,7 @@ void draw_pass_set_camera() {
     rctx->g_near_far = {
         (float_t)(max_distance / (max_distance - min_distance)),
         (float_t)(-(max_distance * min_distance) / (max_distance - min_distance)),
-        0.0f, 0.0f
+        min_distance, max_distance
     };
 }
 
@@ -1566,7 +1557,8 @@ static void draw_pass_sss_filter(sss_data* sss) {
         rndr::Render* rend = render_get();
         uniform->arr[U_REDUCE] = 0;
         shaders_ft.set(SHADER_FT_REDUCE);
-        gl_state_bind_texture_2d(rend->rend_texture[0].GetColorTex());
+        RenderTexture& rt = rend->rend_texture[0];
+        gl_state_bind_texture_2d(rt.GetColorTex());
         gl_state_bind_sampler(0, rctx->render_samplers[0]);
         render_get()->draw_quad(rt.GetWidth(), rt.GetHeight(), 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
@@ -1725,9 +1717,7 @@ static void draw_pass_3d_shadow_set(Shadow* shad) {
     gl_state_bind_sampler(7, 0);
 }
 
-static void draw_pass_3d_translucent(bool opaque_enable,
-    bool transparent_enable, bool translucent_enable, mdl::ObjType opaque,
-    mdl::ObjType transparent, mdl::ObjType translucent) {
+static void draw_pass_3d_translucent(mdl::ObjType opaque, mdl::ObjType transparent, mdl::ObjType translucent) {
     if (disp_manager->get_obj_count(opaque) < 1
         && disp_manager->get_obj_count(transparent) < 1
         && disp_manager->get_obj_count(translucent) < 1)
@@ -1741,11 +1731,11 @@ static void draw_pass_3d_translucent(bool opaque_enable,
     for (int32_t i = 0; i < count; i++) {
         int32_t alpha = alpha_array[i];
         rend->transparency_copy();
-        if (opaque_enable && disp_manager->get_obj_count(opaque))
+        if (render_manager->draw_pass_3d[DRAW_PASS_3D_OPAQUE] && disp_manager->get_obj_count(opaque))
             disp_manager->draw(opaque, 0, true, alpha);
-        if (transparent_enable && disp_manager->get_obj_count(transparent))
+        if (render_manager->draw_pass_3d[DRAW_PASS_3D_TRANSPARENT] && disp_manager->get_obj_count(transparent))
             disp_manager->draw(transparent, 0, true, alpha);
-        if (translucent_enable && disp_manager->get_obj_count(translucent)) {
+        if (render_manager->draw_pass_3d[DRAW_PASS_3D_TRANSLUCENT] && disp_manager->get_obj_count(translucent)) {
             gl_state_enable_blend();
             disp_manager->draw(translucent, 0, true, alpha);
             gl_state_disable_blend();
@@ -1756,7 +1746,7 @@ static void draw_pass_3d_translucent(bool opaque_enable,
 
 static int32_t draw_pass_3d_translucent_count_layers(int32_t* alpha_array,
     mdl::ObjType opaque, mdl::ObjType transparent, mdl::ObjType translucent) {
-    bool arr[256] = { 0 };
+    bool arr[0x100] = { false };
 
     draw_pass_3d_translucent_has_objects(arr, opaque);
     draw_pass_3d_translucent_has_objects(arr, transparent);

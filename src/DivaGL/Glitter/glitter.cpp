@@ -153,8 +153,5 @@ namespace Glitter {
         memcpy(buf, _00000001403A8541_patch_data, 0x14);
         *(uint64_t*)&buf[0x08] = (uint64_t)RenderGroup::DeleteBuffer;
         WRITE_MEMORY_STRING(0x00000001403A8541, buf, 0x14);
-
-        // GltParticleManager
-        WRITE_MEMORY(0x00000001409EB880 + 0x20, uint64_t, (uint64_t)GltParticleManager::Disp);
     }
 }

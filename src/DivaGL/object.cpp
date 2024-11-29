@@ -51,22 +51,22 @@ static_assert(sizeof(ObjsetInfo) == 0xD8, "\"ObjsetInfo\" struct should have a s
 
 void (FASTCALL* objset_info_storage_unload_set)(int32_t set)
     = (void (FASTCALL*)(int32_t set))0x00000001404599B0;
-obj_mesh* (FASTCALL* objset_info_storage_get_obj_mesh_by_index)(object_info obj_info, int32_t mesh_index)
-    = (obj_mesh * (FASTCALL*)(object_info obj_info, int32_t mesh_index))0x0000000140459D40;
-int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(object_info obj_info, const char* mesh_name)
-    = (int32_t(FASTCALL*)(object_info obj_info, const char* mesh_name))0x0000000140459DE0;
-const char* (FASTCALL* object_database_get_obj_name)(object_info obj_info)
-    = (const char* (FASTCALL*)(object_info obj_info))0x0000000140459F20;
+obj_mesh* (FASTCALL* objset_info_storage_get_obj_mesh_by_index)(uint32_t obj_info, int32_t mesh_index)
+    = (obj_mesh * (FASTCALL*)(uint32_t obj_info, int32_t mesh_index))0x0000000140459D40;
+int32_t(FASTCALL* objset_info_storage_get_obj_mesh_index)(uint32_t obj_info, const char* mesh_name)
+    = (int32_t(FASTCALL*)(uint32_t obj_info, const char* mesh_name))0x0000000140459DE0;
+const char* (FASTCALL* object_database_get_obj_name)(uint32_t obj_info)
+    = (const char* (FASTCALL*)(uint32_t obj_info))0x0000000140459F20;
 uint32_t(FASTCALL* object_database_get_object_info)(const char* name)
     = (uint32_t(FASTCALL*)(const char* name))0x0000000140459F80;
-obj* (FASTCALL* objset_info_storage_get_obj)(object_info obj_info)
-    = (obj * (FASTCALL*)(object_info obj_info))0x000000014045A140;
-obj_mesh_index_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_index_buffer)(object_info obj_info, int32_t a2)
-    = (obj_mesh_index_buffer * (FASTCALL*)(object_info obj_info, int32_t a2))0x000000014045A250;
-obj_skin* (FASTCALL* objset_info_storage_get_obj_skin)(object_info obj_info)
-    = (obj_skin * (FASTCALL*)(object_info obj_info))0x000000014045A3E0;
-obj_mesh_vertex_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_vertex_buffer)(object_info obj_info, int32_t a2)
-    = (obj_mesh_vertex_buffer * (FASTCALL*)(object_info obj_info, int32_t a2))0x000000014045A480;
+obj* (FASTCALL* objset_info_storage_get_obj)(uint32_t obj_info)
+    = (obj * (FASTCALL*)(uint32_t obj_info))0x000000014045A140;
+obj_mesh_index_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_index_buffer)(uint32_t obj_info, int32_t a2)
+    = (obj_mesh_index_buffer * (FASTCALL*)(uint32_t obj_info, int32_t a2))0x000000014045A250;
+obj_skin* (FASTCALL* objset_info_storage_get_obj_skin)(uint32_t obj_info)
+    = (obj_skin * (FASTCALL*)(uint32_t obj_info))0x000000014045A3E0;
+obj_mesh_vertex_buffer* (FASTCALL* objset_info_storage_get_obj_mesh_vertex_buffer)(uint32_t obj_info, int32_t a2)
+    = (obj_mesh_vertex_buffer * (FASTCALL*)(uint32_t obj_info, int32_t a2))0x000000014045A480;
 int32_t(FASTCALL* objset_info_storage_get_set_obj_id)(int32_t set_index, int32_t obj_index)
     = (int32_t(FASTCALL*)(int32_t set_index, int32_t obj_index))0x000000014045A750;
 GLuint(FASTCALL* objset_info_storage_get_set_texture)(int32_t set, int32_t tex_id)
@@ -989,7 +989,7 @@ HOOK(void, FASTCALL, ObjsetInfo__vertex_buffer_free, 0x0000000140459C70, ObjsetI
     info->vertex_buffer_free();
 }
 
-HOOK(obj_mesh_index_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_index_buffer, 0x000000014045A250, object_info obj_info, int32_t a2) {
+HOOK(obj_mesh_index_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_index_buffer, 0x000000014045A250, uint32_t obj_info, int32_t a2) {
     bool(FASTCALL * objset_info_storage_check_set)(int32_t set)
         = (bool(FASTCALL*)(int32_t set))0x00000001404577D0;
     int32_t(FASTCALL * objset_info_storage_get_obj_index)(int32_t set, uint32_t object_id)
@@ -997,14 +997,15 @@ HOOK(obj_mesh_index_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_index_bu
     ObjsetInfo* (FASTCALL * objset_info_storage_get_objset_info)(int32_t set)
         = (ObjsetInfo * (FASTCALL*)(int32_t set))0x000000014045AC00;
 
-    if (objset_info_storage_check_set(obj_info.set_id))
+    const object_info _obj_info = obj_info;
+    if (objset_info_storage_check_set(_obj_info.set_id))
         return 0;
 
-    ObjsetInfo* info = objset_info_storage_get_objset_info(obj_info.set_id);
+    ObjsetInfo* info = objset_info_storage_get_objset_info(_obj_info.set_id);
     if (!info || !info->objvb)
         return 0;
 
-    int32_t obj_index = objset_info_storage_get_obj_index(obj_info.set_id, obj_info.id);
+    int32_t obj_index = objset_info_storage_get_obj_index(_obj_info.set_id, _obj_info.id);
     if (obj_index >= 0) {
         if (!a2)
             return info->objib[obj_index].mesh_data;
@@ -1014,7 +1015,7 @@ HOOK(obj_mesh_index_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_index_bu
     return 0;
 }
 
-HOOK(obj_mesh_vertex_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_vertex_buffer, 0x000000014045A480, object_info obj_info, int32_t a2) {
+HOOK(obj_mesh_vertex_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_vertex_buffer, 0x000000014045A480, uint32_t obj_info, int32_t a2) {
     bool(FASTCALL * objset_info_storage_check_set)(int32_t set)
         = (bool(FASTCALL*)(int32_t set))0x00000001404577D0;
     int32_t(FASTCALL * objset_info_storage_get_obj_index)(int32_t set, uint32_t obj_id)
@@ -1022,14 +1023,15 @@ HOOK(obj_mesh_vertex_buffer*, FASTCALL, objset_info_storage_get_obj_mesh_vertex_
     ObjsetInfo* (FASTCALL * objset_info_storage_get_objset_info)(int32_t set)
         = (ObjsetInfo * (FASTCALL*)(int32_t set))0x000000014045AC00;
 
-    if (objset_info_storage_check_set(obj_info.set_id))
+    const object_info _obj_info = obj_info;
+    if (objset_info_storage_check_set(_obj_info.set_id))
         return 0;
 
-    ObjsetInfo* info = objset_info_storage_get_objset_info(obj_info.set_id);
+    ObjsetInfo* info = objset_info_storage_get_objset_info(_obj_info.set_id);
     if (!info || !info->objvb)
         return 0;
 
-    int32_t obj_index = objset_info_storage_get_obj_index(obj_info.set_id, obj_info.id);
+    int32_t obj_index = objset_info_storage_get_obj_index(_obj_info.set_id, _obj_info.id);
     if (obj_index >= 0) {
         if (!a2)
             return info->objvb[obj_index].mesh_data;

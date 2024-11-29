@@ -154,12 +154,23 @@ HOOK(void, FASTCALL, rndr__Render__movie_texture_free, 0x00000001404B18F0,
     rend->movie_texture_free(movie_texture);
 }
 
-HOOK(void, FASTCALL, rndr__RenderManager__render_ctrl, 0x0000000140502C90) {
-    render_manager->render->ctrl();
+HOOK(void, FASTCALL, rndr__RenderManager__rndpass_pre_proc, 0x0000000140502C90) {
+    gl_state_begin_event("rndpass_pre_proc");
+    render_manager->render->pre_proc();
+    Glitter::glt_particle_manager->CalcDisp();
+    Glitter::glt_particle_manager_x->CalcDisp();
+    gl_state_end_event();
 }
 
 HOOK(void, FASTCALL, rndr__RenderManager__render_all, 0x0000000140502CA0) {
     render_manager->render_all();
+}
+
+HOOK(void, FASTCALL, rndr__RenderManager__rndpass_post_proc, 0x0000000140502C70) {
+    gl_state_begin_event("rndpass_post_proc");
+    render_manager->render->post_proc();
+    render_manager->field_31C = false;
+    gl_state_end_event();
 }
 
 struct ScreenShotData {
@@ -268,8 +279,9 @@ void hook_funcs() {
     INSTALL_HOOK(rndr__Render__render_texture_free);
     INSTALL_HOOK(rndr__Render__movie_texture_free);
 
-    INSTALL_HOOK(rndr__RenderManager__render_ctrl);
+    INSTALL_HOOK(rndr__RenderManager__rndpass_pre_proc);
     INSTALL_HOOK(rndr__RenderManager__render_all);
+    INSTALL_HOOK(rndr__RenderManager__rndpass_post_proc);
 
     INSTALL_HOOK(shader_free);
     INSTALL_HOOK(shader_load_all_shaders);

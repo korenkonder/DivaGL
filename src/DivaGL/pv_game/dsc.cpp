@@ -199,7 +199,7 @@ bool dsc::parse(const void* data, size_t size) {
     f2_struct st;
     st.read(data, size);
     data_dsc = (int32_t*)st.data.data();
-    if (st.header.use_big_endian)
+    if (st.header.attrib.get_big_endian())
         for (size_t i = size / 4; i; i--, data_dsc++)
             *data_dsc = load_reverse_endianness_uint32_t(data_dsc);
 

@@ -55,19 +55,19 @@ glid(), target(), internal_format(), max_mipmap_level(), size_texmem() {
 
 }
 
-int32_t texture::get_height_align_mip_level(uint8_t mip_level) {
+int32_t texture::get_height_align_mip_level(uint8_t mip_level) const {
     if (flags & TEXTURE_BLOCK_COMPRESSION)
         return max_def((uint32_t)height >> mip_level, 4u);
     else
         return max_def((uint32_t)height >> mip_level, 1u);
 }
 
-int32_t texture::get_size_mip_level(uint8_t mip_level) {
+int32_t texture::get_size_mip_level(uint8_t mip_level) const {
     return texture_get_size(internal_format,
         get_width_mip_level(mip_level), get_height_mip_level(mip_level));
 }
 
-int32_t texture::get_width_align_mip_level(uint8_t mip_level) {
+int32_t texture::get_width_align_mip_level(uint8_t mip_level) const {
     if (flags & TEXTURE_BLOCK_COMPRESSION)
         return max_def((uint32_t)width >> mip_level, 4u);
     else

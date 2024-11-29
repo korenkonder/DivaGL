@@ -1033,7 +1033,6 @@ namespace Glitter {
         disp_quad = 0;
         disp_line = 0;
         disp_locus = 0;
-        disp_mesh = 0;
 
         for (RenderGroupX*& i : groups) {
             if (!i)
@@ -1048,9 +1047,9 @@ namespace Glitter {
     }
 
     void RenderSceneX::CalcDisp(RenderGroupX* rend_group) {
-        rend_group->disp = 0;
         switch (rend_group->type) {
         case PARTICLE_QUAD:
+            rend_group->disp = 0;
             if (!rend_group->vao)
                 return;
 
@@ -1058,6 +1057,7 @@ namespace Glitter {
             disp_quad += rend_group->disp;
             break;
         case PARTICLE_LINE:
+            rend_group->disp = 0;
             if (!rend_group->vao)
                 return;
 
@@ -1065,6 +1065,7 @@ namespace Glitter {
             disp_line += rend_group->disp;
             break;
         case PARTICLE_LOCUS:
+            rend_group->disp = 0;
             if (!rend_group->vao)
                 return;
 
@@ -1072,8 +1073,9 @@ namespace Glitter {
             disp_locus += rend_group->disp;
             break;
         case PARTICLE_MESH:
-            CalcDispMesh(rend_group);
-            disp_mesh += rend_group->disp;
+            break;
+        default:
+            rend_group->disp = 0;
             break;
         }
     }
@@ -1157,6 +1159,7 @@ namespace Glitter {
             }
         }
         rend_group->disp = disp;
+
         rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
     }
 
@@ -1308,200 +1311,6 @@ namespace Glitter {
         rend_group->disp = disp;
 
         rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
-    }
-
-    void RenderSceneX::CalcDispMesh(RenderGroupX* rend_group) {
-        if (rend_group->object.is_null())
-            return;
-
-        mat4 cam_view;
-        mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
-
-        bool has_scale = false;
-        bool emitter_local = false;
-        vec3 emit_scale = 0.0f;
-        mat4 model_mat;
-        mat4 view_mat;
-        mat4 inv_view_mat;
-        if (rend_group->flags & PARTICLE_EMITTER_LOCAL) {
-            model_mat = rend_group->mat;
-            mat4_normalize_rotation(&model_mat, &view_mat);
-            mat4_mul(&view_mat, &cam_view, &view_mat);
-            mat4_invert(&view_mat, &inv_view_mat);
-
-            emitter_local = true;
-            if (rend_group->flags & PARTICLE_SCALE) {
-                if (rend_group->GetEmitterScale(emit_scale))
-                    has_scale = true;
-            }
-        }
-        else {
-            model_mat = mat4_identity;
-            view_mat = cam_view;
-            inv_view_mat = cam_inv_view;
-        }
-
-        bool local = false;
-        if (rend_group->flags & PARTICLE_LOCAL) {
-            mat4_mul(&inv_view_mat, &rend_group->mat, &inv_view_mat);
-            mat4_mul(&view_mat, &inv_view_mat, &view_mat);
-            mat4_invert(&view_mat, &inv_view_mat);
-            local = true;
-        }
-        mat4_mul(&view_mat, &cam_inv_view, &rend_group->mat_draw);
-
-        mat4 dir_mat = mat4_identity;
-        vec3 up_vec = { 0.0f, 0.0f, 1.0f };
-        bool billboard = false;
-        bool emitter_rotation = false;
-        mat4(*rotate_func)(RenderGroupX*, RenderElementX*, vec3*, vec3*) = 0;
-        switch (rend_group->draw_type) {
-        case DIRECTION_BILLBOARD:
-            mat4_clear_trans(&model_mat, &dir_mat);
-            mat4_mul(&dir_mat, &inv_view_mat, &dir_mat);
-            mat4_clear_trans(&dir_mat, &dir_mat);
-            billboard = true;
-            break;
-        case DIRECTION_EMITTER_DIRECTION:
-            dir_mat = rend_group->mat_rot;
-            break;
-        case DIRECTION_PREV_POSITION:
-        case DIRECTION_PREV_POSITION_DUP:
-            rotate_func = RenderGroupX::RotateMeshToPrevPosition;
-            break;
-        case DIRECTION_EMIT_POSITION:
-            rotate_func = RenderGroupX::RotateMeshToEmitPosition;
-            break;
-        case DIRECTION_Y_AXIS:
-            mat4_rotate_y((float_t)M_PI_2, &dir_mat);
-            break;
-        case DIRECTION_X_AXIS:
-            mat4_rotate_x((float_t)-M_PI_2, &dir_mat);
-            break;
-        case DIRECTION_BILLBOARD_Y_AXIS:
-            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
-            break;
-        case DIRECTION_EMITTER_ROTATION:
-            emitter_rotation = true;
-            break;
-        }
-
-        ParticleX* particle = rend_group->particle->data.particle;
-
-        obj* obj = objset_info_storage_get_obj(rend_group->object);
-        if (!obj)
-            return;
-
-        texture_transform_struct tex_trans[2];
-        int32_t tex_trans_count = 0;
-
-        for (texture_transform_struct& i : tex_trans) {
-            tex_trans->id = -1;
-            tex_trans->mat = mat4_identity;
-        }
-
-        obj_material& material = obj->material_array[0].material;
-
-        for (obj_material_texture_data& i : material.texdata) {
-            if (i.tex_index == -1)
-                continue;
-
-            tex_trans[tex_trans_count].id = i.tex_index & 0xFFFFF;
-            tex_trans[tex_trans_count].mat = mat4_identity;
-
-            if (++tex_trans_count == 2)
-                break;
-        }
-
-        vec3 ext_anim_scale;
-        float_t ext_scale = 0.0f;
-        if (rend_group->GetExtAnimScale(&ext_anim_scale, &ext_scale)) {
-            if (!has_scale) {
-                emit_scale = 1.0f;
-                has_scale = true;
-            }
-
-            if (ext_scale >= 0.0f)
-                emit_scale *= ext_anim_scale + ext_scale;
-            else
-                emit_scale += ext_anim_scale;
-        }
-
-        mdl::DispManager& disp_manager = *::disp_manager;
-        disp_manager.set_texture_pattern(0, 0);
-
-        RenderElementX* elem = rend_group->elements;
-        size_t disp = 0;
-        for (size_t i = rend_group->ctrl, j_max = 1024; i > 0; i -= j_max) {
-            j_max = min_def(i, j_max);
-            for (size_t j = j_max; j > 0; elem++) {
-                if (!elem->alive)
-                    continue;
-                j--;
-
-                if (!elem->disp)
-                    continue;
-
-                vec3 trans = elem->translation;
-                vec3 rot = elem->rotation;
-                vec3 scale = elem->scale * elem->scale_all;
-                if (has_scale)
-                    scale *= emit_scale;
-
-                if (emitter_local)
-                    mat4_transform_point(&model_mat, &trans, &trans);
-
-                mat4 mat;
-                if (billboard) {
-                    if (local)
-                        mat = mat4_identity;
-                    else
-                        mat = dir_mat;
-                }
-                else if (rotate_func) {
-                    mat = rotate_func(rend_group, elem, &up_vec, &trans);
-                }
-                else if (emitter_rotation)
-                    mat = elem->mat;
-                else
-                    mat = dir_mat;
-
-                mat4_set_translation(&mat, &trans);
-                mat4_mul_rotate_zyx(&mat, &rot, &mat);
-                mat4_scale_rot(&mat, &scale, &mat);
-
-                vec3 uv_scroll;
-                vec3 uv_scroll_2nd;
-                uv_scroll.x = elem->uv_scroll.x;
-                uv_scroll.y = -elem->uv_scroll.y;
-                uv_scroll.z = 0.0f;
-                uv_scroll_2nd.x = elem->uv_scroll_2nd.x;
-                uv_scroll_2nd.y = -elem->uv_scroll_2nd.y;
-                uv_scroll_2nd.z = 0.0f;
-
-                mat4_set_translation(&tex_trans[0].mat, &uv_scroll);
-                mat4_set_translation(&tex_trans[1].mat, &uv_scroll_2nd);
-
-                mat4_transpose(&tex_trans[0].mat, &tex_trans[0].mat);
-                mat4_transpose(&tex_trans[1].mat, &tex_trans[1].mat);
-                disp_manager.set_texture_transform(tex_trans_count, tex_trans);
-
-                if (local)
-                    mat4_mul(&mat, &cam_inv_view, &mat);
-                elem->mat_draw = mat;
-
-                mat4_transpose(&mat, &mat);
-                if (disp_manager.entry_obj_by_object_info(&mat,
-                    rend_group->object, &elem->color, 0, local))
-                    disp++;
-
-                disp_manager.set_texture_transform(0, 0);
-            }
-        }
-        disp_manager.set_texture_pattern(0, 0);
-        rend_group->disp = disp;
     }
 
     void RenderSceneX::CalcDispQuad(RenderGroupX* rend_group) {
@@ -1957,7 +1766,17 @@ namespace Glitter {
     }
 
     void RenderSceneX::Disp(RenderGroupX* rend_group) {
-        if (rend_group->disp < 1)
+        switch (rend_group->type) {
+        case PARTICLE_QUAD:
+        case PARTICLE_LINE:
+        case PARTICLE_LOCUS:
+            break;
+        case PARTICLE_MESH:
+        default:
+            return;
+        }
+
+        if (!rend_group->vao || rend_group->disp < 1)
             return;
 
         mat4 cam_view;
@@ -2108,6 +1927,226 @@ namespace Glitter {
                 shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, i.first, i.second);
             break;
         }
+    }
+
+    void RenderSceneX::DispMesh() {
+        disp_mesh = 0;
+
+        for (RenderGroupX*& i : groups) {
+            if (!i)
+                continue;
+
+            RenderGroupX* rend_group = i;
+            if (rend_group->CannotDisp())
+                continue;
+
+            switch (rend_group->type) {
+            case PARTICLE_MESH:
+                rend_group->disp = 0;
+                DispMesh(rend_group);
+                disp_mesh += rend_group->disp;
+                break;
+            }
+        }
+    }
+
+    void RenderSceneX::DispMesh(RenderGroupX* rend_group) {
+        if (!rend_group->elements || rend_group->object.is_null() || rend_group->ctrl < 1)
+            return;
+
+        mat4 cam_view;
+        mat4 cam_inv_view;
+        mat4_transpose(&camera_data->view, &cam_view);
+        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
+
+        bool has_scale = false;
+        bool emitter_local = false;
+        vec3 emit_scale = 0.0f;
+        mat4 model_mat;
+        mat4 view_mat;
+        mat4 inv_view_mat;
+        if (rend_group->flags & PARTICLE_EMITTER_LOCAL) {
+            model_mat = rend_group->mat;
+            mat4_normalize_rotation(&model_mat, &view_mat);
+            mat4_mul(&view_mat, &cam_view, &view_mat);
+            mat4_invert(&view_mat, &inv_view_mat);
+
+            emitter_local = true;
+            if (rend_group->flags & PARTICLE_SCALE) {
+                if (rend_group->GetEmitterScale(emit_scale))
+                    has_scale = true;
+            }
+        }
+        else {
+            model_mat = mat4_identity;
+            view_mat = cam_view;
+            inv_view_mat = cam_inv_view;
+        }
+
+        bool local = false;
+        if (rend_group->flags & PARTICLE_LOCAL) {
+            mat4_mul(&inv_view_mat, &rend_group->mat, &inv_view_mat);
+            mat4_mul(&view_mat, &inv_view_mat, &view_mat);
+            mat4_invert(&view_mat, &inv_view_mat);
+            local = true;
+        }
+        mat4_mul(&view_mat, &cam_inv_view, &rend_group->mat_draw);
+
+        mat4 dir_mat = mat4_identity;
+        vec3 up_vec = { 0.0f, 0.0f, 1.0f };
+        bool billboard = false;
+        bool emitter_rotation = false;
+        mat4(*rotate_func)(RenderGroupX*, RenderElementX*, vec3*, vec3*) = 0;
+        switch (rend_group->draw_type) {
+        case DIRECTION_BILLBOARD:
+            mat4_clear_trans(&model_mat, &dir_mat);
+            mat4_mul(&dir_mat, &inv_view_mat, &dir_mat);
+            mat4_clear_trans(&dir_mat, &dir_mat);
+            billboard = true;
+            break;
+        case DIRECTION_EMITTER_DIRECTION:
+            dir_mat = rend_group->mat_rot;
+            break;
+        case DIRECTION_PREV_POSITION:
+        case DIRECTION_PREV_POSITION_DUP:
+            rotate_func = RenderGroupX::RotateMeshToPrevPosition;
+            break;
+        case DIRECTION_EMIT_POSITION:
+            rotate_func = RenderGroupX::RotateMeshToEmitPosition;
+            break;
+        case DIRECTION_Y_AXIS:
+            mat4_rotate_y((float_t)M_PI_2, &dir_mat);
+            break;
+        case DIRECTION_X_AXIS:
+            mat4_rotate_x((float_t)-M_PI_2, &dir_mat);
+            break;
+        case DIRECTION_BILLBOARD_Y_AXIS:
+            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
+            break;
+        case DIRECTION_EMITTER_ROTATION:
+            emitter_rotation = true;
+            break;
+        }
+
+        ParticleX* particle = rend_group->particle->data.particle;
+
+        obj* obj = objset_info_storage_get_obj(rend_group->object);
+        if (!obj)
+            return;
+
+        texture_transform_struct tex_trans[2];
+        int32_t tex_trans_count = 0;
+
+        for (texture_transform_struct& i : tex_trans) {
+            tex_trans->id = -1;
+            tex_trans->mat = mat4_identity;
+        }
+
+        obj_material& material = obj->material_array[0].material;
+
+        for (obj_material_texture_data& i : material.texdata) {
+            if (i.tex_index == -1)
+                continue;
+
+            tex_trans[tex_trans_count].id = i.tex_index & 0xFFFFF;
+            tex_trans[tex_trans_count].mat = mat4_identity;
+
+            if (++tex_trans_count == 2)
+                break;
+        }
+
+        vec3 ext_anim_scale;
+        float_t ext_scale = 0.0f;
+        if (rend_group->GetExtAnimScale(&ext_anim_scale, &ext_scale)) {
+            if (!has_scale) {
+                emit_scale = 1.0f;
+                has_scale = true;
+            }
+
+            if (ext_scale >= 0.0f)
+                emit_scale *= ext_anim_scale + ext_scale;
+            else
+                emit_scale += ext_anim_scale;
+        }
+
+        mdl::DispManager& disp_manager = *::disp_manager;
+        const bool object_culling = disp_manager.object_culling;
+        if (local)
+            disp_manager.object_culling = false;
+        disp_manager.set_texture_pattern(0, 0);
+
+        RenderElementX* elem = rend_group->elements;
+        size_t disp = 0;
+        for (size_t i = rend_group->ctrl, j_max = 1024; i > 0; i -= j_max) {
+            j_max = min_def(i, j_max);
+            for (size_t j = j_max; j > 0; elem++) {
+                if (!elem->alive)
+                    continue;
+                j--;
+
+                if (!elem->disp)
+                    continue;
+
+                vec3 trans = elem->translation;
+                vec3 rot = elem->rotation;
+                vec3 scale = elem->scale * elem->scale_all;
+                if (has_scale)
+                    scale *= emit_scale;
+
+                if (emitter_local)
+                    mat4_transform_point(&model_mat, &trans, &trans);
+
+                mat4 mat;
+                if (billboard) {
+                    if (local)
+                        mat = mat4_identity;
+                    else
+                        mat = dir_mat;
+                }
+                else if (rotate_func) {
+                    mat = rotate_func(rend_group, elem, &up_vec, &trans);
+                }
+                else if (emitter_rotation)
+                    mat = elem->mat;
+                else
+                    mat = dir_mat;
+
+                mat4_set_translation(&mat, &trans);
+                mat4_mul_rotate_zyx(&mat, &rot, &mat);
+                mat4_scale_rot(&mat, &scale, &mat);
+
+                vec3 uv_scroll;
+                vec3 uv_scroll_2nd;
+                uv_scroll.x = elem->uv_scroll.x;
+                uv_scroll.y = -elem->uv_scroll.y;
+                uv_scroll.z = 0.0f;
+                uv_scroll_2nd.x = elem->uv_scroll_2nd.x;
+                uv_scroll_2nd.y = -elem->uv_scroll_2nd.y;
+                uv_scroll_2nd.z = 0.0f;
+
+                mat4_set_translation(&tex_trans[0].mat, &uv_scroll);
+                mat4_set_translation(&tex_trans[1].mat, &uv_scroll_2nd);
+
+                mat4_transpose(&tex_trans[0].mat, &tex_trans[0].mat);
+                mat4_transpose(&tex_trans[1].mat, &tex_trans[1].mat);
+                disp_manager.set_texture_transform(tex_trans_count, tex_trans);
+
+                if (local)
+                    mat4_mul(&mat, &cam_inv_view, &mat);
+                elem->mat_draw = mat;
+
+                mat4_transpose(&mat, &mat);
+                if (disp_manager.entry_obj_by_object_info(&mat,
+                    rend_group->object, &elem->color, 0, local))
+                    disp++;
+
+                disp_manager.set_texture_transform(0, 0);
+            }
+        }
+        disp_manager.set_texture_pattern(0, 0);
+        rend_group->disp = disp;
+        if (local)
+            disp_manager.object_culling = object_culling;
     }
 
     size_t RenderSceneX::GetCtrlCount(ParticleType type) {

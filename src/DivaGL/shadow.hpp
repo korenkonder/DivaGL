@@ -7,6 +7,7 @@
 
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/time.hpp"
+#include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
 #include "render_texture.hpp"
 #include "shared.hpp"

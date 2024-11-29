@@ -559,6 +559,7 @@ namespace Glitter {
         bool scene_init;
         bool buffer_init;
         prj::vector<MeshX> meshes;
+        GL::ElementArrayBuffer ebo;
 
         EffectGroupX();
         virtual ~EffectGroupX();
@@ -639,7 +640,6 @@ namespace Glitter {
         void CalcDisp(RenderGroupX* rend_group);
         void CalcDispLine(RenderGroupX* rend_group);
         void CalcDispLocus(RenderGroupX* rend_group);
-        void CalcDispMesh(RenderGroupX* rend_group);
         void CalcDispQuad(RenderGroupX* rend_group);
         void CalcDispQuadDirectionRotation(RenderGroupX* rend_group, mat4* model_mat);
         void CalcDispQuadNormal(RenderGroupX* rend_group, mat4* model_mat, mat4* dir_mat);
@@ -648,6 +648,8 @@ namespace Glitter {
         void Ctrl(float_t delta_frame, bool copy_mats);
         void Disp(DispType disp_type);
         void Disp(RenderGroupX* rend_group);
+        void DispMesh();
+        void DispMesh(RenderGroupX* rend_group);
         size_t GetCtrlCount(ParticleType type);
         size_t GetDispCount(ParticleType type);
 
@@ -722,6 +724,7 @@ namespace Glitter {
         void CtrlInit(float_t delta_frame);
         void CtrlMat();
         void Disp(DispType disp_type);
+        void DispMesh();
         void Emit(float_t delta_frame, float_t emission);
         void EmitInit(float_t delta_frame, float_t emission);
         void Free(float_t emission, bool free);
@@ -1349,9 +1352,8 @@ namespace Glitter {
         EffectGroup* effect_group;
         RenderScene render_scene;
 
+        void CalcDisp();
         void Disp(DispType disp_type);
-
-        static void CalcDisp(Scene* sc);
     };
 
     struct SceneEffectX {
@@ -1379,6 +1381,7 @@ namespace Glitter {
         bool Copy(EffectInstX* eff_inst, SceneX* dst);
         void Ctrl(float_t delta_frame);
         void Disp(DispType disp_type);
+        void DispMesh();
         size_t GetCtrlCount(ParticleType ptcl_type);
         size_t GetDispCount(ParticleType ptcl_type);
         float_t GeFrameLifeTime(int32_t* life_time, size_t id);
@@ -1417,9 +1420,8 @@ namespace Glitter {
         prj::map<uint64_t, uint32_t> resources;
         uint32_t texture_counter;
 
+        void CalcDisp();
         void DispScenes(DispType disp_type);
-
-        static void Disp(GPM);
     };
 
     class GltParticleManagerX : app::Task {
@@ -1448,6 +1450,7 @@ namespace Glitter {
 
         bool AppendEffectGroup(uint32_t hash, EffectGroupX* eff_group, FileReaderX* file_read);
         void BasicEffectGroups();
+        void CalcDisp();
         bool CheckHasLocalEffect();
         bool CheckNoFileReaders(uint32_t hash);
         bool CheckSceneEnded(SceneCounter scene_counter);

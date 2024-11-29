@@ -10,11 +10,11 @@
 static uint32_t& render_texture_counter = *(uint32_t*)0x00000001411AD648;
 
 static int32_t render_texture_init_framebuffer(RenderTexture* rt, int32_t max_level);
-static int32_t render_texture_set_framebuffer_texture(RenderTexture* rrt,
+static int32_t render_texture_set_framebuffer_texture(RenderTexture* rt,
     GLuint color_texture, int32_t level, GLuint depth_texture, bool stencil);
 
 RenderTexture::RenderTexture() : color_texture(), depth_texture(),
-binding(), max_level(), fbos()/*, depth_rbo(), stencil_rbo()*/ {
+binding(), max_level(), fbos(), depth_rbo(), stencil_rbo() {
 
 }
 
@@ -154,19 +154,8 @@ void render_texture_counter_reset() {
     render_texture_counter = 0;
 }
 
-HOOK(void, FASTCALL, RenderTexture__RenderTexture, 0x00000001405030C0, RenderTexture* This) {
-    RenderTexture temp;
-    *(void***)This =  *(void***)&temp;
-    *This = temp;
-}
-
-HOOK(void, FASTCALL, RenderTexture___RenderTexture, 0x00000001405030F0, RenderTexture* This) {
-    This->~RenderTexture();
-}
-
 void render_texture_patch() {
-    INSTALL_HOOK(RenderTexture__RenderTexture);
-    INSTALL_HOOK(RenderTexture___RenderTexture);
+
 }
 
 static int32_t render_texture_init_framebuffer(RenderTexture* rt, int32_t max_level) {

@@ -11,16 +11,10 @@
 #include <Helpers.h>
 
 enum stage_data_flags {
-    STAGE_DATA_FLAG_1              = 0x01,
-    STAGE_DATA_LIGHT_CHARA_AMBIENT = 0x02,
-    STAGE_DATA_FLAG_4              = 0x04,
-    STAGE_DATA_FLAG_8              = 0x08,
-};
-
-struct stage_data_reflect {
-    reflect_refract_resolution_mode mode;
-    int32_t blur_num;
-    blur_filter_mode blur_filter;
+    STAGE_DATA_REFLECT_TEXTURE_MASK = 0x01,
+    STAGE_DATA_LIGHT_CHARA_AMBIENT  = 0x02,
+    STAGE_DATA_REFLECT_TONE_CURVE   = 0x04,
+    STAGE_DATA_LIGHT_STAGE_AMBIENT  = 0x08,
 };
 
 static_assert(sizeof(stage_data_reflect) == 0x0C, "\"stage_data_reflect\" struct should have a size of 0x0C");

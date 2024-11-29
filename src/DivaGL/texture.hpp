@@ -68,14 +68,14 @@ struct texture {
 
     texture();
 
-    int32_t get_height_align_mip_level(uint8_t mip_level = 0);
-    int32_t get_size_mip_level(uint8_t mip_level = 0);
-    int32_t get_width_align_mip_level(uint8_t mip_level = 0);
+    int32_t get_height_align_mip_level(uint8_t mip_level = 0) const;
+    int32_t get_size_mip_level(uint8_t mip_level = 0) const;
+    int32_t get_width_align_mip_level(uint8_t mip_level = 0) const;
 
-    inline int32_t get_height_mip_level(uint8_t mip_level) {
+    inline int32_t get_height_mip_level(uint8_t mip_level) const {
         return max_def(height >> mip_level, 1);
     }
-    inline int32_t get_width_mip_level(uint8_t mip_level) {
+    inline int32_t get_width_mip_level(uint8_t mip_level) const {
         return max_def(width >> mip_level, 1);
     }
 };

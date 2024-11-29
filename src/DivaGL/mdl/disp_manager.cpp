@@ -2295,7 +2295,7 @@ namespace mdl {
         return 2;
     }
 
-    bool DispManager::entry_obj(::obj* object, obj_mesh_vertex_buffer* obj_vertex_buf,
+    bool DispManager::entry_obj(::obj* obj, obj_mesh_vertex_buffer* obj_vertex_buf,
         obj_mesh_index_buffer* obj_index_buf, const mat4* mat,
         prj::vector<GLuint>* textures, vec4* blend_color, mat4* bone_mat, ::obj* object_morph,
         obj_mesh_vertex_buffer* obj_morph_vertex_buf, int32_t instances_count, mat4* instances_mat,
@@ -2306,16 +2306,16 @@ namespace mdl {
 
         camera_struct::update_data();
 
-        if (!local && object_culling && !instances_count && !bone_mat && (!object
+        if (!local && object_culling && !instances_count && !bone_mat && (!obj
             || !obj_bounding_sphere_check_visibility(
-                &object->bounding_sphere, &culling, mat))) {
+                &obj->bounding_sphere, &culling, mat))) {
             culling.culled.objects++;
             return false;
         }
         culling.passed.objects++;
 
-        for (int32_t i = 0; i < object->num_mesh; i++) {
-            obj_mesh* mesh = &object->mesh_array[i];
+        for (int32_t i = 0; i < obj->num_mesh; i++) {
+            obj_mesh* mesh = &obj->mesh_array[i];
             obj_mesh* mesh_morph = 0;
             if (obj_vertex_buf && obj_morph_vertex_buf) {
                 if (obj_vertex_buf[i].get_size() != obj_morph_vertex_buf[i].get_size())
@@ -2405,7 +2405,7 @@ namespace mdl {
                     num_bone_index = 0;
                 }
 
-                obj_material_data* material = &object->material_array[sub_mesh->material_index];
+                obj_material_data* material = &obj->material_array[sub_mesh->material_index];
                 ObjData* data = alloc_obj_data(OBJ_KIND_NORMAL);
                 if (!data)
                     continue;
@@ -2502,7 +2502,7 @@ namespace mdl {
                     _emission = material->material.color.emission;
                 }
 
-                data->init_sub_mesh(mat, object->bounding_sphere.radius, sub_mesh, mesh, material, textures,
+                data->init_sub_mesh(mat, obj->bounding_sphere.radius, sub_mesh, mesh, material, textures,
                     num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, _blend_color, _emission,
                     morph_vertex_buffer, morph_vertex_buffer_offset, instances_count, instances_mat, func, func_data);
 
@@ -2731,8 +2731,8 @@ namespace mdl {
         if (obj_info.id == (uint16_t)-1 && obj_info.set_id == (uint16_t)-1)
             return false;
 
-        ::obj* object = objset_info_storage_get_obj(obj_info);
-        if (!object)
+        ::obj* obj = objset_info_storage_get_obj(obj_info);
+        if (!obj)
             return false;
 
         prj::vector<GLuint>* textures = objset_info_storage_get_set_gentex(obj_info.set_id);
@@ -2746,7 +2746,7 @@ namespace mdl {
             obj_morph_vertex_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
         }
 
-        return entry_obj(object, obj_vertex_buffer, obj_index_buffer,
+        return entry_obj(obj, obj_vertex_buffer, obj_index_buffer,
             mat, textures, blend_color, bone_mat, obj_morph, obj_morph_vertex_buffer,
             instances_count, instances_mat, func, func_data, enable_bone_mat, local);
     }
@@ -2991,9 +2991,11 @@ namespace mdl {
     }
 
     mdl::ObjList& DispManager::get_obj_list(mdl::ObjType type) {
+        if (type >= OBJ_TYPE_MAX)
 #pragma warning(suppress: 33010)
 #pragma warning(suppress: 33011)
-        return type >= mdl::OBJ_TYPE_MAX ? rctx->obj_local[type - mdl::OBJ_TYPE_MAX] : disp_manager->obj[type];
+            return rctx->obj_local[type - OBJ_TYPE_MAX];
+        return disp_manager->obj[type];
     }
 
     void DispManager::get_morph(object_info& object, float_t& weight) {
@@ -3069,7 +3071,7 @@ namespace mdl {
         if (list.size() < 1)
             return;
 
-        if (a3 && type == mdl::OBJ_TYPE_TRANSLUCENT)
+        if (a3 && type == OBJ_TYPE_TRANSLUCENT)
             sub_140436760(view);
 
         calc_obj_radius(view, type);
