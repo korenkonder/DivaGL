@@ -338,7 +338,9 @@ static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, in
                 WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
                 WGL_CONTEXT_MINOR_VERSION_ARB, minor,
                 WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+#ifdef DEBUG
                 WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
+#endif
                 0,
             };
             ctx = _wglCreateContextAttribsARB(XHDC, 0, attrib_list);;
