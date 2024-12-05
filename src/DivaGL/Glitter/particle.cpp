@@ -72,6 +72,8 @@ namespace Glitter {
     }
 
     ParticleX::~ParticleX() {
+#if !SHARED_GLITTER_BUFFER
         Glitter::DeleteBuffer(buffer, vao, vbo, ebo);
+#endif
     }
 }

@@ -1081,8 +1081,13 @@ namespace Glitter {
     }
 
     void RenderSceneX::CalcDispLine(RenderGroupX* rend_group) {
+#if SHARED_GLITTER_BUFFER
+        if (!rend_group->elements || rend_group->ctrl < 1)
+            return;
+#else
         if (!rend_group->elements || rend_group->vbo.IsNull() || rend_group->ctrl < 1)
             return;
+#endif
 
         size_t count = 0;
         RenderElementX* elem = rend_group->elements;
@@ -1160,12 +1165,19 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
+#if !SHARED_GLITTER_BUFFER
         rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
+#endif
     }
 
     void RenderSceneX::CalcDispLocus(RenderGroupX* rend_group) {
+#if SHARED_GLITTER_BUFFER
+        if (!rend_group->elements || rend_group->ctrl < 1)
+            return;
+#else
         if (!rend_group->elements || rend_group->vbo.IsNull() || rend_group->ctrl < 1)
             return;
+#endif
 
         size_t count = 0;
         RenderElementX* elem = rend_group->elements;
@@ -1310,12 +1322,19 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
+#if !SHARED_GLITTER_BUFFER
         rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
+#endif
     }
 
     void RenderSceneX::CalcDispQuad(RenderGroupX* rend_group) {
+#if SHARED_GLITTER_BUFFER
+        if (!rend_group->elements || rend_group->ctrl < 1)
+            return;
+#else
         if (!rend_group->elements || rend_group->vbo.IsNull() || rend_group->ctrl < 1)
             return;
+#endif
 
         mat4 cam_view;
         mat4 cam_inv_view;
@@ -1495,7 +1514,9 @@ namespace Glitter {
         }
         rend_group->disp = disp;
 
+#if !SHARED_GLITTER_BUFFER
         rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
+#endif
     }
 
     void RenderSceneX::CalcDispQuadNormal(RenderGroupX* rend_group, mat4* model_mat, mat4* dir_mat) {
@@ -1707,7 +1728,9 @@ namespace Glitter {
             }
         rend_group->disp = disp;
 
+#if !SHARED_GLITTER_BUFFER
         rend_group->vbo.WriteMemory(0, (buf - rend_group->buffer) * sizeof(Buffer), rend_group->buffer);
+#endif
     }
 
     bool RenderSceneX::CanDisp(DispType disp_type, bool a3) {

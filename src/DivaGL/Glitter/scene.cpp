@@ -21,7 +21,6 @@ namespace Glitter {
         this->hash = hash;
         flags = SCENE_NONE;
         emission = 1.0f;
-        effect_group = eff_group;
         fade_frame_left = -1.0f;
         fade_frame = -1.0f;
         effect_group = eff_group;
@@ -47,6 +46,22 @@ namespace Glitter {
         for (SceneEffectX& i : effects)
             if (i.ptr && i.disp)
                 i.ptr->CalcDisp();
+
+#if SHARED_GLITTER_BUFFER
+        size_t disp = 0;
+        for (SceneEffectX& i : effects) {
+            if (!i.ptr || !i.disp)
+                continue;
+
+            EffectInstX* eff_inst = i.ptr;
+            disp += eff_inst->render_scene.disp_quad;
+            disp += eff_inst->render_scene.disp_locus;
+            disp += eff_inst->render_scene.disp_line;
+        }
+
+        if (disp)
+            effect_group->vbo.WriteMemory(0, effect_group->max_count * sizeof(Buffer), effect_group->buffer);
+#endif
     }
 
     bool SceneX::CanDisp(DispType disp_type, bool a3) {

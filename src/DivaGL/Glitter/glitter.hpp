@@ -20,6 +20,8 @@
 #include "../types.hpp"
 #include "../texture.hpp"
 
+#define SHARED_GLITTER_BUFFER (1)
+
 namespace Glitter {
     enum CurveFlag {
         CURVE_RANDOM_RANGE        = 0x01,
@@ -559,7 +561,12 @@ namespace Glitter {
         bool scene_init;
         bool buffer_init;
         prj::vector<MeshX> meshes;
+#if SHARED_GLITTER_BUFFER
+        Buffer* buffer;
+        size_t max_count;
+        GL::ArrayBuffer vbo;
         GL::ElementArrayBuffer ebo;
+#endif
 
         EffectGroupX();
         virtual ~EffectGroupX();
@@ -1088,8 +1095,10 @@ namespace Glitter {
         ParticleX::Data data;
         Buffer* buffer;
         GLuint vao;
+#if !SHARED_GLITTER_BUFFER
         GL::ArrayBuffer vbo;
         GL::ElementArrayBuffer ebo;
+#endif
         int32_t max_count;
         bool buffer_used;
         int32_t version;
@@ -1216,10 +1225,14 @@ namespace Glitter {
         DispType disp_type;
         FogType fog_type;
         GLuint vao;
+#if !SHARED_GLITTER_BUFFER
         GL::ArrayBuffer vbo;
         GL::ElementArrayBuffer ebo;
+#endif
         float_t emission;
+#if !SHARED_GLITTER_BUFFER
         bool use_own_buffer;
+#endif
         DrawListData draw_list;
 
         ParticleInstX* particle;

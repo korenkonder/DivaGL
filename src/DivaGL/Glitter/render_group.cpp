@@ -107,7 +107,7 @@ namespace Glitter {
 
     RenderGroupX::RenderGroupX(ParticleInstX* ptcl_inst) : flags(), type(), draw_type(), pivot(), z_offset(),
         count(), ctrl(), disp(), texture(), mask_texture(), frame(), elements(), buffer(), max_count(),
-        random_ptr(), disp_type(), fog_type(), vao(), vbo(), ebo(), particle(), use_culling(), use_camera() {
+        random_ptr(), disp_type(), fog_type(), vao(), particle(), use_culling(), use_camera() {
         split_u = 1;
         split_v = 1;
         split_uv = 1.0f;
@@ -116,7 +116,9 @@ namespace Glitter {
         mat_draw = mat4_identity;
         disp_type = DISP_NORMAL;
         emission = 1.0f;
+#if !SHARED_GLITTER_BUFFER
         use_own_buffer = true;
+#endif
         blend_mode = PARTICLE_BLEND_TYPICAL;
         mask_blend_mode = PARTICLE_BLEND_TYPICAL;
 
@@ -166,16 +168,21 @@ namespace Glitter {
 
         ParticleX* ptcl = particle->data.particle;
         if (ptcl && ptcl->buffer && !ptcl->buffer_used) {
+            buffer = ptcl->buffer;
             max_count = ptcl->max_count;
             vao = ptcl->vao;
+#if !SHARED_GLITTER_BUFFER
             vbo = ptcl->vbo;
             ebo = ptcl->ebo;
             use_own_buffer = false;
+#endif
             ptcl->buffer_used = true;
         }
 
+#if !SHARED_GLITTER_BUFFER
         if (use_own_buffer)
             Glitter::CreateBuffer(max_count, is_quad, buffer, vao, vbo, ebo);
+#endif
 
         if (!is_quad)
             draw_list.reserve(count);
@@ -362,10 +369,15 @@ namespace Glitter {
             particle = 0;
         }
 
+#if SHARED_GLITTER_BUFFER
+        if (ptcl && ptcl->buffer)
+            ptcl->buffer_used = false;
+#else
         if (use_own_buffer)
             Glitter::DeleteBuffer(buffer, vao, vbo, ebo);
         else if (ptcl && ptcl->buffer)
             ptcl->buffer_used = false;
+#endif
 
         if (!a2 && elements) {
             Free();

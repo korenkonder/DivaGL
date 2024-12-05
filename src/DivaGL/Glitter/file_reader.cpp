@@ -7,6 +7,9 @@
 #include "../../KKdLib/io/path.hpp"
 #include "../../KKdLib/farc.hpp"
 #include "../rob/rob.hpp"
+#if SHARED_GLITTER_BUFFER
+#include "../gl_state.hpp"
+#endif
 
 namespace Glitter {
     FileReaderX::FileReaderX() : file_handler(), farc(),
@@ -76,6 +79,112 @@ namespace Glitter {
         }
 
         if (!effect_group->buffer_init) {
+#if SHARED_GLITTER_BUFFER
+            size_t max_count = 0;
+            size_t max_count_quad = 0;
+
+            for (EffectX*& i : effect_group->effects) {
+                if (!i)
+                    continue;
+
+                for (EmitterX*& j : i->emitters) {
+                    if (!j)
+                        continue;
+
+                    for (ParticleX*& k : j->particles) {
+                        if (!k || k->data.type == PARTICLE_MESH || k->max_count <= 0)
+                            continue;
+
+                        max_count += k->max_count;
+                        if (k->data.type == PARTICLE_QUAD)
+                            max_count_quad = max_def(max_count_quad, (size_t)k->max_count);
+                    }
+                }
+            }
+
+            if (max_count) {
+                free_def(effect_group->buffer);
+
+                effect_group->buffer = force_malloc<Buffer>(max_count);
+                effect_group->max_count = max_count;
+
+                static const GLsizei buffer_size = sizeof(Buffer);
+
+                effect_group->vbo.Create(buffer_size * max_count);
+
+                if (max_count_quad) {
+                    size_t count = max_count_quad / 4 * 5;
+                    uint32_t* ebo_data = force_malloc<uint32_t>(count);
+                    for (size_t i = 0, j = 0, k = count; k; i += 5, j += 4, k -= 5) {
+                        ebo_data[i + 0] = (uint32_t)(j + 0);
+                        ebo_data[i + 1] = (uint32_t)(j + 1);
+                        ebo_data[i + 2] = (uint32_t)(j + 3);
+                        ebo_data[i + 3] = (uint32_t)(j + 2);
+                        ebo_data[i + 4] = 0xFFFFFFFF;
+                    }
+
+                    effect_group->ebo.Create(sizeof(uint32_t) * count, ebo_data);
+                    free_def(ebo_data);
+                }
+                else
+                    effect_group->ebo.Destroy();
+
+                Buffer* buffer = effect_group->buffer;
+                GLuint vbo = effect_group->vbo;
+                GLuint ebo = effect_group->ebo;
+                size_t offset = 0;
+
+                for (EffectX*& i : effect_group->effects) {
+                    if (!i)
+                        continue;
+
+                    for (EmitterX*& j : i->emitters) {
+                        if (!j || j->buffer_init)
+                            continue;
+
+                        for (ParticleX*& k : j->particles) {
+                            if (!k || k->buffer)
+                                continue;
+                            else if (k->data.type == PARTICLE_MESH || k->max_count <= 0)
+                                continue;
+
+                            k->buffer = buffer;
+
+                            glGenVertexArrays(1, &k->vao);
+                            gl_state_bind_vertex_array(k->vao, true);
+                            gl_state_bind_array_buffer(vbo, true);
+                            if (k->data.type == PARTICLE_QUAD)
+                                gl_state_bind_element_array_buffer(ebo, true);
+
+                            glEnableVertexAttribArray(0);
+                            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, buffer_size,
+                                (void*)(offsetof(Buffer, position) + offset));
+                            glEnableVertexAttribArray(1);
+                            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, buffer_size,
+                                (void*)(offsetof(Buffer, uv) + offset));
+                            glEnableVertexAttribArray(2);
+                            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, buffer_size,
+                                (void*)(offsetof(Buffer, color) + offset));
+
+                            buffer += k->max_count;
+                            offset += buffer_size * (size_t)k->max_count;
+                        }
+
+                        j->buffer_init = true;
+                    }
+                }
+
+                gl_state_bind_array_buffer(0);
+                gl_state_bind_vertex_array(0);
+                gl_state_bind_element_array_buffer(0);
+            }
+            else {
+                free_def(effect_group->buffer);
+                effect_group->max_count = 0;
+                effect_group->vbo.Destroy();
+                effect_group->ebo.Destroy();
+            }
+#else
             int32_t init_buffers = Glitter::glt_particle_manager_x->init_buffers;
             if (init_buffers <= 0)
                 return 0;
@@ -102,6 +211,7 @@ namespace Glitter {
                     j->buffer_init = true;
                 }
             }
+#endif
 
             effect_group->buffer_init = true;
         }
