@@ -2053,6 +2053,7 @@ namespace mdl {
             break;
         case OBJ_TYPE_REFLECT_OPAQUE:
             alpha_test = 1;
+            alpha_threshold = 0.5f;
             if (!reflect_texture_mask)
                 func = draw_sub_mesh_reflect_reflect_map;
             break;
