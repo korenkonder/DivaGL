@@ -39,6 +39,13 @@ namespace Glitter {
             resources = 0;
         }
 
+#if SHARED_GLITTER_BUFFER
+        if (scene) {
+            delete scene;
+            scene = 0;
+        }
+#endif
+
         for (EffectX*& i : effects)
             if (i) {
                 delete i;
@@ -46,9 +53,11 @@ namespace Glitter {
             }
         effects.clear();
 
+#if !SHARED_GLITTER_BUFFER
         if (scene) {
             delete scene;
             scene = 0;
         }
+#endif
     }
 }

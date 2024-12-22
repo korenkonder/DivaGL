@@ -81,13 +81,16 @@ namespace Glitter {
     }
 
     ParticleInstX::~ParticleInstX() {
-        for (ParticleInstX*& i : data.children)
-            delete i;
-
         if (data.render_group) {
             data.render_group->DeleteBuffers(true);
             data.render_group = 0;
         }
+
+        for (ParticleInstX*& i : data.children)
+            if (i) {
+                delete i;
+                i = 0;
+            }
     }
 
     void ParticleInstX::AccelerateParticle(RenderElementX* rend_elem,
