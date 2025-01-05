@@ -227,9 +227,9 @@ namespace rndr {
         rctx->sun_quad_ubo.Bind(0);
 
         mat4 view;
-        mat4_transpose(&camera_data->view, &view);
+        mat4_transpose(&camera_data.view, &view);
         mat4 projection;
-        mat4_transpose(&camera_data->projection, &projection);
+        mat4_transpose(&camera_data.projection, &projection);
 
         ExposureCharaData* chara_data = exposure_chara_data;
         int32_t query_index = (this->exposure_query_index + 1) % 3;
@@ -339,16 +339,16 @@ namespace rndr {
             return;
 
         mat4 view;
-        mat4_transpose(&camera_data->view, &view);
+        mat4_transpose(&camera_data.view, &view);
         mat4 projection;
-        mat4_transpose(&camera_data->projection, &projection);
+        mat4_transpose(&camera_data.projection, &projection);
 
         mat4 view_projection;
         mat4 inverse_view_projection_matrix;
-        mat4_transpose(&camera_data->view_projection, &view_projection);
+        mat4_transpose(&camera_data.view_projection, &view_projection);
         mat4_invert(&view_projection, &inverse_view_projection_matrix);
 
-        float_t v5 = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
+        float_t v5 = tanf(camera_data.fov * 0.5f * DEG_TO_RAD_FLOAT);
         light_set* set = &light_set_data[LIGHT_SET_MAIN];
         light_data* data = &set->lights[LIGHT_SUN];
 
@@ -820,16 +820,16 @@ namespace rndr {
 
         view_point_prev = view_point;
         interest_prev = interest;
-        view_point = camera_data->view_point;
-        interest = camera_data->interest;
+        view_point = camera_data.view_point;
+        interest = camera_data.interest;
 
         stage_index_prev = stage_index;
         stage_index = task_stage_get_current_stage_index();
 
         cam_view_projection_prev = cam_view_projection;
-        cam_view_projection = camera_data->view_projection;
+        cam_view_projection = camera_data.view_projection;
 
-        reset_exposure = camera_data->fast_change_hist1 && !camera_data->fast_change_hist0;
+        reset_exposure = camera_data.fast_change_hist1 && !camera_data.fast_change_hist0;
         if (reset_exposure) {
             float_t view_point_dist = vec3::distance(view_point, view_point_prev);
 
@@ -1354,8 +1354,8 @@ namespace rndr {
 
                 mat4 v42;
                 mat4 v43;
-                mat4_mul(&camera_data->view, &v44, &v42);
-                mat4_mul(&camera_data->projection, &v42, &v43);
+                mat4_mul(&camera_data.view, &v44, &v42);
+                mat4_mul(&camera_data.projection, &v42, &v43);
                 mat4_transpose(&v42, &v42);
                 mat4_transpose(&v43, &v43);
 
@@ -1385,7 +1385,7 @@ namespace rndr {
                     v17 = 0.0f;
 
                 float_t v18 = (float_t)height / (float_t)width;
-                float_t v20 = tanf(camera_data->fov * 0.5f * DEG_TO_RAD_FLOAT);
+                float_t v20 = tanf(camera_data.fov * 0.5f * DEG_TO_RAD_FLOAT);
                 float_t v21 = 0.25f / sqrtf(powf(v20 * 3.4f, 2.0f) * (v41.z * v41.z));
                 float_t v22;
                 if (v21 < 0.055f)

@@ -18,6 +18,7 @@ size_t opengl32_handle;
 size_t dll_handle;
 bool cpu_caps_aes_ni;
 bool cpu_caps_f16c;
+bool config_reflect_full = true;
 
 void FASTCALL divagl_main() {
     int32_t cpuid_data[4] = {};

@@ -6,7 +6,9 @@
 #include "auth_3d.hpp"
 #include "../KKdLib/hash.hpp"
 #include "light_param/fog.hpp"
+#include "light_param/light.hpp"
 #include "mdl/disp_manager.hpp"
+#include "pv_game/firstread.hpp"
 #include "rob/rob.hpp"
 #include "canonical_properties.hpp"
 #include "file_handler.hpp"
@@ -451,6 +453,7 @@ struct auth_3d {
     mat4* bone_mats;
     bool shadow;
     bool chara_item;
+    bool reflect;
     chara_index src_chara;
     chara_index dst_chara;
     int32_t pos;
@@ -877,6 +880,14 @@ void auth_3d_id::set_pos(int32_t value) {
     }
 }
 
+void auth_3d_id::set_reflect(bool value) {
+    if (id >= 0 && ((id & 0x7FFF) < AUTH_3D_DATA_COUNT)) {
+        auth_3d* auth = &auth_3d_data->data[id & 0x7FFF];
+        if (auth->id == id)
+            auth->reflect = value;
+    }
+}
+
 void auth_3d_id::set_repeat(bool value) {
     if (id >= 0 && ((id & 0x7FFF) < AUTH_3D_DATA_COUNT)) {
         auth_3d* auth = &auth_3d_data->data[id & 0x7FFF];
@@ -966,6 +977,59 @@ int32_t auth_3d_data_get_auth_3d_id(uint32_t uid, object_info obj_info,
     return -1;
 }
 
+HOOK(void, FASTCALL, auth_3d_parse, 0x00000001401C15B0, auth_3d* auth) {
+    originalauth_3d_parse(auth);
+
+    extern bool reflect_full;
+    extern const firstread* firstread_ptr;
+    if (!reflect_full || !firstread_ptr || !firstread_ptr->auth_3d_array)
+        return;
+
+    const firstread_auth_3d_array* auth_3d_array = firstread_ptr->auth_3d_array;
+
+    for (uint32_t i = 0; i < auth_3d_array->num_auth_3d; i++) {
+        if (auth_3d_array->auth_3d_array[i].uid != auth->uid)
+            continue;
+
+        const firstread_auth_3d* frg_auth_3d = &auth_3d_array->auth_3d_array[i];
+
+        auto obj_begin = auth->object.begin();
+        auto obj_end = auth->object.end();
+        const uint32_t num_object = frg_auth_3d->num_object;
+        for (uint32_t j = 0; j < num_object; j++) {
+            const uint64_t name_hash = hash_utf8_xxh3_64bits(frg_auth_3d->object_array[j].name);
+            for (auth_3d_object& k : auth->object) {
+                if (name_hash != hash_utf8_xxh3_64bits(k.name.c_str()))
+                    continue;
+
+                const firstread_auth_3d_object* frg_a3d_obj = &frg_auth_3d->object_array[j];
+                k.uid_name.assign(frg_a3d_obj->uid_name);
+                k.object_info = object_database_get_object_info(frg_a3d_obj->uid_name);
+
+                k.reflect = k.uid_name.find("_REFLECT") != -1;
+                k.refract = k.uid_name.find("_REFRACT") != -1;
+                break;
+            }
+        }
+
+        auto obj_list_begin = auth->object_list.begin();
+        auto obj_list_end = auth->object_list.end();
+        const uint32_t num_object_list = frg_auth_3d->num_object_list;
+        for (uint32_t j = 0; j < num_object_list; j++) {
+            const uint64_t name_hash = hash_utf8_xxh3_64bits(frg_auth_3d->object_list_array[j].name);
+            for (auto obj_list = obj_list_begin; obj_list != obj_list_end; )
+                if (name_hash == hash_utf8_xxh3_64bits((*obj_list)->name.c_str())) {
+                    auth->object_list.erase(obj_list);
+                    obj_list_end = auth->object_list.end();
+                    break;
+                }
+                else
+                    obj_list++;
+        }
+        break;
+    }
+}
+
 HOOK(void, FASTCALL, auth_3d_curve_array_free, 0x00000001401C2E30,
     prj::vector<auth_3d_curve>* vec, auth_3d_curve* begin, auth_3d_curve* end) {
     while (begin != end) {
@@ -1037,7 +1101,7 @@ HOOK(void, FASTCALL, auth_3d_m_object_hrc_disp, 0x00000001401D0760, auth_3d_m_ob
 
         if (i.mats.size())
             disp_manager.entry_obj_by_object_info_object_skin(
-                i.object_info, 0, 0, auth->alpha, i.mats.data(), 0, 0, &i.model_transform.mat);
+                i.object_info, 0, 0, auth->alpha, i.mats.data(), 0, 0, i.model_transform.mat);
     }
 
     disp_manager.set_obj_flags();
@@ -1098,7 +1162,7 @@ HOOK(void, FASTCALL, auth_3d_object_hrc_disp, 0x00000001401D04A0, auth_3d_object
 
     if (oh->node_bone_mats.size())
         disp_manager.entry_obj_by_object_info_object_skin(
-            oh->object_info, 0, 0, auth->alpha, oh->node_bone_mats.data(), 0, 0, &mat);
+            oh->object_info, 0, 0, auth->alpha, oh->node_bone_mats.data(), 0, 0, mat);
 
     disp_manager.set_obj_flags();
     disp_manager.set_shadow_type(SHADOW_CHARA);
@@ -1118,7 +1182,7 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
 
     if (!auth->visible) {
         if (auth->pos)
-            spr::put_rgb_cross(&o->model_transform.mat);
+            spr::put_rgb_cross(o->model_transform.mat);
 
         for (auth_3d_object*& i : o->children_object)
             implOfauth_3d_object_disp(i, auth);
@@ -1196,7 +1260,7 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
     int32_t uid_name_length = (int32_t)o->uid_name.size();
 
     if (uid_name_length <= 3)
-        disp_manager.entry_obj_by_object_info(&mat, o->object_info);
+        disp_manager.entry_obj_by_object_info(mat, o->object_info);
     else if (o->morph.curve) {
         float_t morph = o->morph.value;
         int32_t morph_int = (int32_t)morph;
@@ -1211,9 +1275,9 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
             sprintf_s(buf, sizeof(buf), "%.*s%03d", uid_name_length - 3, uid_name, morph_int);
             object_info obj_info = object_database_get_object_info(buf);
             if (auth->alpha < 0.999f)
-                disp_manager.entry_obj_by_object_info(&mat, obj_info, auth->alpha);
+                disp_manager.entry_obj_by_object_info(mat, obj_info, auth->alpha);
             else
-                disp_manager.entry_obj_by_object_info(&mat, obj_info);
+                disp_manager.entry_obj_by_object_info(mat, obj_info);
             disp_manager.set_morph({}, 0.0f);
         }
         else {
@@ -1224,24 +1288,24 @@ HOOK(void, FASTCALL, auth_3d_object_disp, 0x00000001401D0970, auth_3d_object* o,
             object_info obj_info = object_database_get_object_info(buf);
             if (obj_info.is_null())
                 obj_info = o->object_info;
-            disp_manager.entry_obj_by_object_info(&mat, obj_info);
+            disp_manager.entry_obj_by_object_info(mat, obj_info);
         }
     }
     else if (o->pattern.curve) {
         sprintf_s(buf, sizeof(buf), "%.*s%03d",
             uid_name_length - 3, uid_name, (int32_t)prj::roundf(o->pattern.value));
         object_info obj_info = object_database_get_object_info(buf);
-        disp_manager.entry_obj_by_object_info(&mat, obj_info);
+        disp_manager.entry_obj_by_object_info(mat, obj_info);
     }
     else
-        disp_manager.entry_obj_by_object_info(&mat, o->object_info);
+        disp_manager.entry_obj_by_object_info(mat, o->object_info);
 
     disp_manager.set_texture_transform();
     disp_manager.set_texture_pattern();
     disp_manager.set_obj_flags();
 
     if (auth->pos)
-        spr::put_rgb_cross(&o->model_transform.mat);
+        spr::put_rgb_cross(o->model_transform.mat);
 
     for (auth_3d_object*& i : o->children_object)
         implOfauth_3d_object_disp(i, auth);
@@ -1254,7 +1318,10 @@ HOOK(void, FASTCALL, auth_3d__disp, 0x00000001401D1230, auth_3d* auth) {
         return;
 
     auth_3d_set_material_list(auth);
+    extern bool reflect_full;
+    mdl::obj_reflect_enable = reflect_full && auth->reflect;
     originalauth_3d__disp(auth);
+    mdl::obj_reflect_enable = false;
     disp_manager->set_material_list();
 }
 
@@ -1298,9 +1365,10 @@ void auth_3d_patch() {
     // Move both auth_3d_curve's value and type
     WRITE_MEMORY_STRING(0x00000001401B316A, "\x48\x8B\x43\x68\x48\x89"
         "\x47\x68\x48\x8B\xC7\x48\x8B\x5C\x24\x48\x48\x83\xC4\x30\x5F\xC3", 0x16);
-    // Null both auth_3d's shadow and chara_item
+    // Null auth_3d's shadow, chara_item and reflect
     WRITE_MEMORY_STRING(0x00000001401D7A78, "\x44\x89\xBF\x98\x00\x00\x00", 0x07);
 
+    INSTALL_HOOK(auth_3d_parse);
     INSTALL_HOOK(auth_3d_curve_array_free);
     INSTALL_HOOK(auth_3d_m_object_hrc_disp);
     INSTALL_HOOK(auth_3d_object_hrc_disp);

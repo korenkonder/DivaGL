@@ -1368,7 +1368,7 @@ struct rob_chara_item_equip_object {
     obj_skin* skin;
     rob_chara_item_equip* item_equip;
 
-    void disp(const mat4* mat);
+    void disp(const mat4& mat);
     int32_t get_bone_index(const char* name);
     bone_node* get_bone_node(int32_t bone_index);
     bone_node* get_bone_node(const char* name);

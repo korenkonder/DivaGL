@@ -295,7 +295,7 @@ namespace mdl {
         obj_material_attrib_member attrib = args->material->material.attrib.m;
         uniform->arr[U_ALPHA_TEST] = (!attrib.flag_28 && (args->blend_color.w < 1.0f
             || (attrib.alpha_texture || attrib.alpha_material) && !attrib.punch_through
-            || args->sub_mesh->attrib.m.transparent)
+            || args->sub_mesh->attrib.m.translucent)
             || attrib.punch_through) ? 1 : 0;
 
         uniform->arr[U_NPR_NORMAL] = 1;
@@ -303,12 +303,12 @@ namespace mdl {
         const obj_material_data* material = args->material;
         switch (material->material.shader.index) {
         case SHADER_FT_CLOTH:
-            if (!render_manager->npr_param && material->material.color.ambient.w < 1.0f
+            if (!render_manager.npr_param && material->material.color.ambient.w < 1.0f
                 && material->material.shader_info.m.aniso_direction == OBJ_MATERIAL_ANISO_DIRECTION_NORMAL)
                 chara = true;
             break;
         case SHADER_FT_TIGHTS:
-            if (!render_manager->npr_param)
+            if (!render_manager.npr_param)
                 chara = true;
             break;
         case SHADER_FT_GLASEYE:
@@ -382,7 +382,7 @@ namespace mdl {
         obj_material_attrib_member attrib = args->material->material.attrib.m;
         if (!attrib.flag_28 && (args->blend_color.w < 1.0f
             || (attrib.alpha_texture || attrib.alpha_material) && !attrib.punch_through
-            || args->sub_mesh->attrib.m.transparent)
+            || args->sub_mesh->attrib.m.translucent)
             || attrib.punch_through) {
             uniform->arr[U_ALPHA_TEST] = 1;
             rctx->set_batch_alpha_threshold(0.5f);

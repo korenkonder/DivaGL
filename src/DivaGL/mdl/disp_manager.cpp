@@ -45,6 +45,9 @@ static void object_data_get_vertex_attrib_buffer_bindings(const mdl::ObjSubMeshA
 
 static void sub_140436760(mat4* view);
 
+extern bool reflect_draw;
+extern mat4 reflect_mat;
+
 material_list_struct::material_list_struct() : blend_color(), has_blend_color(), emission(), has_emission() {
     hash = (uint64_t)-1;
 }
@@ -78,6 +81,9 @@ namespace mdl {
 
     int32_t material_list_count;
     material_list_struct material_list_array[MATERIAL_LIST_COUNT];
+
+
+    bool obj_reflect_enable;
 
     ObjSubMeshArgs::ObjSubMeshArgs() : sub_mesh(), mesh(), material(), textures(), mat_count(), mats(),
         vertex_buffer(), vertex_buffer_offset(), index_buffer(), set_blend_color(), chara_color(), self_shadow(),
@@ -213,23 +219,22 @@ namespace mdl {
 
     }
 
-    void ObjData::init_etc(const mat4* mat, mdl::EtcObj* etc) {
+    void ObjData::init_etc(const mat4& mat, const mdl::EtcObj& etc) {
         kind = mdl::OBJ_KIND_ETC;
-        mat4_transpose(mat, &this->mat);
-        args.etc = *etc;
+        mat4_transpose(&mat, &this->mat);
+        args.etc = etc;
 
         disp_manager->add_vertex_array(&args.etc, this->mat);
     }
 
-    void ObjData::init_sub_mesh(const mat4* mat, float_t radius,
-        const obj_sub_mesh* sub_mesh, const obj_mesh* mesh, const obj_material_data* material,
-        const prj::vector<GLuint>* textures, int32_t mat_count, const mat4* mats,
-        GLuint vertex_buffer, size_t vertex_buffer_offset, GLuint index_buffer,
-        const vec4& blend_color, const vec4& emission, GLuint morph_vertex_buffer,
-        size_t morph_vertex_buffer_offset, int32_t instances_count, mat4* instances_mat,
-        void(FASTCALL* func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data) {
+    void ObjData::init_sub_mesh(const mat4& mat, float_t radius, const obj_sub_mesh* sub_mesh,
+        const obj_mesh* mesh, const obj_material_data* material, const prj::vector<GLuint>* textures,
+        int32_t mat_count, const mat4* mats, GLuint vertex_buffer, size_t vertex_buffer_offset,
+        GLuint index_buffer, const vec4& blend_color, const vec4& emission, GLuint morph_vertex_buffer,
+        size_t morph_vertex_buffer_offset,
+        int32_t instances_count, const mat4* instances_mat, draw_func func, const ObjSubMeshArgs* func_data) {
         kind = mdl::OBJ_KIND_NORMAL;
-        mat4_transpose(mat, &this->mat);
+        mat4_transpose(&mat, &this->mat);
         this->radius = radius;
 
         mdl::ObjSubMeshArgs* args = &this->args.sub_mesh;
@@ -284,15 +289,15 @@ namespace mdl {
         disp_manager->add_vertex_array(args);
     }
 
-    void ObjData::init_translucent(const mat4* mat, ObjTranslucentArgs* translucent) {
+    void ObjData::init_translucent(const mat4& mat, const ObjTranslucentArgs& translucent) {
         kind = mdl::OBJ_KIND_TRANSLUCENT;
-        mat4_transpose(mat, &this->mat);
-        args.translucent = *translucent;
+        mat4_transpose(&mat, &this->mat);
+        args.translucent = translucent;
     }
 
-    void ObjData::init_user(const mat4* mat, UserArgsFunc func, void* data) {
+    void ObjData::init_user(const mat4& mat, UserArgsFunc func, void* data) {
         kind = OBJ_KIND_USER;
-        mat4_transpose(mat, &this->mat);
+        mat4_transpose(&mat, &this->mat);
         args.user.func = func;
         args.user.data = data;
     }
@@ -1549,7 +1554,7 @@ namespace mdl {
             const vec3 up = { 0.0f, 1.0f, 0.0f };
             vec3 axis;
             float_t angle;
-            Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
+            Glitter::axis_angle_from_vectors(axis, angle, up, dir);
 
             mat4 m = mat4_identity;
             mat4_mul_rotation(&m, &axis, angle, &m);
@@ -1570,7 +1575,7 @@ namespace mdl {
             const vec3 up = { 0.0f, 1.0f, 0.0f };
             vec3 axis;
             float_t angle;
-            Glitter::axis_angle_from_vectors(&axis, &angle, &up, &dir);
+            Glitter::axis_angle_from_vectors(axis, angle, up, dir);
 
             mat4 m = mat4_identity;
             mat4_mul_rotation(&m, &axis, angle, &m);
@@ -1923,7 +1928,7 @@ namespace mdl {
                 mat4 mat;
                 mat4_translate(&i, &mat);
                 mat4_transpose(&mat, &mat);
-                entry_obj_etc(&mat, &etc);
+                entry_obj_etc(mat, etc);
             }
 
         if (show_mat_center && type == OBJ_TYPE_TRANSLUCENT)
@@ -1938,7 +1943,7 @@ namespace mdl {
                 mat4 mat;
                 mat4_translate(&i, &mat);
                 mat4_transpose(&mat, &mat);
-                entry_obj_etc(&mat, &etc);
+                entry_obj_etc(mat, etc);
             }
     }
 
@@ -1972,7 +1977,7 @@ namespace mdl {
     }
 
     void DispManager::draw(ObjType type, int32_t depth_mask, bool reflect_texture_mask, int32_t alpha) {
-        if (type < 0 || type >= mdl::OBJ_TYPE_LOCAL_MAX || get_obj_count(type) < 1)
+        if (type < 0 || type >= OBJ_TYPE_REFLECT_MAX || get_obj_count(type) < 1)
             return;
 
         int32_t alpha_test = 0;
@@ -1997,6 +2002,7 @@ namespace mdl {
                 func = draw_sub_mesh_translucent;
             else
                 gl_state_set_depth_mask(GL_FALSE);
+
             alpha_test = 1;
             min_alpha = 0.0f;
             alpha_threshold = 0.0f;
@@ -2022,48 +2028,79 @@ namespace mdl {
             func = draw_sub_mesh_translucent;
             gl_state_set_color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
             draw_state.shader_index = SHADER_FT_SIL;
+
             alpha_test = 1;
             min_alpha = 0.0f;
             alpha_threshold = 0.99999994f;
             break;
         case OBJ_TYPE_REFLECT_CHARA_OPAQUE:
             gl_state_set_cull_face_mode(GL_FRONT);
-            if (reflect)
-                func = draw_sub_mesh_reflect;
-            else if (render_manager->reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP)
-                func = draw_sub_mesh_reflect_reflect_map;
+
+            if (!reflect_draw) {
+                if (reflect)
+                    func = draw_sub_mesh_reflect;
+                else if (render_manager.reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP)
+                    func = draw_sub_mesh_reflect_reflect_map;
+            }
             break;
         case OBJ_TYPE_REFLECT_CHARA_TRANSLUCENT:
             gl_state_set_cull_face_mode(GL_FRONT);
-            if (reflect)
-                func = draw_sub_mesh_reflect;
-            else if (render_manager->reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP)
-                func = draw_sub_mesh_reflect_reflect_map;
+
             min_alpha = 0.0f;
+
+            if (!reflect_draw) {
+                if (reflect)
+                    func = draw_sub_mesh_reflect;
+                else if (render_manager.reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP)
+                    func = draw_sub_mesh_reflect_reflect_map;
+            }
             break;
         case OBJ_TYPE_REFLECT_CHARA_TRANSPARENT:
             gl_state_set_cull_face_mode(GL_FRONT);
-            if (reflect)
-                func = draw_sub_mesh_reflect;
-            else if (render_manager->reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP)
-                func = draw_sub_mesh_reflect_reflect_map;
+
             alpha_test = 1;
             min_alpha = 0.1f;
             alpha_threshold = 0.5f;
+
+            if (!reflect_draw) {
+                if (reflect)
+                    func = draw_sub_mesh_reflect;
+                else if (render_manager.reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP)
+                    func = draw_sub_mesh_reflect_reflect_map;
+            }
             break;
         case OBJ_TYPE_REFLECT_OPAQUE:
             alpha_test = 1;
             alpha_threshold = 0.5f;
-            if (!reflect_texture_mask)
+
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            else if (!reflect_texture_mask)
                 func = draw_sub_mesh_reflect_reflect_map;
             break;
         case OBJ_TYPE_REFLECT_TRANSLUCENT:
+            gl_state_set_depth_mask(GL_FALSE);
+
+            min_alpha = 0.0f;
+            alpha_threshold = 0.0f;
+
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            break;
+        case OBJ_TYPE_REFLECT_TRANSPARENT:
+            alpha_test = 1;
+            min_alpha = 0.1f;
+            alpha_threshold = 0.5f;
+
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            break;
         case OBJ_TYPE_REFRACT_TRANSLUCENT:
             gl_state_set_depth_mask(GL_FALSE);
+
             min_alpha = 0.0f;
             alpha_threshold = 0.0f;
             break;
-        case OBJ_TYPE_REFLECT_TRANSPARENT:
         case OBJ_TYPE_REFRACT_TRANSPARENT:
             alpha_test = 1;
             min_alpha = 0.1f;
@@ -2071,9 +2108,9 @@ namespace mdl {
             break;
         case OBJ_TYPE_SSS:
             func = draw_sub_mesh_sss;
-            break;
-        case OBJ_TYPE_USER:
-            func = draw_sub_mesh_translucent;
+
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
             break;
         case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1:
         case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2:
@@ -2088,11 +2125,25 @@ namespace mdl {
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3:
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2_LOCAL:
             gl_state_set_depth_mask(GL_FALSE);
+
             alpha_test = 1;
             min_alpha = 0.0f;
             alpha_threshold = 0.0f;
             break;
-        default:
+        case OBJ_TYPE_USER:
+            func = draw_sub_mesh_translucent;
+            break;
+        case OBJ_TYPE_REFLECT_TRANSLUCENT_SORT_BY_RADIUS:
+            if (depth_mask)
+                func = draw_sub_mesh_translucent;
+            else
+                gl_state_set_depth_mask(GL_FALSE);
+
+            alpha_test = 1;
+            min_alpha = 0.0f;
+            alpha_threshold = 0.0f;
+
+            gl_state_set_cull_face_mode(GL_FRONT);
             break;
         }
         rctx->set_batch_alpha_threshold(alpha_threshold);
@@ -2141,8 +2192,6 @@ namespace mdl {
         switch (type) {
         case OBJ_TYPE_TRANSLUCENT:
         case OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS:
-        case OBJ_TYPE_REFLECT_TRANSLUCENT:
-        case OBJ_TYPE_REFRACT_TRANSLUCENT:
             if (!depth_mask)
                 gl_state_set_depth_mask(GL_TRUE);
             break;
@@ -2156,15 +2205,35 @@ namespace mdl {
         case OBJ_TYPE_REFLECT_CHARA_TRANSPARENT:
             gl_state_set_cull_face_mode(GL_BACK);
             break;
-        case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_1:
-        case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_2:
-        case OBJ_TYPE_TRANSPARENT_ALPHA_ORDER_3:
-            gl_state_set_cull_face_mode(GL_BACK);
+        case OBJ_TYPE_REFLECT_OPAQUE:
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            break;
+        case OBJ_TYPE_REFLECT_TRANSLUCENT:
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            gl_state_set_depth_mask(GL_TRUE);
+            break;
+        case OBJ_TYPE_REFLECT_TRANSPARENT:
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            break;
+        case OBJ_TYPE_REFRACT_TRANSLUCENT:
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_FRONT);
+            gl_state_set_depth_mask(GL_TRUE);
+            break;
+        case OBJ_TYPE_SSS:
+            if (reflect_draw)
+                gl_state_set_cull_face_mode(GL_BACK);
             break;
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1:
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_2:
         case OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_3:
             gl_state_set_depth_mask(GL_TRUE);
+            break;
+        case OBJ_TYPE_REFLECT_TRANSLUCENT_SORT_BY_RADIUS:
+            gl_state_set_cull_face_mode(GL_BACK);
             break;
         }
 
@@ -2211,7 +2280,7 @@ namespace mdl {
     }
 
     static int32_t obj_axis_aligned_bounding_box_check_visibility(
-        obj_axis_aligned_bounding_box* aabb, const mat4* mat) {
+        obj_axis_aligned_bounding_box* aabb, const mat4& mat) {
         vec3 points[8];
         points[0] = aabb->center + (aabb->size ^ vec3( 0.0f,  0.0f,  0.0f));
         points[1] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f, -0.0f));
@@ -2223,7 +2292,7 @@ namespace mdl {
         points[7] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f,  0.0f));
 
         mat4 view_mat;
-        mat4_mul(&camera_data->view, mat, &view_mat);
+        mat4_mul(&camera_data.view, &mat, &view_mat);
         mat4_transpose(&view_mat, &view_mat);
 
         for (int32_t i = 0; i < 8; i++)
@@ -2231,17 +2300,17 @@ namespace mdl {
 
         vec4 v2[6];
         *(vec3*)&v2[0] = { 0.0f, 0.0f, -1.0f };
-        v2[0].w = -camera_data->min_distance;
-        *(vec3*)&v2[1] = camera_data->field_1E4;
+        v2[0].w = -camera_data.min_distance;
+        *(vec3*)&v2[1] = camera_data.field_1E4;
         v2[1].w = 0.0f;
-        *(vec3*)&v2[2] = camera_data->field_1F0;
+        *(vec3*)&v2[2] = camera_data.field_1F0;
         v2[2].w = 0.0f;
-        *(vec3*)&v2[3] = camera_data->field_1FC;
+        *(vec3*)&v2[3] = camera_data.field_1FC;
         v2[3].w = 0.0f;
-        *(vec3*)&v2[4] = camera_data->field_208;
+        *(vec3*)&v2[4] = camera_data.field_208;
         v2[4].w = 0.0f;
         *(vec3*)&v2[5] = { 0.0f, 0.0f, 1.0f };
-        v2[5].w = camera_data->max_distance;
+        v2[5].w = camera_data.max_distance;
 
         for (int32_t i = 0; i < 6; i++)
             for (int32_t j = 0; j < 8; j++) {
@@ -2255,82 +2324,90 @@ namespace mdl {
         return 1;
     }
 
-    static int32_t obj_bounding_sphere_check_visibility(obj_bounding_sphere* sphere,
-        CullingCheck* culling, const mat4* mat) {
+    static int32_t obj_bounding_sphere_check_visibility(const obj_bounding_sphere& sphere,
+        CullingCheck* culling, const mat4& mat) {
         if (disp_manager->culling_func)
-            return disp_manager->culling_func(sphere);
+            return disp_manager->culling_func(&sphere);
 
         vec3 center;
         mat4 _mat;
-        mat4_transpose(mat, &_mat);
-        mat4_transform_point(&_mat, &sphere->center, &center);
-        float_t radius = mat4_get_max_scale(&_mat) * sphere->radius;
+        mat4_transpose(&mat, &_mat);
+        mat4_transform_point(&_mat, &sphere.center, &center);
+        float_t radius = mat4_get_max_scale(&_mat) * sphere.radius;
 
-        mat4_transpose(&camera_data->view, &_mat);
+        mat4_transpose(&camera_data.view, &_mat);
         mat4_transform_point(&_mat, &center, &center);
 
         double_t min_depth = (double_t)center.z - (double_t)radius;
         double_t max_depth = (double_t)center.z + (double_t)radius;
-        if (-camera_data->min_distance < min_depth || -camera_data->max_distance > max_depth)
+        if (-camera_data.min_distance < min_depth || -camera_data.max_distance > max_depth)
             return 0;
 
-        float_t v5 = vec3::dot(camera_data->field_1E4, center);
+        float_t v5 = vec3::dot(camera_data.field_1E4, center);
         if (v5 < -radius)
             return 0;
 
-        float_t v6 = vec3::dot(camera_data->field_1F0, center);
+        float_t v6 = vec3::dot(camera_data.field_1F0, center);
         if (v6 < -radius)
             return 0;
 
-        float_t v7 = vec3::dot(camera_data->field_1FC, center);
+        float_t v7 = vec3::dot(camera_data.field_1FC, center);
         if (v7 < -radius)
             return 0;
 
-        float_t v8 = vec3::dot(camera_data->field_208, center);
+        float_t v8 = vec3::dot(camera_data.field_208, center);
         if (v8 < -radius)
             return 0;
 
-        if (-camera_data->min_distance >= max_depth && -camera_data->max_distance <= min_depth
+        if (-camera_data.min_distance >= max_depth && -camera_data.max_distance <= min_depth
             && v5 >= radius && v6 >= radius && v7 >= radius && v8 >= radius)
             return 1;
         return 2;
     }
 
-    bool DispManager::entry_obj(::obj* obj, obj_mesh_vertex_buffer* obj_vertex_buf,
-        obj_mesh_index_buffer* obj_index_buf, const mat4* mat,
-        prj::vector<GLuint>* textures, vec4* blend_color, mat4* bone_mat, ::obj* object_morph,
-        obj_mesh_vertex_buffer* obj_morph_vertex_buf, int32_t instances_count, mat4* instances_mat,
-        void(*func)(const mdl::ObjSubMeshArgs*), const ObjSubMeshArgs* func_data,
-        bool enable_bone_mat, bool local) {
-        if (!obj_vertex_buf || !obj_index_buf)
+    bool DispManager::entry_obj(const ::obj* obj, const mat4& mat, obj_mesh_vertex_buffer* obj_vert_buf,
+        obj_mesh_index_buffer* obj_index_buf, const prj::vector<GLuint>* textures, const vec4* blend_color,
+        const mat4* bone_mat, const ::obj* obj_morph, obj_mesh_vertex_buffer* obj_morph_vert_buf,
+        int32_t instances_count, const mat4* instances_mat,
+        draw_func func, const ObjSubMeshArgs* func_data, bool enable_bone_mat, bool local) {
+        if (!obj_vert_buf || !obj_index_buf)
             return false;
 
         camera_struct::update_data();
 
+        mat4 _mat;
+        if (mdl::obj_reflect_enable) {
+            mat4_transpose(&mat, &_mat);
+            mat4_mul(&_mat, &reflect_mat, &_mat);
+            mat4_transpose(&_mat, &_mat);
+        }
+
         if (!local && object_culling && !instances_count && !bone_mat && (!obj
             || !obj_bounding_sphere_check_visibility(
-                &obj->bounding_sphere, &culling, mat))) {
+                obj->bounding_sphere, &culling, mat) && !(mdl::obj_reflect_enable
+                    && obj_bounding_sphere_check_visibility(
+                        obj->bounding_sphere, &culling, _mat)))) {
             culling.culled.objects++;
             return false;
         }
         culling.passed.objects++;
 
         for (int32_t i = 0; i < obj->num_mesh; i++) {
-            obj_mesh* mesh = &obj->mesh_array[i];
-            obj_mesh* mesh_morph = 0;
-            if (obj_vertex_buf && obj_morph_vertex_buf) {
-                if (obj_vertex_buf[i].get_size() != obj_morph_vertex_buf[i].get_size())
+            const obj_mesh* mesh = &obj->mesh_array[i];
+            const obj_mesh* mesh_morph = 0;
+            if (obj_vert_buf && obj_morph_vert_buf) {
+                if (obj_vert_buf[i].get_size() != obj_morph_vert_buf[i].get_size())
                     continue;
 
-                if (object_morph && i < object_morph->num_mesh)
-                    mesh_morph = &object_morph->mesh_array[i];
+                if (obj_morph && i < obj_morph->num_mesh)
+                    mesh_morph = &obj_morph->mesh_array[i];
             }
 
             if (!local && object_culling && !instances_count && !bone_mat
                 && !obj_bounding_sphere_check_visibility(
-                    &mesh->bounding_sphere, &culling, mat)
+                    mesh->bounding_sphere, &culling, mat)
                 && (!mesh_morph || !obj_bounding_sphere_check_visibility(
-                    &mesh_morph->bounding_sphere, &culling, mat))) {
+                    mesh_morph->bounding_sphere, &culling, mat))) {
                 culling.culled.meshes++;
                 continue;
             }
@@ -2340,15 +2417,16 @@ namespace mdl {
             int32_t translucent_priority_count = 0;
 
             for (int32_t j = 0; j < mesh->num_submesh; j++) {
-                obj_sub_mesh* sub_mesh = &mesh->submesh_array[j];
-                obj_sub_mesh* sub_mesh_morph = 0;
+                const obj_sub_mesh* sub_mesh = &mesh->submesh_array[j];
+                const obj_sub_mesh* sub_mesh_morph = 0;
                 if (sub_mesh->attrib.m.cloth)
                     continue;
 
                 if (!local && object_culling && !instances_count && !bone_mat) {
                     int32_t v32 = obj_bounding_sphere_check_visibility(
-                        &sub_mesh->bounding_sphere, &culling, mat);
-                    if (v32 != 2 || (!mesh->attrib.m.billboard && !mesh->attrib.m.billboard_y_axis)) {
+                        sub_mesh->bounding_sphere, &culling, mat);
+                    if (v32 != 2 || (!mesh->attrib.m.billboard && !mesh->attrib.m.billboard_y_axis
+                        && !mesh->attrib.m.disable_aabb_culling)) {
                         if (v32 == 2) {
                             if (disp_manager->culling_func)
                                 v32 = 1;
@@ -2359,18 +2437,18 @@ namespace mdl {
 
                         if (!v32) {
                             if (!mesh_morph || j >= mesh_morph->num_submesh) {
-                                culling.culled.submesh_array++;
+                                culling.culled.sub_meshes++;
                                 continue;
                             }
 
                             sub_mesh_morph = &mesh_morph->submesh_array[j];
                             if (!sub_mesh_morph) {
-                                culling.culled.submesh_array++;
+                                culling.culled.sub_meshes++;
                                 continue;
                             }
 
                             v32 = obj_bounding_sphere_check_visibility(
-                                &sub_mesh_morph->bounding_sphere, &culling, mat);
+                                sub_mesh_morph->bounding_sphere, &culling, mat);
                             if (v32 == 2) {
                                 if (disp_manager->culling_func)
                                     v32 = 1;
@@ -2380,16 +2458,16 @@ namespace mdl {
                             }
 
                             if (!v32) {
-                                culling.culled.submesh_array++;
+                                culling.culled.sub_meshes++;
                                 continue;
                             }
                         }
                     }
                 }
-                culling.passed.submesh_array++;
+                culling.passed.sub_meshes++;
 
                 int32_t num_bone_index = sub_mesh->num_bone_index;
-                uint16_t* bone_index = sub_mesh->bone_index_array;
+                const uint16_t* bone_index = sub_mesh->bone_index_array;
 
                 mat4* mats;
                 if (num_bone_index && enable_bone_mat) {
@@ -2413,9 +2491,9 @@ namespace mdl {
 
                 GLuint morph_vertex_buffer = 0;
                 size_t morph_vertex_buffer_offset = 0;
-                if (obj_morph_vertex_buf) {
-                    morph_vertex_buffer = obj_morph_vertex_buf[i].get_buffer();
-                    morph_vertex_buffer_offset = obj_morph_vertex_buf[i].get_offset();
+                if (obj_morph_vert_buf) {
+                    morph_vertex_buffer = obj_morph_vert_buf[i].get_buffer();
+                    morph_vertex_buffer_offset = obj_morph_vert_buf[i].get_offset();
                 }
 
                 GLuint index_buffer = 0;
@@ -2424,15 +2502,15 @@ namespace mdl {
 
                 GLuint vertex_buffer = 0;
                 size_t vertex_buffer_offset = 0;
-                if (obj_vertex_buf) {
-                    vertex_buffer = obj_vertex_buf[i].get_buffer();
-                    vertex_buffer_offset = obj_vertex_buf[i].get_offset();
+                if (obj_vert_buf) {
+                    vertex_buffer = obj_vert_buf[i].get_buffer();
+                    vertex_buffer_offset = obj_vert_buf[i].get_offset();
                 }
 
-                if (!vertex_buffer || !index_buffer || obj_morph_vertex_buf && !morph_vertex_buffer)
+                if (!vertex_buffer || !index_buffer || obj_morph_vert_buf && !morph_vertex_buffer)
                     continue;
 
-                uint64_t material_hash = hash_utf8_fnv1a64m(material->material.name);
+                const uint64_t material_hash = hash_utf8_fnv1a64m(material->material.name);
 
                 material_list_struct* mat_list = 0;
                 for (int32_t k = 0; k < material_list_count; k++)
@@ -2515,13 +2593,13 @@ namespace mdl {
                     continue;
                 }
 
-                obj_material_attrib_member attrib = material->material.attrib.m;
+                const obj_material_attrib_member attrib = material->material.attrib.m;
                 if (obj_flags & (mdl::OBJ_ALPHA_ORDER_1 | mdl::OBJ_ALPHA_ORDER_2 | mdl::OBJ_ALPHA_ORDER_3)
                     && data->args.sub_mesh.blend_color.w < 1.0f) {
                     if (!(obj_flags & mdl::OBJ_NO_TRANSLUCENCY)) {
                         if (attrib.flag_28 || (attrib.punch_through
                             || !(attrib.alpha_texture | attrib.alpha_material))
-                            && !sub_mesh->attrib.m.transparent) {
+                            && !sub_mesh->attrib.m.translucent) {
                             if (!attrib.punch_through) {
                                 if (obj_flags & mdl::OBJ_ALPHA_ORDER_1)
                                     entry_list(OBJ_TYPE_OPAQUE_ALPHA_ORDER_1, data);
@@ -2557,7 +2635,7 @@ namespace mdl {
                 else {
                     if (attrib.flag_28 || data->args.sub_mesh.blend_color.w >= 1.0f
                         && (attrib.punch_through || !(attrib.alpha_texture | attrib.alpha_material))
-                        && !sub_mesh->attrib.m.transparent) {
+                        && !sub_mesh->attrib.m.translucent) {
                         if (obj_flags & mdl::OBJ_SHADOW)
                             entry_list((ObjType)(OBJ_TYPE_SHADOW_CHARA + shadow_type), data);
 
@@ -2623,7 +2701,7 @@ namespace mdl {
                 if (obj_flags & mdl::OBJ_CHARA_REFLECT)
                     entry_list(OBJ_TYPE_REFLECT_CHARA_OPAQUE, data);
                 if (obj_flags & mdl::OBJ_REFLECT) {
-                    if (render_manager->reflect_type != STAGE_DATA_REFLECT_REFLECT_MAP)
+                    if (render_manager.reflect_type != STAGE_DATA_REFLECT_REFLECT_MAP)
                         entry_list(OBJ_TYPE_REFLECT_OPAQUE, data);
                     else
                         entry_list(OBJ_TYPE_REFLECT_TRANSLUCENT, data);
@@ -2653,7 +2731,7 @@ namespace mdl {
             if (!data)
                 continue;
 
-            data->init_translucent(mat, &translucent_args);
+            data->init_translucent(mat, translucent_args);
             if (obj_flags & mdl::OBJ_ALPHA_ORDER_1)
                 entry_list(OBJ_TYPE_TRANSLUCENT_ALPHA_ORDER_1, data);
             else if (obj_flags & mdl::OBJ_ALPHA_ORDER_2)
@@ -2665,27 +2743,289 @@ namespace mdl {
                 entry_list(local ? OBJ_TYPE_TRANSLUCENT_LOCAL
                     : OBJ_TYPE_TRANSLUCENT, data);
         }
+
+        if (local || (obj_flags & mdl::OBJ_SHADOW_OBJECT)
+            || (obj_flags & (mdl::OBJ_ALPHA_ORDER_1 | mdl::OBJ_ALPHA_ORDER_2 | mdl::OBJ_ALPHA_ORDER_3)
+                && blend_color && blend_color->w < 1.0f))
+            return true;
+
+        mat4_transpose(&mat, &_mat);
+        mat4_mul(&_mat, &reflect_mat, &_mat);
+        mat4_transpose(&_mat, &_mat);
+
+        bool camera_front = vec3::normalize(camera_data.view_point - camera_data.interest).z >= 0.0f;
+
+        for (int32_t i = 0; i < obj->num_mesh; i++) {
+            const obj_mesh* mesh = &obj->mesh_array[i];
+            const obj_mesh* mesh_morph = 0;
+            if (!mdl::obj_reflect_enable && !mesh->attrib.m.reflect || mesh->attrib.m.no_reflect
+                || camera_front && mesh->attrib.m.reflect_cam_back)
+                continue;
+
+            if (obj_vert_buf && obj_morph_vert_buf) {
+                if (obj_vert_buf[i].get_size() != obj_morph_vert_buf[i].get_size())
+                    continue;
+
+                if (obj_morph && i < obj_morph->num_mesh)
+                    mesh_morph = &obj_morph->mesh_array[i];
+            }
+
+            if (object_culling && !instances_count && !bone_mat
+                && !obj_bounding_sphere_check_visibility(
+                    mesh->bounding_sphere, &culling, _mat)
+                && (!mesh_morph || !obj_bounding_sphere_check_visibility(
+                    mesh_morph->bounding_sphere, &culling, _mat))) {
+                culling.culled.meshes++;
+                continue;
+            }
+            culling.passed.meshes++;
+
+            ObjSubMeshArgs* translucent_priority[40];
+            int32_t translucent_priority_count = 0;
+
+            for (int32_t j = 0; j < mesh->num_submesh; j++) {
+                const obj_sub_mesh* sub_mesh = &mesh->submesh_array[j];
+                const obj_sub_mesh* sub_mesh_morph = 0;
+                if (sub_mesh->attrib.m.cloth || sub_mesh->attrib.m.no_reflect
+                    || !mdl::obj_reflect_enable && !sub_mesh->attrib.m.reflect
+                    || camera_front && sub_mesh->attrib.m.reflect_cam_back)
+                    continue;
+
+                if (object_culling && !instances_count && !bone_mat) {
+                    int32_t v32 = obj_bounding_sphere_check_visibility(
+                        sub_mesh->bounding_sphere, &culling, _mat);
+                    if (v32 != 2 || (!mesh->attrib.m.billboard && !mesh->attrib.m.billboard_y_axis
+                        && !mesh->attrib.m.disable_aabb_culling)) {
+                        if (v32 == 2) {
+                            if (culling_func)
+                                v32 = 1;
+                            else {
+                                obj_axis_aligned_bounding_box aabb = *sub_mesh->axis_aligned_bounding_box;
+                                mat4_transform_point(&reflect_mat, &aabb.center, &aabb.center);
+                                mat4_transform_vector(&reflect_mat, &aabb.size, &aabb.size);
+                                v32 = obj_axis_aligned_bounding_box_check_visibility(&aabb, mat);
+                            }
+                        }
+
+                        if (!v32) {
+                            if (!mesh_morph || j >= mesh_morph->num_submesh) {
+                                culling.culled.sub_meshes++;
+                                continue;
+                            }
+
+                            sub_mesh_morph = &mesh_morph->submesh_array[j];
+                            if (!sub_mesh_morph) {
+                                culling.culled.sub_meshes++;
+                                continue;
+                            }
+
+                            int32_t v32 = obj_bounding_sphere_check_visibility(
+                                sub_mesh_morph->bounding_sphere, &culling, _mat);
+                            if (v32 == 2) {
+                                if (culling_func)
+                                    v32 = 1;
+                                else {
+                                    obj_axis_aligned_bounding_box aabb = *sub_mesh_morph->axis_aligned_bounding_box;
+                                    mat4_transform_point(&reflect_mat, &aabb.center, &aabb.center);
+                                    mat4_transform_vector(&reflect_mat, &aabb.size, &aabb.size);
+                                    v32 = obj_axis_aligned_bounding_box_check_visibility(&aabb, mat);
+                                }
+                            }
+
+                            if (!v32) {
+                                culling.culled.sub_meshes++;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                culling.passed.sub_meshes++;
+
+                int32_t num_bone_index = sub_mesh->num_bone_index;
+                const uint16_t* bone_index = sub_mesh->bone_index_array;
+
+                mat4* mats;
+                if (num_bone_index && enable_bone_mat) {
+                    mats = alloc_mat4_array(num_bone_index);
+                    if (bone_mat)
+                        for (int32_t k = 0; k < num_bone_index; k++, bone_index++)
+                            mat4_transpose(&bone_mat[*bone_index], &mats[k]);
+                    else
+                        for (int32_t k = 0; k < num_bone_index; k++)
+                            mats[k] = mat4_identity;
+                }
+                else {
+                    mats = 0;
+                    num_bone_index = 0;
+                }
+
+                obj_material_data* material = &obj->material_array[sub_mesh->material_index];
+                ObjData* data = alloc_obj_data(OBJ_KIND_NORMAL);
+                if (!data)
+                    continue;
+
+                GLuint morph_vertex_buffer = 0;
+                size_t morph_vertex_buffer_offset = 0;
+                if (obj_morph_vert_buf) {
+                    morph_vertex_buffer = obj_morph_vert_buf[i].get_buffer();
+                    morph_vertex_buffer_offset = obj_morph_vert_buf[i].get_offset();
+                }
+
+                GLuint index_buffer = 0;
+                if (obj_index_buf)
+                    index_buffer = obj_index_buf[i].buffer;
+
+                GLuint vertex_buffer = 0;
+                size_t vertex_buffer_offset = 0;
+                if (obj_vert_buf) {
+                    vertex_buffer = obj_vert_buf[i].get_buffer();
+                    vertex_buffer_offset = obj_vert_buf[i].get_offset();
+                }
+
+                if (!vertex_buffer || !index_buffer || obj_morph_vert_buf && !morph_vertex_buffer)
+                    continue;
+
+                const uint64_t material_hash = hash_utf8_fnv1a64m(material->material.name);
+
+                const material_list_struct* mat_list = 0;
+                for (int32_t k = 0; k < material_list_count; k++)
+                    if (material_list_array[k].hash == material_hash) {
+                        mat_list = &material_list_array[k];
+                        break;
+                    }
+
+                vec4 _blend_color = 1.0f;
+                vec4 _emission = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+                if (mat_list) {
+                    bool has_blend_color = false;
+                    if (mat_list->has_blend_color.x) {
+                        _blend_color.x = mat_list->blend_color.x;
+                        has_blend_color = true;
+                    }
+
+                    if (mat_list->has_blend_color.y) {
+                        _blend_color.y = mat_list->blend_color.y;
+                        has_blend_color = true;
+                    }
+
+                    if (mat_list->has_blend_color.z) {
+                        _blend_color.z = mat_list->blend_color.z;
+                        has_blend_color = true;
+                    }
+
+                    if (mat_list->has_blend_color.w) {
+                        _blend_color.w = mat_list->blend_color.w;
+                        has_blend_color = true;
+                    }
+
+                    if (blend_color) {
+                        if (!has_blend_color)
+                            _blend_color = *blend_color;
+                        else
+                            _blend_color *= *blend_color;
+                    }
+
+                    bool has_emission = false;
+                    if (mat_list->has_emission.x) {
+                        _emission.x = mat_list->emission.x;
+                        has_emission = true;
+                    }
+
+                    if (mat_list->has_emission.y) {
+                        _emission.y = mat_list->emission.y;
+                        has_emission = true;
+                    }
+
+                    if (mat_list->has_emission.z) {
+                        _emission.z = mat_list->emission.z;
+                        has_emission = true;
+                    }
+
+                    if (mat_list->has_emission.w) {
+                        _emission.w = mat_list->emission.w;
+                        has_emission = true;
+                    }
+
+                    if (!has_emission)
+                        _emission = material->material.color.emission;
+                }
+                else {
+                    if (blend_color)
+                        _blend_color = *blend_color;
+                    _emission = material->material.color.emission;
+                }
+
+                data->init_sub_mesh(mat, obj->bounding_sphere.radius, sub_mesh, mesh, material, textures,
+                    num_bone_index, mats, vertex_buffer, vertex_buffer_offset, index_buffer, _blend_color, _emission,
+                    morph_vertex_buffer, morph_vertex_buffer_offset, instances_count, instances_mat, func, func_data);
+
+                const obj_material_attrib_member attrib = material->material.attrib.m;
+                if (!attrib.flag_28 && (data->args.sub_mesh.blend_color.w < 1.0f
+                    || !attrib.punch_through && attrib.alpha_texture | attrib.alpha_material
+                    || sub_mesh->attrib.m.translucent)) {
+                    if (!attrib.translucent_priority)
+                        if (mesh->attrib.m.translucent_sort_by_radius
+                            || obj_flags & mdl::OBJ_TRANSLUCENT_SORT_BY_RADIUS) {
+                            DispManager::entry_list(OBJ_TYPE_REFLECT_TRANSLUCENT_SORT_BY_RADIUS, data);
+                        }
+                        else
+                            DispManager::entry_list(OBJ_TYPE_REFLECT_TRANSLUCENT, data);
+                    else if (translucent_priority_count < 40)
+                        translucent_priority[translucent_priority_count++] = &data->args.sub_mesh;
+                }
+                else {
+                    if (!(obj_flags & mdl::OBJ_NO_TRANSLUCENCY))
+                        if (attrib.punch_through)
+                            DispManager::entry_list(OBJ_TYPE_REFLECT_TRANSPARENT, data);
+                        else
+                            DispManager::entry_list(OBJ_TYPE_REFLECT_OPAQUE, data);
+                    continue;
+                }
+            }
+
+            if (translucent_priority_count <= 0)
+                continue;
+
+            ObjTranslucentArgs translucent_args;
+            translucent_args.count = 0;
+            for (int32_t j = 62; j; j--)
+                for (int32_t k = 0; k < translucent_priority_count; k++) {
+                    ObjSubMeshArgs* sub_mesh = translucent_priority[k];
+                    if (sub_mesh->material->material.attrib.m.translucent_priority != j)
+                        continue;
+
+                    translucent_args.sub_mesh[translucent_args.count] = sub_mesh;
+                    translucent_args.count++;
+                }
+
+            ObjData* data = DispManager::alloc_obj_data(mdl::OBJ_KIND_TRANSLUCENT);
+            if (data) {
+                data->init_translucent(mat, translucent_args);
+                DispManager::entry_list(OBJ_TYPE_TRANSLUCENT, data);
+            }
+        }
+
         return true;
     }
 
-    void DispManager::entry_obj_by_obj(const mat4* mat,
-        ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
+    void DispManager::entry_obj_by_obj(const mat4& mat,
+        const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
         obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
         if (!obj)
             return;
 
-        vec4 blend_color = { 1.0f, 1.0f, 1.0f, alpha };
-        vec4* blend_color_ptr = alpha < 1.0f ? &blend_color : 0;
+        const vec4 blend_color(1.0f, 1.0f, 1.0f, alpha);
 
-        entry_obj(obj, obj_vert_buf, obj_index_buf, mat, textures, blend_color_ptr,
-            bone_mat, 0, 0, 0, 0, 0, 0, !!bone_mat);
+        entry_obj(obj, mat, obj_vert_buf, obj_index_buf, textures,
+            alpha < 1.0f ? &blend_color : 0, bone_mat, 0, 0, 0, 0, 0, 0, !!bone_mat);
     }
 
 #if SHARED_OBJECT_BUFFER
 #pragma warning(push)
 #pragma warning(disable: 6386)
-    void DispManager::entry_obj_by_obj(const mat4* mat,
-        ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
+    void DispManager::entry_obj_by_obj(const mat4& mat,
+        const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
         obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
         if (!obj)
             return;
@@ -2709,23 +3049,23 @@ namespace mdl {
         blend_color.w = alpha;
 
         vec4* blend_color_ptr = alpha < 1.0f ? &blend_color : 0;
-        disp_manager->entry_obj(obj, _obj_vert_buf, obj_index_buf, mat,
+        entry_obj(obj, mat, _obj_vert_buf, obj_index_buf,
             textures, blend_color_ptr, bone_mat, 0, 0, 0, 0, 0, 0, 0, !!bone_mat);
         _operator_delete(_obj_vert_buf);
     }
 #pragma warning(pop)
 #endif
 
-    bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info) {
+    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info) {
         return entry_obj_by_object_info(mat, obj_info, 0, 0, 0, 0, 0, 0, false);
     }
 
-    bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info, mat4* bone_mat) {
+    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info, mat4* bone_mat) {
         vec4 blend_color = 1.0f;
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true);
     }
 
-    bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info,
+    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info,
         vec4* blend_color, mat4* bone_mat, int32_t instances_count, mat4* instances_mat,
         void(*func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data,
         bool enable_bone_mat, bool local) {
@@ -2737,42 +3077,42 @@ namespace mdl {
             return false;
 
         prj::vector<GLuint>* textures = objset_info_storage_get_set_gentex(obj_info.set_id);
-        obj_mesh_vertex_buffer* obj_vertex_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(obj_info, 0);
+        obj_mesh_vertex_buffer* obj_vert_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(obj_info, 0);
         obj_mesh_index_buffer* obj_index_buffer = objset_info_storage_get_obj_mesh_index_buffer(obj_info, 0);
 
         ::obj* obj_morph = 0;
-        obj_mesh_vertex_buffer* obj_morph_vertex_buffer = 0;
+        obj_mesh_vertex_buffer* obj_morph_vert_buffer = 0;
         if (morph.object.set_id != (uint16_t)-1) {
             obj_morph = objset_info_storage_get_obj(morph.object);
-            obj_morph_vertex_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
+            obj_morph_vert_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
         }
 
-        return entry_obj(obj, obj_vertex_buffer, obj_index_buffer,
-            mat, textures, blend_color, bone_mat, obj_morph, obj_morph_vertex_buffer,
+        return entry_obj(obj, mat, obj_vert_buffer, obj_index_buffer,
+            textures, blend_color, bone_mat, obj_morph, obj_morph_vert_buffer,
             instances_count, instances_mat, func, func_data, enable_bone_mat, local);
     }
 
-    bool DispManager::entry_obj_by_object_info(const mat4* mat,
+    bool DispManager::entry_obj_by_object_info(const mat4& mat,
         object_info obj_info, float_t alpha, mat4* bone_mat) {
         vec4 blend_color = 1.0f;
         blend_color.w = alpha;
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true);
     }
 
-    bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info,
+    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info,
         float_t r, float_t g, float_t b, float_t a, mat4* bone_mat, bool local) {
         vec4 blend_color = { r, g, b, a };
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true, local);
     }
 
-    bool DispManager::entry_obj_by_object_info(const mat4* mat, object_info obj_info,
+    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info,
         vec4* blend_color, mat4* bone_mat, bool local) {
         return entry_obj_by_object_info(mat, obj_info, blend_color, 0, 0, 0, 0, 0, false, local);
     }
 
     void DispManager::entry_obj_by_object_info_object_skin(object_info obj_info,
         prj::vector<texture_pattern_struct>* texture_pattern, texture_data_struct* texture_data, float_t alpha,
-        mat4* matrices, mat4* ex_data_matrices, const mat4* mat, const mat4* global_mat) {
+        mat4* matrices, mat4* ex_data_matrices, const mat4* mat, const mat4& global_mat) {
         obj_skin* skin = objset_info_storage_get_obj_skin(obj_info);
         if (!skin)
             return;
@@ -2833,13 +3173,13 @@ namespace mdl {
         }
     }
 
-    void DispManager::entry_obj_etc(const mat4* mat, EtcObj* etc, bool local) {
+    void DispManager::entry_obj_etc(const mat4& mat, const EtcObj& etc, bool local) {
         ObjData* data = alloc_obj_data(mdl::OBJ_KIND_ETC);
         if (!data)
             return;
 
         data->init_etc(mat, etc);
-        if (etc->color.a == 0xFF) {
+        if (etc.color.a == 0xFF) {
             if (!local && (obj_flags & OBJ_SHADOW))
                 entry_list((mdl::ObjType)(OBJ_TYPE_SHADOW_CHARA + shadow_type), data);
             entry_list(local ? OBJ_TYPE_OPAQUE_LOCAL : OBJ_TYPE_OPAQUE, data);
@@ -2848,7 +3188,7 @@ namespace mdl {
             entry_list(local ? OBJ_TYPE_TRANSLUCENT_LOCAL : OBJ_TYPE_TRANSLUCENT, data);
     }
 
-    void DispManager::entry_obj_user(const mat4* mat, UserArgsFunc func, void* data, ObjType type) {
+    void DispManager::entry_obj_user(const mat4& mat, UserArgsFunc func, void* data, ObjType type) {
         ObjData* _data = alloc_obj_data(OBJ_KIND_USER);
         if (_data) {
             _data->init_user(mat, func, data);
@@ -2992,7 +3332,11 @@ namespace mdl {
     }
 
     mdl::ObjList& DispManager::get_obj_list(mdl::ObjType type) {
-        if (type >= OBJ_TYPE_MAX)
+        if (type >= OBJ_TYPE_LOCAL_MAX)
+#pragma warning(suppress: 33010)
+#pragma warning(suppress: 33011)
+            return rctx->obj_reflect[type - OBJ_TYPE_LOCAL_MAX];
+        else if (type >= OBJ_TYPE_MAX)
 #pragma warning(suppress: 33010)
 #pragma warning(suppress: 33011)
             return rctx->obj_local[type - OBJ_TYPE_MAX];
@@ -3121,6 +3465,9 @@ namespace mdl {
         for (prj::list<ObjData*>& i : rctx->obj_local)
             i.clear();
 
+        for (prj::list<ObjData*>& i : rctx->obj_reflect)
+            i.clear();
+
         buffer_reset();
     }
 
@@ -3128,7 +3475,7 @@ namespace mdl {
         chara_color = value;
     }
 
-    void DispManager::set_culling_finc(bool(FASTCALL* func)(obj_bounding_sphere*)) {
+    void DispManager::set_culling_func(bool(FASTCALL* func)(const obj_bounding_sphere*)) {
         culling_func = func;
     }
 
@@ -3224,7 +3571,7 @@ namespace mdl {
         vec3 pos = 0.0f;
         sub_1405E8A20(shadow_ptr_get(), 0, &pos);
         disp_manager->set_shadow_type(SHADOW_CHARA);
-        disp_manager->entry_obj_by_object_info(&mat, object_info((uint16_t)id, (uint16_t)set_id));
+        disp_manager->entry_obj_by_object_info(mat, object_info((uint16_t)id, (uint16_t)set_id));
         disp_manager->set_obj_flags((mdl::ObjFlags)0);
     }
 
@@ -3237,7 +3584,7 @@ namespace mdl {
         mat4 mat;
         mat4_translate(&aabb->center, &mat);
         mat4_transpose(&mat, &mat);
-        disp_manager->entry_obj_etc(&mat, &etc);
+        disp_manager->entry_obj_etc(mat, etc);
     }
 
     HOOK(void, FASTCALL, MeshDw__DrawObjBoundingSphere, 0x000000014031AFE0, obj_bounding_sphere* bounding_sphere, color4u8_bgra color) {
@@ -3252,7 +3599,7 @@ namespace mdl {
         mat4 mat;
         mat4_translate(&bounding_sphere->center, &mat);
         mat4_transpose(&mat, &mat);
-        disp_manager->entry_obj_etc(&mat, &etc);
+        disp_manager->entry_obj_etc(mat, etc);
     }
 
     HOOK(void, FASTCALL, DispManager__entry_obj, 0x00000001404379E0,
@@ -3264,20 +3611,20 @@ namespace mdl {
         abort();
     }
 
-    HOOK(void, FASTCALL, DispManager__entry_obj_etc, 0x00000001404395C0, mdl::EtcObj* etc) {
-        disp_manager->entry_obj_etc(&mat4_identity, etc);
+    HOOK(void, FASTCALL, DispManager__entry_obj_etc, 0x00000001404395C0, const mdl::EtcObj& etc) {
+        disp_manager->entry_obj_etc(mat4_identity, etc);
     }
 
 
 #if SHARED_OBJECT_BUFFER
     HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
         obj_mesh_vertex_buffer_aft* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
-        disp_manager->entry_obj_by_obj(rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
+        disp_manager->entry_obj_by_obj(*rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
     }
 #else
     HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
         obj_mesh_vertex_buffer* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
-        disp_manager->entry_obj_by_obj(rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
+        disp_manager->entry_obj_by_obj(*rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
     }
 #endif
 
@@ -3294,7 +3641,7 @@ namespace mdl {
         mat4 mat;
         mat4_translate(pos, &mat);
         mat4_transpose(&mat, &mat);
-        disp_manager->entry_obj_etc(&mat, &etc);
+        disp_manager->entry_obj_etc(mat, etc);
     }
 
     void disp_manager_patch() {

@@ -4,7 +4,6 @@
 */
 
 #include "glitter.hpp"
-#include "../../KKdLib/prj/algorithm.hpp"
 #include "../object.hpp"
 #include "../texture.hpp"
 

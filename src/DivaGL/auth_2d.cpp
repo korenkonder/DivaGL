@@ -217,7 +217,7 @@ void aet_layout_data::put_sprite(int32_t spr_id, spr::SprAttr attr,
     args.prio = prio;
     if (pos)
         *(vec2*)&args.trans.x += *pos;
-    spr::put_sprite(&args);
+    spr::put_sprite(args);
 }
 
 void aet_layout_data::set_args(const aet_layout_data* layout, spr::SprArgs* args) {

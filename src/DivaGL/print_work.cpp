@@ -169,7 +169,7 @@ void PrintWork::DrawTextMesh(app::text_flags flags, sprite_text_mesh& mesh) {
         }
         args.SetVertexArray(mesh.vertices.data(), mesh.vertices.size());
         args.id.index = mesh.sprite_id;
-        spr::put_sprite(&args);
+        spr::put_sprite(args);
 
         for (spr::SpriteVertex& i : mesh.vertices) {
             i.color.r = color.r;
@@ -184,7 +184,7 @@ void PrintWork::DrawTextMesh(app::text_flags flags, sprite_text_mesh& mesh) {
     if (flags & app::TEXT_FLAG_FONT)
         args.shader = SHADER_FT_FONT;
     args.id.index = mesh.sprite_id;
-    spr::put_sprite(&args);
+    spr::put_sprite(args);
 }
 
 void PrintWork::FillRectangle(rectangle rect) {

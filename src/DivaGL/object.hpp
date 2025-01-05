@@ -288,9 +288,12 @@ struct obj_material_data {
 struct obj_sub_mesh_attrib_member {
     uint32_t recieve_shadow : 1;
     uint32_t cast_shadow : 1;
-    uint32_t transparent : 1;
+    uint32_t translucent : 1;
     uint32_t cloth : 1;
-    uint32_t dummy : 28;
+    uint32_t no_reflect : 1; // Own stuff
+    uint32_t reflect : 1; // Own stuff
+    uint32_t reflect_cam_back : 1; // Own stuff
+    uint32_t dummy : 25; // 28
 };
 
 union obj_sub_mesh_attrib {
@@ -309,7 +312,7 @@ struct obj_sub_mesh {
     obj_primitive_type primitive_type;
     obj_index_format index_format;
     int32_t num_index;
-    uint16_t* index_array;
+    void* index_array;
     obj_sub_mesh_attrib attrib;
     uint32_t reserved[4];
     obj_axis_aligned_bounding_box* axis_aligned_bounding_box;
@@ -325,7 +328,11 @@ struct obj_mesh_attrib_member {
     uint32_t billboard_y_axis : 1;
     uint32_t translucent_sort_by_radius : 1;
     uint32_t billboard : 1;
-    uint32_t dummy : 26; // 28
+    uint32_t no_reflect : 1; // Own stuff
+    uint32_t reflect : 1; // Own stuff
+    uint32_t reflect_cam_back : 1; // Own stuff
+    uint32_t disable_aabb_culling : 1; // Own stuff
+    uint32_t dummy : 22; // 28
     uint32_t compression : 2; // Own stuff
 };
 
@@ -611,6 +618,6 @@ extern int32_t obj_material_texture_type_get_texture_index(
     obj_material_texture_type type, int32_t base_index);
 
 extern void obj_skin_set_matrix_buffer(obj_skin* s, mat4* matrices,
-    mat4* ex_data_matrices, mat4* matrix_buffer, const mat4* mat, const mat4* global_mat);
+    mat4* ex_data_matrices, mat4* matrix_buffer, const mat4* mat, const mat4& global_mat);
 
 extern void object_patch();

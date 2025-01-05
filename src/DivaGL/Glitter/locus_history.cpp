@@ -55,5 +55,4 @@ namespace Glitter {
             hist_data->translation = temp;
         }
     }
-
 }

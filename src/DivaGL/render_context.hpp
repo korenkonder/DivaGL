@@ -451,6 +451,7 @@ struct render_context {
     int32_t screen_height;
 
     mdl::ObjList obj_local[mdl::OBJ_TYPE_LOCAL_MAX - mdl::OBJ_TYPE_MAX];
+    mdl::ObjList obj_reflect[mdl::OBJ_TYPE_REFLECT_MAX - mdl::OBJ_TYPE_LOCAL_MAX];
 
     render_context();
     ~render_context();

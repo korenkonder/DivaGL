@@ -263,9 +263,9 @@ namespace spr {
 
     static_assert(sizeof(spr::SprArgs) == 0xE8, "\"spr::SprArgs\" struct should have a size of 0xE8");
 
-    extern void(FASTCALL* put_cross)(const mat4* mat, color4u8 color_x, color4u8 color_y, color4u8 color_z);
-    extern void(FASTCALL* put_rgb_cross)(const mat4* mat);
-    extern spr::SprArgs* (FASTCALL* put_sprite)(const spr::SprArgs* args);
+    extern void(FASTCALL* put_cross)(const mat4& mat, color4u8 color_x, color4u8 color_y, color4u8 color_z);
+    extern void(FASTCALL* put_rgb_cross)(const mat4& mat);
+    extern spr::SprArgs* (FASTCALL* put_sprite)(const spr::SprArgs& args);
 
     vec2 proj_sprite_3d_line(vec3 vec, bool offset);
 

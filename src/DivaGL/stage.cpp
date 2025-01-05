@@ -4,8 +4,9 @@
 */
 
 #include "stage.hpp"
+#include "../KKdLib/hash.hpp"
 #include "../KKdLib/mat.hpp"
-#include "../KKdLib/vec.hpp"
+#include "pv_game/firstread.hpp"
 #include "object.hpp"
 #include "render_context.hpp"
 #include <Helpers.h>
@@ -80,12 +81,53 @@ static_assert(sizeof(stage) == 0x68, "\"stage\" struct should have a size of 0x6
 extern size_t(FASTCALL* stage_data_handler_get_stage_data_count)() = (size_t(FASTCALL*)())0x000000014064AFC0;
 
 static bool object_bounding_sphere_check_visibility_shadow(obj_bounding_sphere* sphere, mat4* mat);
-static bool object_bounding_sphere_check_visibility_shadow_chara(obj_bounding_sphere* sphere);
-static bool object_bounding_sphere_check_visibility_shadow_stage(obj_bounding_sphere* sphere);
+static bool object_bounding_sphere_check_visibility_shadow_chara(const obj_bounding_sphere* sphere);
+static bool object_bounding_sphere_check_visibility_shadow_stage(const obj_bounding_sphere* sphere);
+
+bool& chara_reflect = *(bool*)0x00000001411ADAFC;
+
+HOOK(void, FASTCALL, stage__set, 0x0000000140647710, stage* prev, stage* curr) {
+    originalstage__set(prev, curr);
+
+    extern bool reflect_full;
+    extern const firstread* firstread_ptr;
+    if (reflect_full && firstread_ptr && firstread_ptr->stage_data_array && (!curr || prev != curr) && curr) {
+        const firstread_stage_data_array* stage_data_array = firstread_ptr->stage_data_array;
+
+        ::stage_data* stage_data = curr->stage_data;
+        const uint64_t name_hash = hash_utf8_xxh3_64bits(stage_data->name);
+        const uint32_t num_stage_data = stage_data_array->num_stage_data;
+        for (uint32_t i = 0; i < num_stage_data; i++) {
+            if (hash_utf8_xxh3_64bits(stage_data_array->stage_data_array[i].name) != name_hash)
+                continue;
+
+            const firstread_stage_data* frg_stage_data = &stage_data_array->stage_data_array[i];
+
+            chara_reflect = false;
+            render_manager.reflect_type = (stage_data_reflect_type)frg_stage_data->reflect_type;
+
+            if (frg_stage_data->reflect) {
+                const stage_data_reflect* reflect = frg_stage_data->reflect;
+                render_manager.pass_sw[rndr::RND_PASSID_REFLECT] = true;
+                render_manager.reflect_blur_num = reflect->blur_num;
+                render_manager.reflect_blur_filter = (blur_filter_mode)reflect->blur_filter;
+                render_manager.reflect = true;
+                reflect_refract_resolution_mode  mode = REFLECT_REFRACT_RESOLUTION_512x512;
+                if (frg_stage_data->reflect_type != STAGE_DATA_REFLECT_REFLECT_MAP)
+                    mode = reflect->mode;
+                render_manager.tex_index[0] = mode;
+            }
+            break;
+        }
+    }
+}
 
 HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
     if (s->state != 6 || !s->stage_display)
         return;
+
+    extern bool reflect_full;
+    mdl::obj_reflect_enable = reflect_full;
 
     mdl::DispManager& disp_manager = *::disp_manager;
 
@@ -94,27 +136,27 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
     mat4_transpose(&mat, &mat);
 
     if (s->stage_data->object_ground.not_null() && s->ground)
-        disp_manager.entry_obj_by_object_info(&mat, s->stage_data->object_ground);
+        disp_manager.entry_obj_by_object_info(mat, s->stage_data->object_ground);
 
     if (s->stage_data->object_ring.not_null() && s->ring)
-        disp_manager.entry_obj_by_object_info(&mat, s->stage_data->object_ring);
+        disp_manager.entry_obj_by_object_info(mat, s->stage_data->object_ring);
 
     if (s->stage_data->object_reflect.not_null()) {
         disp_manager.set_obj_flags((mdl::ObjFlags)(mdl::OBJ_NO_TRANSLUCENCY | mdl::OBJ_REFLECT));
-        disp_manager.entry_obj_by_object_info(&mat, s->stage_data->object_reflect);
+        disp_manager.entry_obj_by_object_info(mat, s->stage_data->object_reflect);
         disp_manager.set_obj_flags();
     }
 
     if (s->stage_data->object_refract.not_null()) {
         disp_manager.set_obj_flags((mdl::ObjFlags)(mdl::OBJ_NO_TRANSLUCENCY | mdl::OBJ_REFRACT));
-        disp_manager.entry_obj_by_object_info(&mat, s->stage_data->object_refract);
+        disp_manager.entry_obj_by_object_info(mat, s->stage_data->object_refract);
         disp_manager.set_obj_flags();
     }
 
     if (s->stage_data->object_sky.not_null() && s->sky) {
         mat4 t = s->mat;
         mat4_mul(&mat, &t, &t);
-        disp_manager.entry_obj_by_object_info(&t, s->stage_data->object_sky);
+        disp_manager.entry_obj_by_object_info(t, s->stage_data->object_sky);
     }
 
     if (s->stage_data->lens_flare_texture != -1 && s->lens_flare) {
@@ -131,14 +173,16 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
             rend->lens_shaft_inv_scale = s->stage_data->lens_shaft_inv_scale;
         }
     }
+
+    mdl::obj_reflect_enable = false;
 }
 
-static void stage__disp_shadow_object(object_info object, mat4* mat) {
+static void stage__disp_shadow_object(object_info object, const mat4& mat) {
     mdl::DispManager& disp_manager = *::disp_manager;
 
     for (int32_t i = SHADOW_CHARA; i < SHADOW_MAX; i++) {
         disp_manager.set_shadow_type((shadow_type_enum)i);
-        disp_manager.set_culling_finc(i == SHADOW_CHARA
+        disp_manager.set_culling_func(i == SHADOW_CHARA
             ? object_bounding_sphere_check_visibility_shadow_chara
             : object_bounding_sphere_check_visibility_shadow_stage);
         disp_manager.set_obj_flags((mdl::ObjFlags)(mdl::OBJ_NO_TRANSLUCENCY | mdl::OBJ_SHADOW_OBJECT));
@@ -146,7 +190,7 @@ static void stage__disp_shadow_object(object_info object, mat4* mat) {
     }
 
     disp_manager.set_obj_flags();
-    disp_manager.set_culling_finc();
+    disp_manager.set_culling_func();
     disp_manager.set_shadow_type();
 }
 
@@ -159,17 +203,18 @@ HOOK(void, FASTCALL, stage__disp_shadow, 0x00000001406497C0, stage* s) {
     mat4_rotate_y(s->rot_y, &mat);
     mat4_transpose(&mat, &mat);
     if (s->stage_data->object_shadow.not_null())
-        stage__disp_shadow_object(s->stage_data->object_shadow, &mat);
+        stage__disp_shadow_object(s->stage_data->object_shadow, mat);
 }
 
 void stage_patch() {
+    INSTALL_HOOK(stage__set);
     INSTALL_HOOK(stage__disp);
     INSTALL_HOOK(stage__disp_shadow);
 }
 
-static bool object_bounding_sphere_check_visibility_shadow(obj_bounding_sphere* sphere, mat4* mat) {
+static bool object_bounding_sphere_check_visibility_shadow(const obj_bounding_sphere* sphere, mat4* mat) {
     mat4 view;
-    mat4_transpose(&camera_data->view, &view);
+    mat4_transpose(&camera_data.view, &view);
 
     vec3 center;
     mat4_transform_point(mat, &sphere->center, &center);
@@ -188,14 +233,14 @@ static bool object_bounding_sphere_check_visibility_shadow(obj_bounding_sphere* 
     return true;
 }
 
-static bool object_bounding_sphere_check_visibility_shadow_chara(obj_bounding_sphere* sphere) {
+static bool object_bounding_sphere_check_visibility_shadow_chara(const obj_bounding_sphere* sphere) {
     mat4 mat;
     Shadow* shad = shadow_ptr_get();
     mat4_look_at(&shad->view_point[0], &shad->interest[0], &mat);
     return object_bounding_sphere_check_visibility_shadow(sphere, &mat);
 }
 
-static bool object_bounding_sphere_check_visibility_shadow_stage(obj_bounding_sphere* sphere) {
+static bool object_bounding_sphere_check_visibility_shadow_stage(const obj_bounding_sphere* sphere) {
     mat4 mat;
     Shadow* shad = shadow_ptr_get();
     mat4_look_at(&shad->view_point[1], &shad->interest[1], &mat);

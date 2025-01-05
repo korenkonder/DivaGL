@@ -75,6 +75,7 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     Glitter::Patch();
 
     rctx = new render_context;
+    reflect_full_init();
     int32_t ret = originaldata_init();
 
     extern size_t diva_handle;
@@ -98,6 +99,7 @@ HOOK(int32_t, FASTCALL, data_free, 0x000000140192490) {
     rctx->free();
 
     int32_t ret = originaldata_free();
+    reflect_full_free();
     delete rctx;
     rctx = 0;
     return ret;
@@ -156,20 +158,20 @@ HOOK(void, FASTCALL, rndr__Render__movie_texture_free, 0x00000001404B18F0,
 
 HOOK(void, FASTCALL, rndr__RenderManager__rndpass_pre_proc, 0x0000000140502C90) {
     gl_state_begin_event("rndpass_pre_proc");
-    render_manager->render->pre_proc();
+    render_manager.render->pre_proc();
     Glitter::glt_particle_manager->CalcDisp();
     Glitter::glt_particle_manager_x->CalcDisp();
     gl_state_end_event();
 }
 
 HOOK(void, FASTCALL, rndr__RenderManager__render_all, 0x0000000140502CA0) {
-    render_manager->render_all();
+    render_manager.render_all();
 }
 
 HOOK(void, FASTCALL, rndr__RenderManager__rndpass_post_proc, 0x0000000140502C70) {
     gl_state_begin_event("rndpass_post_proc");
-    render_manager->render->post_proc();
-    render_manager->field_31C = false;
+    render_manager.render->post_proc();
+    render_manager.field_31C = false;
     gl_state_end_event();
 }
 

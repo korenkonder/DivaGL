@@ -166,6 +166,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="mdl\disp_manager.cpp" />
     <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="pv_game\dsc.cpp" />
+    <ClCompile Include="pv_game\firstread.cpp" />
     <ClCompile Include="pv_game\pvpp.cpp" />
     <ClCompile Include="pv_game\pvsr.cpp" />
     <ClCompile Include="pv_game\pv_game.cpp" />
@@ -225,6 +226,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="mdl\disp_manager.hpp" />
     <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="pv_game\dsc.hpp" />
+    <ClInclude Include="pv_game\firstread.hpp" />
     <ClInclude Include="pv_game\pvpp.hpp" />
     <ClInclude Include="pv_game\pvsr.hpp" />
     <ClInclude Include="pv_game\pv_game.hpp" />

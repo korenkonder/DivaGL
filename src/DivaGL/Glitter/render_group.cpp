@@ -24,7 +24,7 @@ namespace Glitter {
 
             vec3 axis;
             float_t angle;
-            axis_angle_from_vectors(&axis, &angle, &vec1, &vec2);
+            axis_angle_from_vectors(axis, angle, vec1, vec2);
             mat4_mul_rotation(&mat, &axis, angle, &mat);
         }
         else
@@ -47,7 +47,7 @@ namespace Glitter {
 
             vec3 axis;
             float_t angle;
-            axis_angle_from_vectors(&axis, &angle, &vec1, &vec2);
+            axis_angle_from_vectors(axis, angle, vec1, vec2);
             mat4_mul_rotation(&mat, &axis, angle, &mat);
         }
         return mat;
@@ -467,7 +467,7 @@ namespace Glitter {
 
         vec3 axis;
         float_t angle;
-        axis_angle_from_vectors(&axis, &angle, &vec1, &vec2);
+        axis_angle_from_vectors(axis, angle, vec1, vec2);
 
         mat4 mat = mat4_identity;
         mat4_mul_rotation(&mat, &axis, angle, &mat);
@@ -487,7 +487,7 @@ namespace Glitter {
 
         vec3 axis;
         float_t angle;
-        axis_angle_from_vectors(&axis, &angle, &vec1, &vec2);
+        axis_angle_from_vectors(axis, angle, vec1, vec2);
 
         mat4 mat = mat4_identity;
         mat4_mul_rotation(&mat, &axis, angle, &mat);
@@ -509,7 +509,7 @@ namespace Glitter {
 
         vec3 axis;
         float_t angle;
-        axis_angle_from_vectors(&axis, &angle, &vec1, &vec2);
+        axis_angle_from_vectors(axis, angle, vec1, vec2);
 
         mat4 mat = mat4_identity;
         mat4_mul_rotation(&mat, &axis, angle, &mat);
@@ -529,7 +529,7 @@ namespace Glitter {
 
         vec3 axis;
         float_t angle;
-        axis_angle_from_vectors(&axis, &angle, &vec1, &vec2);
+        axis_angle_from_vectors(axis, angle, vec1, vec2);
 
         mat4 mat = mat4_identity;
         mat4_mul_rotation(&mat, &axis, angle, &mat);

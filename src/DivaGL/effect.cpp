@@ -554,7 +554,7 @@ void leaf_particle_draw() {
     shader_data.g_transform[1] = temp.row1;
     shader_data.g_transform[2] = temp.row2;
     shader_data.g_transform[3] = temp.row3;
-    camera_data->get_view_point(shader_data.g_view_pos);
+    camera_data.get_view_point(shader_data.g_view_pos);
     shader_data.g_color = stage_param_data_leaf_current->color;
     rctx->get_scene_light(&shader_data.g_light_env_stage_diffuse,
         &shader_data.g_light_env_stage_specular,
@@ -662,7 +662,7 @@ void particle_draw() {
     shader_data.g_transform[1] = temp.row1;
     shader_data.g_transform[2] = temp.row2;
     shader_data.g_transform[3] = temp.row3;
-    camera_data->get_view_point(shader_data.g_view_pos);
+    camera_data.get_view_point(shader_data.g_view_pos);
     light_chara.get_diffuse(shader_data.g_light_env_chara_diffuse);
     light_chara.get_specular(shader_data.g_light_env_chara_specular);
     particle_scene_ubo.WriteMemory(shader_data);
@@ -690,7 +690,7 @@ void snow_particle_draw() {
     gl_state_enable_depth_test();
     gl_state_set_depth_mask(GL_FALSE);
 
-    float_t point_attenuation = powf(tanf((float_t)camera_data->fov
+    float_t point_attenuation = powf(tanf((float_t)camera_data.fov
         * 0.5f * DEG_TO_RAD_FLOAT) * 3.4f, 2.0f) * 0.1f;
 
     snow_particle_scene_shader_data snow_scene = {};
@@ -741,7 +741,7 @@ void snow_particle_draw() {
     snow_particle_scene_ubo.Bind(0);
     snow_particle_batch_ubo.Bind(1);
 
-    point_attenuation = powf(tanf((float_t)camera_data->fov
+    point_attenuation = powf(tanf((float_t)camera_data.fov
         * 0.5f * DEG_TO_RAD_FLOAT) * 3.4f, 2.0f) * 0.06f;
 
     snow_scene.g_state_point_attenuation = { 0.0f, 0.0f, point_attenuation, 0.0f };
@@ -794,7 +794,7 @@ HOOK(void, FASTCALL, EffectFogRing__dest, 0x0000000140348090, EffectFogRing* fog
 
 HOOK(void, FASTCALL, EffectFogRing__disp, 0x0000000140348120, EffectFogRing* fog_ring) {
     if (fog_ring->enable && fog_ring->display)
-        disp_manager->entry_obj_user(&mat4_identity,
+        disp_manager->entry_obj_user(mat4_identity,
             (mdl::UserArgsFunc)draw_fog_particle, fog_ring, mdl::OBJ_TYPE_USER);
 }
 
@@ -1074,7 +1074,7 @@ HOOK(void, FASTCALL, EffectRipple__draw_static, 0x000000014035AA50, void* data) 
 HOOK(void, FASTCALL, EffectRipple__disp_particles, 0x000000014035AD80,
     EffectRipple* effect_ripple, ripple_struct* data) {
     if (data->count > 0)
-        disp_manager->entry_obj_user(&mat4_identity,
+        disp_manager->entry_obj_user(mat4_identity,
             (mdl::UserArgsFunc)draw_ripple_particles, data, mdl::OBJ_TYPE_USER);
 }
 
@@ -1329,7 +1329,7 @@ HOOK(void, FASTCALL, water_particle__disp, 0x0000000140364090, water_particle* w
     if (!water_ptcl->splash)
         return;
 
-    disp_manager->entry_obj_user(&mat4_identity,
+    disp_manager->entry_obj_user(mat4_identity,
         (mdl::UserArgsFunc)draw_water_particle, water_ptcl, mdl::OBJ_TYPE_TRANSLUCENT);
 
     EffectRipple* effect_ripple = effect_ripple_data_get();
@@ -1406,7 +1406,7 @@ void EffectFogRing::draw() {
         return;
 
     draw_state.set_fog_height(true);
-    RenderTexture& rt = render_manager->get_render_texture(8);
+    RenderTexture& rt = render_manager.get_render_texture(8);
     rt.Bind();
     gl_state_set_viewport(0, 0,
         rt.color_texture->get_width_align_mip_level(),
@@ -1416,7 +1416,7 @@ void EffectFogRing::draw() {
     if (disp_manager->get_obj_count(mdl::OBJ_TYPE_USER))
         disp_manager->draw(mdl::OBJ_TYPE_USER);
     gl_state_bind_framebuffer(0);
-    render_manager->set_effect_texture(rt.color_texture);
+    render_manager.set_effect_texture(rt.color_texture);
     gl_state_get_error();
 }
 
@@ -1475,7 +1475,7 @@ void EffectRipple::draw() {
 
     RenderTexture* rt[3];
     for (int32_t i = 0, j = 2; i < 3; i++, j++)
-        rt[i] = &render_manager->get_render_texture(
+        rt[i] = &render_manager.get_render_texture(
             use_float_ripplemap ? j : (j + 3));
 
     if (update) {
@@ -1522,8 +1522,8 @@ void EffectRipple::draw() {
     if (!use_float_ripplemap)
         v11 += 3;
 
-    render_manager->set_effect_texture(
-        render_manager->get_render_texture(v11).color_texture);
+    render_manager.set_effect_texture(
+        render_manager.get_render_texture(v11).color_texture);
 
     update = false;
 
@@ -2016,7 +2016,7 @@ static void draw_ripple_particles(ripple_struct* data, mat4* mat) {
 
     int32_t size = (int32_t)(data->size + 0.5f);
 
-    RenderTexture& rt = render_manager->get_render_texture(
+    RenderTexture& rt = render_manager.get_render_texture(
         effect_ripple_data_get()->use_float_ripplemap ? 2 : 5);
     int32_t width = rt.GetWidth();
     int32_t height = rt.GetHeight();

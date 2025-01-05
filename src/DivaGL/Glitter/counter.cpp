@@ -6,7 +6,7 @@
 #include "glitter.hpp"
 
 namespace Glitter {
-    Counter* counter = (Counter*)0x0000000141199CB0;
+    Counter& counter = *(Counter*)0x0000000141199CB0;
 
     void Counter::Increment() {
         value++;

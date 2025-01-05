@@ -147,11 +147,11 @@ static const GLenum spr_blend_param[6][4] = {
 };
 
 namespace spr {
-    void(FASTCALL* put_cross)(const mat4* mat, color4u8 color_x, color4u8 color_y, color4u8 color_z)
-        = (void(FASTCALL*)(const mat4 * mat, color4u8 color_x, color4u8 color_y, color4u8 color_z))0x00000001404BC920;
-    void(FASTCALL* put_rgb_cross)(const mat4* mat) = (void(FASTCALL*)(const mat4 * mat))0x00000001404BC8F0;
-    spr::SprArgs* (FASTCALL* put_sprite)(const spr::SprArgs* args)
-        = (spr::SprArgs * (FASTCALL*)(const spr::SprArgs * args))0x0000000140640740;
+    void(FASTCALL* put_cross)(const mat4& mat, color4u8 color_x, color4u8 color_y, color4u8 color_z)
+        = (void(FASTCALL*)(const mat4 & mat, color4u8 color_x, color4u8 color_y, color4u8 color_z))0x00000001404BC920;
+    void(FASTCALL* put_rgb_cross)(const mat4& mat) = (void(FASTCALL*)(const mat4 & mat))0x00000001404BC8F0;
+    spr::SprArgs* (FASTCALL* put_sprite)(const spr::SprArgs& args)
+        = (spr::SprArgs * (FASTCALL*)(const spr::SprArgs & args))0x0000000140640740;
 
     SprArgs::SprArgs() : kind(), attr(), blend(), index(), layer(),
         prio(), resolution_mode_screen(), resolution_mode_sprite(), texture(),
@@ -235,13 +235,13 @@ namespace spr {
 
     vec2 proj_sprite_3d_line(vec3 vec, bool offset) {
         mat4 view;
-        mat4_transpose(&camera_data->view, &view);
+        mat4_transpose(&camera_data.view, &view);
 
         mat4_transform_point(&view, &vec, &vec);
         if (fabsf(vec.z) < 1.0e-10f)
             return 0.0f;
 
-        vec2 sc_vec = camera_data->depth * *(vec2*)&vec.x * (1.0f / vec.z);
+        vec2 sc_vec = camera_data.depth * *(vec2*)&vec.x * (1.0f / vec.z);
 
         resolution_struct* res_wind_int = res_window_internal_get();
         sc_vec.x = (float_t)res_wind_int->width * 0.5f - sc_vec.x;
@@ -274,7 +274,7 @@ namespace spr {
         args.color = color;
         args.SetSpriteSize({ p2.x - p1.x, p2.y - p1.y });
         enum_or(args.attr, SPR_ATTR_MATRIX);
-        spr::put_sprite(&args);
+        spr::put_sprite(args);
     }
 
     void put_sprite_line_list(vec2* points, size_t count, resolution_mode mode,
@@ -297,7 +297,7 @@ namespace spr {
         }
 
         args.SetVertexArray(vertex_array.data(), vertex_array.size());
-        spr::put_sprite(&args);
+        spr::put_sprite(args);
     }
 
     void put_sprite_multi(rectangle rect, resolution_mode mode, spr::SprPrio prio, color4u8 color, int32_t layer) {
@@ -313,7 +313,7 @@ namespace spr {
         args.color = color;
         args.SetSpriteSize(rect.size);
         enum_or(args.attr, SPR_ATTR_MATRIX);
-        spr::put_sprite(&args);
+        spr::put_sprite(args);
     }
 
     void put_sprite_rect(rectangle rect, resolution_mode mode, spr::SprPrio prio, color4u8 color, int32_t layer) {
@@ -329,7 +329,7 @@ namespace spr {
         args.color = color;
         args.SetSpriteSize(rect.size);
         enum_or(args.attr, SPR_ATTR_MATRIX);
-        spr::put_sprite(&args);
+        spr::put_sprite(args);
     }
 
     void put_sprite_triangles(SpriteVertex* vert, size_t num, resolution_mode mode,
@@ -345,7 +345,7 @@ namespace spr {
             args.id.info = sprite_database_get_spr_by_id(spr_id)->info;
         enum_or(args.attr, SPR_ATTR_MATRIX);
         args.SetVertexArray(vert, num);
-        spr::put_sprite(&args);
+        spr::put_sprite(args);
     }
 
     SpriteManager::RenderData::RenderData() {
@@ -481,7 +481,7 @@ namespace spr {
                 float_t sprite_half_width = (float_t)res_window_get()->width * 0.5f;
                 float_t sprite_half_height = (float_t)res_window_get()->height * 0.5f;
 
-                float_t aet_depth = camera_data->aet_depth;
+                float_t aet_depth = camera_data.aet_depth;
                 float_t aet_depth_1 = 1.0f / aet_depth;
 
                 float_t v15a = sprite_half_height * aspect[i] * 0.2f * aet_depth_1;
@@ -1441,8 +1441,8 @@ void sprite_manager_set_res(double_t aspect, int32_t width, int32_t height) {
 
 void sprite_manager_set_view_projection(bool aet_3d) {
     view_projection_aet = aet_3d
-        ? camera_data->view_projection_aet_3d
-        : camera_data->view_projection_aet_2d;
+        ? camera_data.view_projection_aet_3d
+        : camera_data.view_projection_aet_2d;
 }
 
 void sprite_manager_free() {

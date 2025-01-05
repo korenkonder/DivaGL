@@ -262,7 +262,7 @@ void RobOsage::SetRot(float_t rot_y, float_t rot_z) {
     skin_param_ptr->rot.z = rot_z * DEG_TO_RAD_FLOAT;
 }
 
-void rob_chara_item_equip_object::disp(const mat4* mat) {
+void rob_chara_item_equip_object::disp(const mat4& mat) {
     if (obj_info.is_null())
         return;
 
@@ -277,7 +277,7 @@ void rob_chara_item_equip_object::disp(const mat4* mat) {
         disp_manager->entry_obj_by_object_info_object_skin(obj_info,
             &texture_pattern, &texture_data, alpha, mats, ex_data_bone_mats.data(), 0, mat);
 
-        rob_chara_item_equip_mat = mat;
+        rob_chara_item_equip_mat = &mat;
 
         for (ExNodeBlock*& i : node_blocks)
             i->__vftable->Disp(i);
@@ -615,7 +615,7 @@ static void sub_140512C20(rob_chara_item_equip* rob_itm_equip) {
     int32_t tex_pat_count = (int32_t)rob_itm_equip->texture_pattern.size();
     if (tex_pat_count)
         disp_manager->set_texture_pattern(tex_pat_count, rob_itm_equip->texture_pattern.data());
-    disp_manager->entry_obj_by_object_info(&mat, rob_itm_equip->field_D0);
+    disp_manager->entry_obj_by_object_info(mat, rob_itm_equip->field_D0);
     if (tex_pat_count)
         disp_manager->set_texture_pattern();
 }
@@ -633,6 +633,8 @@ static float_t sub_140512F60(rob_chara_item_equip* rob_itm_equip) {
 
 HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
     rob_chara_item_equip* rob_item_equip, int32_t chara_id) {
+    extern bool reflect_full;
+    mdl::obj_reflect_enable = reflect_full;
 
     mdl::ObjFlags flags = (mdl::ObjFlags)0;
     if (chara_reflect)
@@ -668,13 +670,13 @@ HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
 
     disp_manager.set_texture_color_coefficients(rob_item_equip->texture_color_coefficients);
     disp_manager.set_wet_param(rob_item_equip->wet);
-    render_manager->field_31C |= rob_item_equip->npr_flag;
+    render_manager.field_31C |= rob_item_equip->npr_flag;
     sub_140512C20(rob_item_equip);
     rob_chara_age_age_array_disp(chara_id, chara_reflect, rob_item_equip->chara_color);
 
     if (rob_item_equip->item_equip_range)
         for (int32_t i = rob_item_equip->first_item_equip_object; i < rob_item_equip->max_item_equip_object; i++)
-            rob_item_equip->item_equip_object[i].disp(&rob_item_equip->mat);
+            rob_item_equip->item_equip_object[i].disp(rob_item_equip->mat);
     else {
         for (int32_t i = ITEM_ATAMA; i < ITEM_MAX; i++) {
             mdl::ObjFlags chara_flags = (mdl::ObjFlags)0;
@@ -693,7 +695,7 @@ HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
                 enum_and(flags, ~mdl::OBJ_SHADOW);
 
             disp_manager.set_obj_flags((mdl::ObjFlags)(chara_flags | flags | mdl::OBJ_SSS));
-            rob_item_equip->item_equip_object[i].disp(&rob_item_equip->mat);
+            rob_item_equip->item_equip_object[i].disp(rob_item_equip->mat);
         }
     }
     disp_manager.set_texture_color_coefficients(temp_texture_color_coeff);
@@ -701,6 +703,8 @@ HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
     disp_manager.set_chara_color();
     disp_manager.set_obj_flags();
     disp_manager.set_shadow_type();
+
+    mdl::obj_reflect_enable = false;
 }
 
 HOOK(void, FASTCALL, rob_chara_set_chara_size, 0x0000000140516810, rob_chara* rob_chr, float_t value) {
@@ -956,7 +960,7 @@ void rob_chara_age_age_object::disp(size_t chara_index,
 
     static prj::vector<GLuint>* (FASTCALL * rob_chara_age_age_object__get_obj_set_texture)(rob_chara_age_age_object * rob_age_age_obj)
         = (prj::vector<GLuint>*(FASTCALL*)(rob_chara_age_age_object * rob_age_age_obj))0x000000014045A8E0;
-    disp_manager->entry_obj_by_obj(&mat4_identity, &obj,
+    disp_manager->entry_obj_by_obj(mat4_identity, &obj,
         rob_chara_age_age_object__get_obj_set_texture(this),
         &obj_vert_buf, &obj_index_buf, 0, 1.0f);
 }
@@ -992,8 +996,8 @@ void rob_chara_arm_adjust_x::reset() {
 
 static void rob_chara_age_age_disp(rob_chara_age_age* arr,
     int32_t chara_id, bool reflect, bool chara_color) {
-    bool npr = !!render_manager->npr_param;
-    mat4& view = camera_data->view;
+    bool npr = !!render_manager.npr_param;
+    mat4& view = camera_data.view;
     vec3 v11 = *(vec3*)&view.row2;
     arr[chara_id * 3 + 0].disp(chara_id, npr, reflect, v11, chara_color);
     arr[chara_id * 3 + 1].disp(chara_id, npr, reflect, v11, chara_color);

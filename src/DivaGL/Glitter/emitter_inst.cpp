@@ -168,7 +168,7 @@ namespace Glitter {
         switch (data.direction) {
         case DIRECTION_BILLBOARD: {
             if (eff_inst->data.flags & EFFECT_LOCAL) {
-                mat4_transpose(&camera_data->view, &dir_mat);
+                mat4_transpose(&camera_data.view, &dir_mat);
                 mat4_clear_trans(&dir_mat, &dir_mat);
                 mat4_mul(&dir_mat, &mat, &dir_mat);
             }
@@ -177,7 +177,7 @@ namespace Glitter {
 
             mat4 inv_view_mat;
             mat3 inv_view_mat3;
-            mat4_transpose(&camera_data->view, &inv_view_mat);
+            mat4_transpose(&camera_data.view, &inv_view_mat);
             mat4_to_mat3(&inv_view_mat, &inv_view_mat3);
             mat3_invert(&inv_view_mat3, &inv_view_mat3);
             mat4_from_mat3(&inv_view_mat3, &inv_view_mat);
@@ -191,7 +191,7 @@ namespace Glitter {
             mat4_rotate_x((float_t)-M_PI_2, &dir_mat);
             break;
         case DIRECTION_BILLBOARD_Y_AXIS:
-            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
+            mat4_rotate_y(camera_data.rotation.y, &dir_mat);
             break;
         default:
             mult = false;
@@ -287,7 +287,7 @@ namespace Glitter {
         switch (data.direction) {
         case DIRECTION_BILLBOARD: {
             mat3 inv_view_mat3;
-            mat4_transpose(&camera_data->view, &dir_mat);
+            mat4_transpose(&camera_data.view, &dir_mat);
             mat4_to_mat3(&dir_mat, &inv_view_mat3);
             mat3_invert(&inv_view_mat3, &inv_view_mat3);
             mat4_from_mat3(&inv_view_mat3, &dir_mat);
@@ -301,7 +301,7 @@ namespace Glitter {
             mat4_rotate_x((float_t)-M_PI_2, &dir_mat);
             break;
         case DIRECTION_BILLBOARD_Y_AXIS:
-            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
+            mat4_rotate_y(camera_data.rotation.y, &dir_mat);
             break;
         default:
             mult = false;

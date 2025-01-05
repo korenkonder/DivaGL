@@ -662,7 +662,7 @@ namespace Glitter {
             ids[i] = texture_id(0x2A, GPM_VAL->texture_counter++);
 
         txp_set_load(st->data.data(), &eff_group->resources, (uint32_t*)ids);
-        free_def(ids);
+        _operator_delete(ids);
 
         uint32_t* resource_hashes = this->resource_hashes;
 

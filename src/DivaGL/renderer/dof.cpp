@@ -45,7 +45,6 @@ namespace renderer {
                     if (dof_debug_data->flags & DOF_DEBUG_AUTO_FOCUS) {
                         size_t rob_chara_smth = get_rob_chara_smth();
 
-                        size_t rob_chr = 0;
                         for (int32_t i = 0; i < ROB_CHARA_COUNT; i++) {
                             rob_chara* rob_chr = rob_chara_array_get(rob_chara_smth, i);
                             if (!rob_chr || !rob_chr->is_visible())
@@ -59,24 +58,24 @@ namespace renderer {
                             mat4_get_translation(&mat, &chara_trans);
 
                             mat4 view;
-                            mat4_transpose(&camera_data->view, &view);
+                            mat4_transpose(&camera_data.view, &view);
                             focus = -vec3::dot(*(vec3*)&view.row2, chara_trans) - view.row2.w - 0.1f;
                             break;
                         }
                     }
 
-                    focus = max_def(focus, camera_data->min_distance);
+                    focus = max_def(focus, camera_data.min_distance);
                     apply_physical(rt, rt->GetColorTex(), rt->GetDepthTex(),
-                        camera_data->min_distance, camera_data->max_distance,
+                        camera_data.min_distance, camera_data.max_distance,
                         focus, dof_debug_data->focal_length,
-                        camera_data->fov * DEG_TO_RAD_FLOAT,
+                        camera_data.fov * DEG_TO_RAD_FLOAT,
                         dof_debug_data->f_number);
                 }
                 else {
                     float_t fuzzing_range = max_def(dof_debug_data->f2.fuzzing_range, 0.01f);
                     apply_f2(rt, rt->GetColorTex(), rt->GetDepthTex(),
-                        camera_data->min_distance, camera_data->max_distance,
-                        camera_data->fov * DEG_TO_RAD_FLOAT,
+                        camera_data.min_distance, camera_data.max_distance,
+                        camera_data.fov * DEG_TO_RAD_FLOAT,
                         dof_debug_data->f2.focus, dof_debug_data->f2.focus_range,
                         fuzzing_range, dof_debug_data->f2.ratio);
                 }
@@ -86,8 +85,8 @@ namespace renderer {
             float_t fuzzing_range = max_def(dof_pv_data->f2.fuzzing_range, 0.01f);
             if (dof_pv_data->f2.fuzzing_range >= 0.0099999998)
                 apply_f2(rt, rt->GetColorTex(), rt->GetDepthTex(),
-                    camera_data->min_distance, camera_data->max_distance,
-                    camera_data->fov * DEG_TO_RAD_FLOAT,
+                    camera_data.min_distance, camera_data.max_distance,
+                    camera_data.fov * DEG_TO_RAD_FLOAT,
                     dof_pv_data->f2.focus, dof_pv_data->f2.focus_range,
                     fuzzing_range, dof_pv_data->f2.ratio);
             enum_or(dof_debug_data->flags, DOF_DEBUG_ENABLE_DOF);

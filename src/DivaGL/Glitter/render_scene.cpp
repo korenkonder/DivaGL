@@ -9,6 +9,9 @@
 #include "../shader_ft.hpp"
 #include "../wrap.hpp"
 
+extern bool reflect_draw;
+extern mat4 reflect_mat;
+
 namespace Glitter {
     void RenderScene::CalcDisp() {
         disp_quad = 0;
@@ -88,8 +91,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_projection;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->projection, &cam_projection);
+        mat4_transpose(&camera_data.view, &cam_view);
+        mat4_transpose(&camera_data.projection, &cam_projection);
 
         mat4 mat;
         mat4_transpose(&rend_group->mat_draw, &mat);
@@ -368,8 +371,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
+        mat4_transpose(&camera_data.view, &cam_view);
+        mat4_transpose(&camera_data.inv_view, &cam_inv_view);
 
         vec3 x_vec = { 1.0f, 0.0f, 0.0f };
         if (rend_group->flags & PARTICLE_LOCAL) {
@@ -511,8 +514,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
+        mat4_transpose(&camera_data.view, &cam_view);
+        mat4_transpose(&camera_data.inv_view, &cam_inv_view);
 
         mat4 model_mat;
         mat4 view_mat;
@@ -571,7 +574,7 @@ namespace Glitter {
             mat4_rotate_z((float_t)-M_PI_2, &dir_mat);
             break;
         case DIRECTION_BILLBOARD_Y_AXIS:
-            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
+            mat4_rotate_y(camera_data.rotation.y, &dir_mat);
             break;
         default:
             dir_mat = mat4_identity;
@@ -717,7 +720,7 @@ namespace Glitter {
         if (fabsf(rend_group->z_offset) > 0.000001f) {
             use_z_offset = true;
             mat4_get_translation(model_mat, &dist_to_cam);
-            dist_to_cam = camera_data->view_point - dist_to_cam;
+            dist_to_cam = camera_data.view_point - dist_to_cam;
             if (rend_group->flags & PARTICLE_EMITTER_LOCAL) {
                 mat4_normalize_rotation(model_mat, &z_offset_inv_mat);
                 mat4_invert(&z_offset_inv_mat, &z_offset_inv_mat);
@@ -1197,8 +1200,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
+        mat4_transpose(&camera_data.view, &cam_view);
+        mat4_transpose(&camera_data.inv_view, &cam_inv_view);
 
         vec3 x_vec = { 1.0f, 0.0f, 0.0f };
         if (rend_group->flags & PARTICLE_LOCAL) {
@@ -1338,8 +1341,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
+        mat4_transpose(&camera_data.view, &cam_view);
+        mat4_transpose(&camera_data.inv_view, &cam_inv_view);
 
         mat4 model_mat;
         mat4 view_mat;
@@ -1387,7 +1390,7 @@ namespace Glitter {
             mat4_rotate_x((float_t)-M_PI_2, &dir_mat);
             break;
         case DIRECTION_BILLBOARD_Y_AXIS:
-            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
+            mat4_rotate_y(camera_data.rotation.y, &dir_mat);
             break;
         default:
             dir_mat = mat4_identity;
@@ -1532,7 +1535,7 @@ namespace Glitter {
         if (fabsf(rend_group->z_offset) > 0.000001f) {
             use_z_offset = true;
             mat4_get_translation(model_mat, &dist_to_cam);
-            dist_to_cam = camera_data->view_point - dist_to_cam;
+            dist_to_cam = camera_data.view_point - dist_to_cam;
             if (rend_group->flags & PARTICLE_EMITTER_LOCAL) {
                 mat4_normalize_rotation(model_mat, &z_offset_inv_mat);
                 mat4_invert(&z_offset_inv_mat, &z_offset_inv_mat);
@@ -1804,8 +1807,10 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_projection;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->projection, &cam_projection);
+        mat4_transpose(&camera_data.view, &cam_view);
+        if (reflect_draw)
+            mat4_mul(&reflect_mat, &cam_view, &cam_view);
+        mat4_transpose(&camera_data.projection, &cam_projection);
 
         mat4 mat;
         mat4_mul(&rend_group->mat_draw, &cam_view, &mat);
@@ -1979,8 +1984,8 @@ namespace Glitter {
 
         mat4 cam_view;
         mat4 cam_inv_view;
-        mat4_transpose(&camera_data->view, &cam_view);
-        mat4_transpose(&camera_data->inv_view, &cam_inv_view);
+        mat4_transpose(&camera_data.view, &cam_view);
+        mat4_transpose(&camera_data.inv_view, &cam_inv_view);
 
         bool has_scale = false;
         bool emitter_local = false;
@@ -2044,7 +2049,7 @@ namespace Glitter {
             mat4_rotate_x((float_t)-M_PI_2, &dir_mat);
             break;
         case DIRECTION_BILLBOARD_Y_AXIS:
-            mat4_rotate_y(camera_data->rotation.y, &dir_mat);
+            mat4_rotate_y(camera_data.rotation.y, &dir_mat);
             break;
         case DIRECTION_EMITTER_ROTATION:
             emitter_rotation = true;
@@ -2096,6 +2101,8 @@ namespace Glitter {
         const bool object_culling = disp_manager.object_culling;
         if (local)
             disp_manager.object_culling = false;
+        extern bool reflect_full;
+        mdl::obj_reflect_enable = !local && reflect_full;
         disp_manager.set_texture_pattern(0, 0);
 
         RenderElementX* elem = rend_group->elements;
@@ -2159,7 +2166,7 @@ namespace Glitter {
                 elem->mat_draw = mat;
 
                 mat4_transpose(&mat, &mat);
-                if (disp_manager.entry_obj_by_object_info(&mat,
+                if (disp_manager.entry_obj_by_object_info(mat,
                     rend_group->object, &elem->color, 0, local))
                     disp++;
 
@@ -2170,6 +2177,7 @@ namespace Glitter {
         rend_group->disp = disp;
         if (local)
             disp_manager.object_culling = object_culling;
+        mdl::obj_reflect_enable = false;
     }
 
     size_t RenderSceneX::GetCtrlCount(ParticleType type) {

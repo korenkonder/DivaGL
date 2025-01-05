@@ -63,7 +63,7 @@ namespace Glitter {
         ext_anim = 0;
         render_scene = {};
 
-        Glitter::counter->Increment();
+        Glitter::counter.Increment();
 
         if (load_flags & 0x01)
             enum_or(flags, EFFECT_INST_FLAG_23);
@@ -71,7 +71,7 @@ namespace Glitter {
         if (data.flags & EFFECT_USE_SEED)
             random = data.seed;
         else
-            random = Glitter::counter->GetValue();
+            random = Glitter::counter.GetValue();
         random_shared.value = random;
 
         if (!(eff->data.flags & EFFECT_LOCAL) && data.ext_anim) {

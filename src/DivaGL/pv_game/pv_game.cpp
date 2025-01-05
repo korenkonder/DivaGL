@@ -11,6 +11,7 @@
 #include "../auth_3d.hpp"
 #include "../print_work.hpp"
 #include "dsc.hpp"
+#include "firstread.hpp"
 #include "pvpp.hpp"
 #include "pvsr.hpp"
 #include <Helpers.h>
@@ -620,25 +621,29 @@ public:
     void stop_current_pv();
 };
 
-struct x_pv_game_str_array {
-    prj::unordered_map<int32_t, prj::unordered_map<int32_t, const char*>> strings;
+struct x_pv_game_firstread {
+    prj::unordered_map<int32_t, prj::unordered_map<int32_t, const char*>> str_array_strings;
     p_file_handler file_handler;
+    const firstread* firstread;
     int32_t lang_sel;
     bool init;
 
-    x_pv_game_str_array();
-    ~x_pv_game_str_array();
+    x_pv_game_firstread();
+    ~x_pv_game_firstread();
 
-    const char* get_string(int32_t id);
+    const char* get_str_array_string(int32_t id);
     void read();
 };
 
 TaskPvGame& task_pv_game = *(TaskPvGame*)0x000000014CC95270;
 TaskPvGameX* task_pv_game_x;
-x_pv_game_str_array* x_pv_game_str_array_ptr;
+const firstread* firstread_ptr;
+x_pv_game_firstread* x_pv_game_firstread_ptr;
 pv_disp2d& pv_disp2d_data = *(pv_disp2d*)0x0000000140C938E0;
 size_t pv_game_ptr = 0x0000000140CDD8D0;
 pv_game_parent& pv_game_parent_data = *(pv_game_parent*)0x0000000140D0B510;
+
+bool reflect_full = false;
 
 bool pv_game_load_state_4_tail_impl() {
     if (task_pv_game_x->use) {
@@ -827,15 +832,15 @@ HOOK(bool, FASTCALL, pv_game_pv_data__load, 0x000000014011B7E0, size_t _this,
 void pv_game_init() {
     if (!task_pv_game_x)
         task_pv_game_x = new (_operator_new(sizeof(TaskPvGameX))) TaskPvGameX;
-    if (!x_pv_game_str_array_ptr)
-        x_pv_game_str_array_ptr = new (_operator_new(sizeof(x_pv_game_str_array))) x_pv_game_str_array;
+    if (!x_pv_game_firstread_ptr)
+        x_pv_game_firstread_ptr = new (_operator_new(sizeof(x_pv_game_firstread))) x_pv_game_firstread;
 }
 
 void pv_game_free() {
-    if (x_pv_game_str_array_ptr) {
-        x_pv_game_str_array_ptr->~x_pv_game_str_array();
-        _operator_delete(x_pv_game_str_array_ptr);
-        x_pv_game_str_array_ptr = 0;
+    if (x_pv_game_firstread_ptr) {
+        x_pv_game_firstread_ptr->~x_pv_game_firstread();
+        _operator_delete(x_pv_game_firstread_ptr);
+        x_pv_game_firstread_ptr = 0;
     }
 
     if (task_pv_game_x) {
@@ -1715,6 +1720,7 @@ void x_pv_game_effect::set_song_effect(int32_t index, int64_t time) {
         i.id.set_repeat(false);
         i.id.set_req_frame(0.0f);
         i.id.set_visibility(true);
+        i.id.set_reflect(reflect_full);
     }
 
     for (x_pv_game_song_effect_glitter& i : song_effect.glitter) {
@@ -1979,7 +1985,7 @@ void x_pv_aet_disp_string::ctrl(const char* name, aet_obj_data* aet) {
 }
 
 static const char* sub_8133DDF8(int32_t id) {
-    return x_pv_game_str_array_ptr->get_string(id);
+    return x_pv_game_firstread_ptr->get_str_array_string(id);
 }
 
 const char* x_pv_str_array_pv::get_song_name(int32_t index) {
@@ -3166,6 +3172,7 @@ void x_pv_game_stage::ctrl(float_t delta_time) {
                     id.set_paused(false);
                     id.set_visibility(false);
                     id.set_frame_rate(&bpm_frame_rate_control);
+                    id.set_reflect(reflect_full);
                     eff_auth_3d.id = id;
                     eff_auth_3d.name = stg_eff_auth_3d.name;
 
@@ -3438,6 +3445,7 @@ void x_pv_game_stage::load_change_effect(int32_t curr_stage_effect, int32_t next
             id.set_paused(false);
             id.set_visibility(false);
             id.set_frame_rate(&bpm_frame_rate_control);
+            id.set_reflect(reflect_full);
             chg_eff_auth_3d.id = id;
             chg_eff_auth_3d.name = stg_chg_eff_auth_3d.name;
 
@@ -3560,6 +3568,7 @@ void x_pv_game_stage::set_change_effect_frame_part_2(float_t frame) {
         id.set_paused(false);
         id.set_visibility(!!(flags & 0x01));
         id.set_frame_rate(&bpm_frame_rate_control);
+        id.set_reflect(reflect_full);
     }
 
     for (x_pv_game_stage_effect_glitter& i : chg_eff.glitter) {
@@ -3649,6 +3658,7 @@ void x_pv_game_stage::set_stage_effect_auth_3d_frame(int32_t stage_effect, float
         id.set_paused(false);
         id.set_visibility(true);
         id.set_frame_rate(&bpm_frame_rate_control);
+        id.set_reflect(reflect_full);
     }
 }
 
@@ -3830,7 +3840,22 @@ TaskPvGameX::~TaskPvGameX() {
 
 bool TaskPvGameX::init() {
     use = true;
-    x_pv_game_str_array_ptr->read();
+    x_pv_game_firstread_ptr->read();
+    reflect_full = false;
+    extern bool config_reflect_full;
+    if (firstread_ptr && firstread_ptr->stage_data_array && config_reflect_full) {
+        const firstread_stage_data_array* stage_data_array = firstread_ptr->stage_data_array;
+        const uint32_t num_stage_data = stage_data_array->num_stage_data;
+        for (uint32_t i = 0; i < num_stage_data; i++) {
+            const firstread_stage_data* stage_data = &stage_data_array->stage_data_array[i];
+            if (stage_data->pv_id == pv_id) {
+                if (stage_data->reflect_type == STAGE_DATA_REFLECT_REFLECT_MAP
+                    && stage_data->reflect && stage_data->reflect_full)
+                    reflect_full = true;
+                break;
+            }
+        }
+    }
     return true;
 }
 
@@ -3909,12 +3934,45 @@ bool TaskPvGameX::ctrl() {
 
 bool TaskPvGameX::dest() {
     unload();
+    reflect_full = false;
     use = false;
     return true;
 }
 
 void TaskPvGameX::disp() {
     data.disp();
+
+    static bool reflect_show;
+    if (reflect_full && reflect_show) {
+        extern RenderTexture* reflect_tex;
+        if (reflect_tex) {
+            const float_t width = 1280.0f;
+            const float_t height = 720.0f;
+
+            const float_t reflection_quality = 1.0f;
+
+            spr::put_sprite_rect({ 0.0f, 0.0f, width, height }, RESOLUTION_MODE_HD,
+                spr::SPR_PRIO_DEFAULT, { 0x00, 0x00, 0x00, 0xFF }, 0);
+
+            spr::SprArgs args;
+            args.resolution_mode_screen = RESOLUTION_MODE_HD;
+            args.resolution_mode_sprite = RESOLUTION_MODE_HD;
+            args.SetSpriteSize({ width, height });
+            args.SetTexturePosSize(0.0f,
+                (float_t)reflect_tex->GetHeight() - (float_t)reflect_tex->GetHeight() * reflection_quality,
+                (float_t)reflect_tex->GetWidth() * reflection_quality,
+                (float_t)reflect_tex->GetHeight() * reflection_quality);
+            args.texture = reflect_tex->color_texture;
+            args.color = color4u8_bgra(0xFF, 0xFF, 0xFF, 0x3F);
+            args.scale.x = 1.0f;
+            args.scale.y = -1.0f;
+            args.center.x = width * 0.5f;
+            args.center.y = height * 0.5f;
+            args.trans.x = width * 0.5f;
+            args.trans.y = height * 0.5f;
+            spr::put_sprite(args);
+        }
+    }
 }
 
 void TaskPvGameX::load(int32_t pv_id, int32_t modules[6]) {
@@ -4076,17 +4134,19 @@ void TaskPvGameX::stop_current_pv() {
     data.stop();
 }
 
-x_pv_game_str_array::x_pv_game_str_array() : init() {
+x_pv_game_firstread::x_pv_game_firstread() : init(), firstread() {
     lang_sel = 0;
 }
 
-x_pv_game_str_array::~x_pv_game_str_array() {
-
+x_pv_game_firstread::~x_pv_game_firstread() {
+    firstread = 0;
+    firstread_ptr = 0;
+    file_handler.reset();
 }
 
-const char* x_pv_game_str_array::get_string(int32_t id) {
-    auto lang_elem = strings.find(lang_sel);
-    if (lang_elem != strings.end()) {
+const char* x_pv_game_firstread::get_str_array_string(int32_t id) {
+    auto lang_elem = str_array_strings.find(lang_sel);
+    if (lang_elem != str_array_strings.end()) {
         auto elem = lang_elem->second.find(id);
         if (elem != lang_elem->second.end())
             return elem->second;
@@ -4094,11 +4154,11 @@ const char* x_pv_game_str_array::get_string(int32_t id) {
     return 0;
 }
 
-void x_pv_game_str_array::read() {
+void x_pv_game_firstread::read() {
     if (init)
         return;
 
-    file_handler.read_file_path("rom/str_array_x.bin", prj::HeapCMallocSystem);
+    file_handler.read_file_path("rom/firstread_x.bin", prj::HeapCMallocSystem);
     file_handler.read_now();
 
     if (!file_handler.get_data() || !file_handler.get_size()) {
@@ -4106,24 +4166,22 @@ void x_pv_game_str_array::read() {
         return;
     }
 
-    size_t data = (size_t)file_handler.get_data();
-    if (*(uint32_t*)data != reverse_endianness_uint32_t('strx')) {
-        init = true;
-        return;
+    firstread = firstread::read(file_handler.get_data(), file_handler.get_size());
+    firstread_ptr = firstread;
+
+    if (firstread->str_array) {
+        const firstread_str_array* str_array = firstread->str_array;
+        const uint32_t lang_count = str_array->num_lang;
+        for (uint32_t i = 0; i < lang_count; i++) {
+            const firstread_str_array_lang* lang_data = &str_array->lang_array[i];
+
+            prj::unordered_map<int32_t, const char*>& strings = str_array_strings[lang_data->lang_id];
+            const uint32_t num_string = lang_data->num_string;
+            for (uint32_t j = 0; j < num_string; j++) {
+                const firstread_str_array_string* string_data = &lang_data->string_array[j];
+                strings[string_data->id] = string_data->str;
+            }
+        }
     }
-
-    uint32_t lang_count = *(uint32_t*)(data + 0x04);
-    size_t lang_data = data + *(uint32_t*)(data + 0x08);
-    for (uint32_t i = lang_count; i; i--, lang_data += 0x0C) {
-        int32_t lang_id = *(int32_t*)lang_data;
-        uint32_t strings_count = *(uint32_t*)(lang_data + 0x04);
-        uint32_t strings_offset = *(uint32_t*)(lang_data + 0x08);
-
-        prj::unordered_map<int32_t, const char*>& strings = this->strings[lang_id];
-        size_t strings_data = data + strings_offset;
-        for (uint32_t j = strings_count; j; j--, strings_data += 0x08)
-            strings[*(int32_t*)strings_data] = (const char*)(data + *(uint32_t*)(strings_data + 0x04));
-    }
-
     init = true;
 }

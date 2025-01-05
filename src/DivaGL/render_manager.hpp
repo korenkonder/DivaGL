@@ -135,10 +135,13 @@ namespace rndr {
 
 extern RenderTexture* litproj_shadow;
 extern RenderTexture* litproj_texture;
-extern rndr::RenderManager* render_manager;
+extern rndr::RenderManager& render_manager;
 
 extern void image_filter_scale(RenderTexture* dst, texture* src, const vec4& scale = 1.0f);
 
 extern void draw_pass_set_camera();
+
+extern void reflect_full_init();
+extern void reflect_full_free();
 
 extern void render_manager_patch();

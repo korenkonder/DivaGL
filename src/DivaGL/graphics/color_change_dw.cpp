@@ -145,7 +145,7 @@ HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* Thi
             args.texture = org_tex;
             if (This->auto_resize)
                 args.SetSpriteSize({ 256.0f, 256.0f });
-            spr::put_sprite(&args);
+            spr::put_sprite(args);
         }
 
         if (chg_tex) {
@@ -156,7 +156,7 @@ HOOK(void, FASTCALL, ColorChangeDw__Draw, 0x00000001402C2170, ColorChangeDw* Thi
                 args.SetSpriteSize({ 256.0f, 256.0f });
                 args.trans.x = 266.0f;
             }
-            spr::put_sprite(&args);
+            spr::put_sprite(args);
         }
     }
 

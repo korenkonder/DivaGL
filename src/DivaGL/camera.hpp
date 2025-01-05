@@ -59,6 +59,6 @@ struct camera_struct {
     static void update_data();
 };
 
-extern camera_struct* camera_data;
+extern camera_struct& camera_data;
 
 extern void camera_patch();

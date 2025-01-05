@@ -116,6 +116,11 @@ namespace prj {
 
     template<class T>
     class ptr_base {
+    public:
+        T* get() const {
+            return ptr;
+        }
+
     private:
         T* ptr;
         ref_count<T>* ref;
@@ -127,6 +132,61 @@ namespace prj {
     template<class T>
     class shared_ptr : public ptr_base<T> {
     public:
+        T* operator->() const {
+            return this->get();
+        }
+
+        operator bool() const {
+            return !!this->get();
+        }
+    };
+
+    struct stack_allocator {
+        size_t size;
+        uint8_t* begin;
+        uint8_t* end;
+        uint8_t* capacity_end;
+
+        inline void* allocate(size_t size) {
+            static void* (*prj__stack_allocator__allocate)(prj::stack_allocator * This, size_t size)
+                = (void* (*)(prj::stack_allocator * This, size_t size))0x000000014009B110;
+            return prj__stack_allocator__allocate(this, size);
+        }
+
+        template <typename T>
+        inline T* allocate() {
+            return new((T*)allocate(sizeof(T))) T;
+        }
+
+        template <typename T>
+        inline T* allocate(size_t size) {
+            if (!size)
+                return 0;
+
+            T* arr = (T*)allocate(sizeof(T) * size);
+            for (size_t i = 0; i < size; i++)
+                new(&arr[i]) T();
+            return arr;
+        }
+
+        template <typename T>
+        inline T* allocate(const T* src) {
+            if (!src)
+                return 0;
+
+            return new((T*)allocate(sizeof(T))) T(*src);
+        }
+
+        template <typename T>
+        inline T* allocate(const T* src, size_t size) {
+            if (!src || !size)
+                return 0;
+
+            T* dst = (T*)allocate(sizeof(T) * size);
+            for (size_t i = 0; i < size; i++)
+                new(&dst[i]) T(src[i]);
+            return dst;
+        }
     };
 
     template<typename T, typename U>

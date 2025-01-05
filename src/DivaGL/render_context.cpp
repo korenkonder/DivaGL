@@ -613,7 +613,7 @@ void render_context::ctrl(bool change_res) {
         return;
 
     if (screen_res_change)
-        render_manager->resize(screen_width, screen_height);
+        render_manager.resize(screen_width, screen_height);
 
     /*if (render_res_change)
           litproj_texture->Init(render_width, render_height, 0, GL_RGBA8, GL_DEPTH_COMPONENT32F);*/
@@ -629,7 +629,7 @@ void render_context::ctrl(bool change_res) {
         };
 
         RenderTexture& render_buffer = render->rend_texture[0];
-        RenderTexture& reflect_buffer = render_manager->get_render_texture(0);
+        RenderTexture& reflect_buffer = render_manager.get_render_texture(0);
         RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
         init_copy_buffer(reflect_buffer, this->reflect_buffer);
         init_copy_buffer(render_buffer, this->render_buffer);
@@ -683,7 +683,7 @@ void render_context::init() {
     };
 
     RenderTexture& render_buffer = render_get()->rend_texture[0];
-    RenderTexture& reflect_buffer = render_manager->get_render_texture(0);
+    RenderTexture& reflect_buffer = render_manager.get_render_texture(0);
     RenderTexture& shadow_buffer = shadow_ptr_get()->render_textures[1];
     init_copy_buffer(reflect_buffer, this->reflect_buffer);
     init_copy_buffer(render_buffer, this->render_buffer);

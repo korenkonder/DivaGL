@@ -19,9 +19,9 @@ void Shadow::ctrl() {
     for (int32_t i = 0; i < 2; i++)
         shadow_enable[i] = false;
 
-    if (render_manager->shadow) {
-        view_mat[0] = camera_data->view;
-        view_mat[1] = camera_data->inv_view;
+    if (render_manager.shadow) {
+        view_mat[0] = camera_data.view;
+        view_mat[1] = camera_data.inv_view;
 
         light_data& light_chara = light_set_data[LIGHT_SET_MAIN].lights[LIGHT_CHARA];
 
