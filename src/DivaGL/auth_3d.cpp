@@ -978,11 +978,15 @@ int32_t auth_3d_data_get_auth_3d_id(uint32_t uid, object_info obj_info,
 }
 
 HOOK(void, FASTCALL, auth_3d_parse, 0x00000001401C15B0, auth_3d* auth) {
+    const int32_t state_before = auth->state;
     originalauth_3d_parse(auth);
-
+    const int32_t state_after = auth->state;
     extern bool reflect_full;
+    if (!reflect_full || state_before != 1 || state_after != 2)
+        return;
+
     extern const firstread* firstread_ptr;
-    if (!reflect_full || !firstread_ptr || !firstread_ptr->auth_3d_array)
+    if (!firstread_ptr || !firstread_ptr->auth_3d_array)
         return;
 
     const firstread_auth_3d_array* auth_3d_array = firstread_ptr->auth_3d_array;

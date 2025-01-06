@@ -28,6 +28,7 @@ struct reflect_full_struct {
     RenderTexture reflect_texture;
     RenderTexture reflect_buffer_texture;
     RenderTexture reflect_contour_texture;
+    renderer::DOF3* dof;
 
     reflect_full_struct();
     ~reflect_full_struct();
@@ -67,6 +68,9 @@ static int32_t draw_pass_3d_translucent_count_layers(int32_t* alpha_array,
 static void draw_pass_3d_translucent_has_objects(bool* arr, mdl::ObjType type);
 
 static void draw_pass_reflect_full(rndr::RenderManager& render_manager);
+
+static bool draw_pass_reflect_get_obj_reflect_surface();
+static bool draw_pass_reflect_get_obj_reflect_surface(mdl::ObjType type);
 
 static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     blur_filter_mode filter, const vec2 res_scale, const vec4 scale, const vec4 offset);
@@ -1285,7 +1289,7 @@ void render_manager_patch() {
     INSTALL_HOOK(render_manager_init_data);
 }
 
-reflect_full_struct::reflect_full_struct() {
+reflect_full_struct::reflect_full_struct() : dof() {
 
 }
 
@@ -1294,6 +1298,8 @@ reflect_full_struct::~reflect_full_struct() {
 }
 
 void reflect_full_struct::free() {
+    delete dof;
+
     reflect_contour_texture.Free();
 
     reflect_buffer_texture.Free();
@@ -1303,12 +1309,20 @@ void reflect_full_struct::free() {
 void reflect_full_struct::init() {
     rndr::Render* render = render_manager.render;
 
-    reflect_texture.Init(render->render_width[0], render->render_height[0],
-        0, GL_RGBA16F, GL_DEPTH_COMPONENT24);
-    reflect_buffer_texture.Init(render->render_width[0], render->render_height[0],
-        0, GL_RGBA16F, GL_DEPTH_COMPONENT24);
+    extern int32_t config_reflect_res_scale;
+    const float_t res_scale = clamp_def((float_t)((double_t)config_reflect_res_scale / 100.0), 0.25f, 1.0f);
+
+    int32_t render_width = (int32_t)prj::roundf((float_t)render->render_width[0] * res_scale);
+    render_width = min_def(max_def(render_width, 128), render->render_width[0]);
+    int32_t render_height = (int32_t)prj::roundf((float_t)render->render_height[0] * res_scale);
+    render_height = min_def(max_def(render_height, 72), render->render_height[0]);
+
+    reflect_texture.Init(render_width, render_height, 0, GL_RGBA16F, GL_DEPTH_COMPONENT24);
+    reflect_buffer_texture.Init(render_width, render_height, 0, GL_RGBA16F, GL_DEPTH_COMPONENT24);
 
     reflect_contour_texture.SetColorDepthTextures(reflect_texture.GetColorTex());
+
+    dof = new renderer::DOF3(render_width, render_height);
 }
 
 void get_reflect_mat() {
@@ -2024,10 +2038,11 @@ static void draw_pass_reflect_full(rndr::RenderManager& render_manager) {
     RenderTexture& refl_buf_tex = reflect_full_ptr->reflect_buffer_texture;
     refl_tex.Bind();
     extern bool reflect_full;
-    if (disp_manager->get_obj_count(mdl::OBJ_TYPE_REFLECT_OPAQUE)
+    if (draw_pass_reflect_get_obj_reflect_surface()
+        && (disp_manager->get_obj_count(mdl::OBJ_TYPE_REFLECT_OPAQUE)
         || disp_manager->get_obj_count(mdl::OBJ_TYPE_REFLECT_TRANSPARENT)
         || disp_manager->get_obj_count(mdl::OBJ_TYPE_REFLECT_TRANSLUCENT_SORT_BY_RADIUS)
-        || disp_manager->get_obj_count(mdl::OBJ_TYPE_REFLECT_TRANSLUCENT)) {
+        || disp_manager->get_obj_count(mdl::OBJ_TYPE_REFLECT_TRANSLUCENT))) {
         reflect_tex = &refl_tex;
 
         refl_tex.SetViewport();
@@ -2150,13 +2165,16 @@ static void draw_pass_reflect_full(rndr::RenderManager& render_manager) {
         if (render_manager.shadow)
             draw_pass_3d_shadow_reset();
 
+        gl_state_set_cull_face_mode(GL_BACK);
+        gl_state_disable_depth_test();
+
+        reflect_full_ptr->dof->apply(&refl_tex, &refl_buf_tex);
+
         rndr::Render* render = render_manager.render;
         rctx->set_scene_framebuffer_size(render->render_width[0],
             render->render_height[0], render->render_width[0], render->render_height[0]);
         reflect_draw = false;
 
-        gl_state_set_cull_face_mode(GL_BACK);
-        gl_state_disable_depth_test();
         uniform->arr[U_REFLECT] = 0;
 
         for (int32_t i = render_manager.reflect_blur_num, j = 0; i > 0; i--, j++) {
@@ -2175,6 +2193,39 @@ static void draw_pass_reflect_full(rndr::RenderManager& render_manager) {
     shader::unbind();
     gl_state_bind_framebuffer(0);
     gl_state_end_event();
+}
+
+static bool draw_pass_reflect_get_obj_reflect_surface() {
+    return draw_pass_reflect_get_obj_reflect_surface(mdl::OBJ_TYPE_OPAQUE)
+        || draw_pass_reflect_get_obj_reflect_surface(mdl::OBJ_TYPE_TRANSLUCENT)
+        || draw_pass_reflect_get_obj_reflect_surface(mdl::OBJ_TYPE_TRANSLUCENT_SORT_BY_RADIUS)
+        || draw_pass_reflect_get_obj_reflect_surface(mdl::OBJ_TYPE_TRANSPARENT);
+}
+
+static bool draw_pass_reflect_get_obj_reflect_surface(mdl::ObjType type) {
+    mdl::ObjList& list = disp_manager->get_obj_list(type);
+
+    for (mdl::ObjData*& i : disp_manager->get_obj_list(type))
+        switch (i->kind) {
+        case mdl::OBJ_KIND_NORMAL: {
+            switch (i->args.sub_mesh.material->material.shader.index) {
+            case SHADER_FT_WATER01: // _WATER01
+            case SHADER_FT_FLOOR:   // _FLOOR
+            case SHADER_FT_PUDDLE:  // _PUDDLE
+                return true;
+            }
+        } break;
+        case mdl::OBJ_KIND_TRANSLUCENT: {
+            for (int32_t j = 0; j < i->args.translucent.count; j++)
+                switch (i->args.translucent.sub_mesh[j]->material->material.shader.index) {
+                case SHADER_FT_WATER01: // _WATER01
+                case SHADER_FT_FLOOR:   // _FLOOR
+                case SHADER_FT_PUDDLE:  // _PUDDLE
+                    return true;
+                }
+        } break;
+        }
+    return false;
 }
 
 static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,

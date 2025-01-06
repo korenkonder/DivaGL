@@ -112,7 +112,7 @@ HOOK(void, FASTCALL, stage__set, 0x0000000140647710, stage* prev, stage* curr) {
                 render_manager.reflect_blur_num = reflect->blur_num;
                 render_manager.reflect_blur_filter = (blur_filter_mode)reflect->blur_filter;
                 render_manager.reflect = true;
-                reflect_refract_resolution_mode  mode = REFLECT_REFRACT_RESOLUTION_512x512;
+                reflect_refract_resolution_mode  mode = REFLECT_REFRACT_RESOLUTION_512x256;
                 if (frg_stage_data->reflect_type != STAGE_DATA_REFLECT_REFLECT_MAP)
                     mode = reflect->mode;
                 render_manager.tex_index[0] = mode;

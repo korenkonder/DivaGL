@@ -58,24 +58,25 @@ namespace renderer {
         DOF3(int32_t width, int32_t height);
         ~DOF3();
 
-        void apply(RenderTexture* rt);
+        void apply(RenderTexture* rt, RenderTexture* buf_rt);
         void resize(int32_t width, int32_t height);
 
     private:
         void free();
         void init(int32_t width, int32_t height);
 
-        void apply_f2(RenderTexture* rt, GLuint color_texture,
+        void apply_f2(RenderTexture* rt, RenderTexture* buf_rt, GLuint color_texture,
             GLuint depth_texture, float_t min_distance, float_t max_distance, float_t fov,
             float_t focus, float_t focus_range, float_t fuzzing_range, float_t ratio);
-        void apply_physical(RenderTexture* rt, GLuint color_texture,
+        void apply_physical(RenderTexture* rt, RenderTexture* buf_rt, GLuint color_texture,
             GLuint depth_texture, float_t min_distance, float_t max_distance,
             float_t focus, float_t focal_length, float_t fov, float_t f_number);
 
         void render_tiles(GLuint depth_texture, bool f2);
         void downsample(GLuint color_texture, GLuint depth_texture, bool f2);
         void apply_main_filter(bool f2);
-        void upsample(RenderTexture* rt, GLuint color_texture, GLuint depth_texture, bool f2);
+        void upsample(RenderTexture* rt, RenderTexture* buf_rt,
+            GLuint color_texture, GLuint depth_texture, bool f2);
 
         void init_textures(int32_t width, int32_t height);
         void update_data(float_t min_dist, float_t max_dist, float_t fov, float_t dist, float_t focal_length,

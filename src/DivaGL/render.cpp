@@ -41,7 +41,7 @@ namespace rndr {
         gl_state_disable_depth_test();
         gl_state_disable_blend();
 
-        dof->apply(&rend_texture[0]);
+        dof->apply(&rend_texture[0], &rctx->render_buffer);
 
         draw_lens_ghost();
 

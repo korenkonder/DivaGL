@@ -2279,8 +2279,52 @@ namespace mdl {
         get_obj_list(type).push_back(data);
     }
 
-    static int32_t obj_axis_aligned_bounding_box_check_visibility(
-        obj_axis_aligned_bounding_box* aabb, const mat4& mat) {
+    static int32_t obj_bounding_sphere_check_visibility_default(const vec3& center, float_t radius) {
+        mat4 view_mat;
+        mat4_transpose(&camera_data.view, &view_mat);
+        vec3 _center;
+        mat4_transform_point(&view_mat, &center, &_center);
+
+        double_t min_depth = (double_t)_center.z - (double_t)radius;
+        double_t max_depth = (double_t)_center.z + (double_t)radius;
+        if (-camera_data.min_distance < min_depth || -camera_data.max_distance > max_depth)
+            return 0;
+
+        float_t v5 = vec3::dot(camera_data.field_1E4, _center);
+        if (v5 < -radius)
+            return 0;
+
+        float_t v6 = vec3::dot(camera_data.field_1F0, _center);
+        if (v6 < -radius)
+            return 0;
+
+        float_t v7 = vec3::dot(camera_data.field_1FC, _center);
+        if (v7 < -radius)
+            return 0;
+
+        float_t v8 = vec3::dot(camera_data.field_208, _center);
+        if (v8 < -radius)
+            return 0;
+
+        if (-camera_data.min_distance >= max_depth && -camera_data.max_distance <= min_depth
+            && v5 >= radius && v6 >= radius && v7 >= radius && v8 >= radius)
+            return 1;
+        return 2;
+    }
+
+    static int32_t obj_bounding_sphere_check_visibility(const obj_bounding_sphere& sphere, const mat4& mat) {
+        if (disp_manager->culling_func)
+            return disp_manager->culling_func(&sphere);
+
+        vec3 center;
+        mat4 _mat;
+        mat4_transpose(&mat, &_mat);
+        mat4_transform_point(&_mat, &sphere.center, &center);
+        return obj_bounding_sphere_check_visibility_default(center, mat4_get_max_scale(&_mat) * sphere.radius);
+    }
+
+    static int32_t obj_axis_aligned_bounding_box_check_visibility_default(
+        const obj_axis_aligned_bounding_box* aabb, const mat4& mat) {
         vec3 points[8];
         points[0] = aabb->center + (aabb->size ^ vec3( 0.0f,  0.0f,  0.0f));
         points[1] = aabb->center + (aabb->size ^ vec3(-0.0f, -0.0f, -0.0f));
@@ -2324,45 +2368,11 @@ namespace mdl {
         return 1;
     }
 
-    static int32_t obj_bounding_sphere_check_visibility(const obj_bounding_sphere& sphere,
-        CullingCheck* culling, const mat4& mat) {
+    static int32_t obj_axis_aligned_bounding_box_check_visibility(
+        const obj_axis_aligned_bounding_box* aabb, const mat4& mat) {
         if (disp_manager->culling_func)
-            return disp_manager->culling_func(&sphere);
-
-        vec3 center;
-        mat4 _mat;
-        mat4_transpose(&mat, &_mat);
-        mat4_transform_point(&_mat, &sphere.center, &center);
-        float_t radius = mat4_get_max_scale(&_mat) * sphere.radius;
-
-        mat4_transpose(&camera_data.view, &_mat);
-        mat4_transform_point(&_mat, &center, &center);
-
-        double_t min_depth = (double_t)center.z - (double_t)radius;
-        double_t max_depth = (double_t)center.z + (double_t)radius;
-        if (-camera_data.min_distance < min_depth || -camera_data.max_distance > max_depth)
-            return 0;
-
-        float_t v5 = vec3::dot(camera_data.field_1E4, center);
-        if (v5 < -radius)
-            return 0;
-
-        float_t v6 = vec3::dot(camera_data.field_1F0, center);
-        if (v6 < -radius)
-            return 0;
-
-        float_t v7 = vec3::dot(camera_data.field_1FC, center);
-        if (v7 < -radius)
-            return 0;
-
-        float_t v8 = vec3::dot(camera_data.field_208, center);
-        if (v8 < -radius)
-            return 0;
-
-        if (-camera_data.min_distance >= max_depth && -camera_data.max_distance <= min_depth
-            && v5 >= radius && v6 >= radius && v7 >= radius && v8 >= radius)
             return 1;
-        return 2;
+        return obj_axis_aligned_bounding_box_check_visibility_default(aabb, mat);
     }
 
     bool DispManager::entry_obj(const ::obj* obj, const mat4& mat, obj_mesh_vertex_buffer* obj_vert_buf,
@@ -2383,10 +2393,9 @@ namespace mdl {
         }
 
         if (!local && object_culling && !instances_count && !bone_mat && (!obj
-            || !obj_bounding_sphere_check_visibility(
-                obj->bounding_sphere, &culling, mat) && !(mdl::obj_reflect_enable
-                    && obj_bounding_sphere_check_visibility(
-                        obj->bounding_sphere, &culling, _mat)))) {
+            || !obj_bounding_sphere_check_visibility(obj->bounding_sphere, mat)
+            && !(mdl::obj_reflect_enable
+                && obj_bounding_sphere_check_visibility(obj->bounding_sphere, _mat)))) {
             culling.culled.objects++;
             return false;
         }
@@ -2404,10 +2413,8 @@ namespace mdl {
             }
 
             if (!local && object_culling && !instances_count && !bone_mat
-                && !obj_bounding_sphere_check_visibility(
-                    mesh->bounding_sphere, &culling, mat)
-                && (!mesh_morph || !obj_bounding_sphere_check_visibility(
-                    mesh_morph->bounding_sphere, &culling, mat))) {
+                && !obj_bounding_sphere_check_visibility(mesh->bounding_sphere, mat)
+                && (!mesh_morph || !obj_bounding_sphere_check_visibility(mesh_morph->bounding_sphere, mat))) {
                 culling.culled.meshes++;
                 continue;
             }
@@ -2423,17 +2430,12 @@ namespace mdl {
                     continue;
 
                 if (!local && object_culling && !instances_count && !bone_mat) {
-                    int32_t v32 = obj_bounding_sphere_check_visibility(
-                        sub_mesh->bounding_sphere, &culling, mat);
+                    int32_t v32 = obj_bounding_sphere_check_visibility(sub_mesh->bounding_sphere, mat);
                     if (v32 != 2 || (!mesh->attrib.m.billboard && !mesh->attrib.m.billboard_y_axis
                         && !mesh->attrib.m.disable_aabb_culling)) {
-                        if (v32 == 2) {
-                            if (disp_manager->culling_func)
-                                v32 = 1;
-                            else
-                                v32 = obj_axis_aligned_bounding_box_check_visibility(
-                                    sub_mesh->axis_aligned_bounding_box, mat);
-                        }
+                        if (v32 == 2)
+                            v32 = obj_axis_aligned_bounding_box_check_visibility(
+                                sub_mesh->axis_aligned_bounding_box, mat);
 
                         if (!v32) {
                             if (!mesh_morph || j >= mesh_morph->num_submesh) {
@@ -2447,15 +2449,10 @@ namespace mdl {
                                 continue;
                             }
 
-                            v32 = obj_bounding_sphere_check_visibility(
-                                sub_mesh_morph->bounding_sphere, &culling, mat);
-                            if (v32 == 2) {
-                                if (disp_manager->culling_func)
-                                    v32 = 1;
-                                else
-                                    v32 = obj_axis_aligned_bounding_box_check_visibility(
-                                        sub_mesh_morph->axis_aligned_bounding_box, mat);
-                            }
+                            int32_t v32 = obj_bounding_sphere_check_visibility(sub_mesh_morph->bounding_sphere, mat);
+                            if (v32 == 2)
+                                v32 = obj_axis_aligned_bounding_box_check_visibility(
+                                    sub_mesh_morph->axis_aligned_bounding_box, mat);
 
                             if (!v32) {
                                 culling.culled.sub_meshes++;
@@ -2771,10 +2768,8 @@ namespace mdl {
             }
 
             if (object_culling && !instances_count && !bone_mat
-                && !obj_bounding_sphere_check_visibility(
-                    mesh->bounding_sphere, &culling, _mat)
-                && (!mesh_morph || !obj_bounding_sphere_check_visibility(
-                    mesh_morph->bounding_sphere, &culling, _mat))) {
+                && !obj_bounding_sphere_check_visibility(mesh->bounding_sphere, _mat)
+                && (!mesh_morph || !obj_bounding_sphere_check_visibility(mesh_morph->bounding_sphere, _mat))) {
                 culling.culled.meshes++;
                 continue;
             }
@@ -2792,20 +2787,12 @@ namespace mdl {
                     continue;
 
                 if (object_culling && !instances_count && !bone_mat) {
-                    int32_t v32 = obj_bounding_sphere_check_visibility(
-                        sub_mesh->bounding_sphere, &culling, _mat);
+                    int32_t v32 = obj_bounding_sphere_check_visibility(sub_mesh->bounding_sphere, _mat);
                     if (v32 != 2 || (!mesh->attrib.m.billboard && !mesh->attrib.m.billboard_y_axis
                         && !mesh->attrib.m.disable_aabb_culling)) {
-                        if (v32 == 2) {
-                            if (culling_func)
-                                v32 = 1;
-                            else {
-                                obj_axis_aligned_bounding_box aabb = *sub_mesh->axis_aligned_bounding_box;
-                                mat4_transform_point(&reflect_mat, &aabb.center, &aabb.center);
-                                mat4_transform_vector(&reflect_mat, &aabb.size, &aabb.size);
-                                v32 = obj_axis_aligned_bounding_box_check_visibility(&aabb, mat);
-                            }
-                        }
+                        if (v32 == 2)
+                            v32 = obj_axis_aligned_bounding_box_check_visibility(
+                                sub_mesh->axis_aligned_bounding_box, _mat);
 
                         if (!v32) {
                             if (!mesh_morph || j >= mesh_morph->num_submesh) {
@@ -2819,18 +2806,10 @@ namespace mdl {
                                 continue;
                             }
 
-                            int32_t v32 = obj_bounding_sphere_check_visibility(
-                                sub_mesh_morph->bounding_sphere, &culling, _mat);
-                            if (v32 == 2) {
-                                if (culling_func)
-                                    v32 = 1;
-                                else {
-                                    obj_axis_aligned_bounding_box aabb = *sub_mesh_morph->axis_aligned_bounding_box;
-                                    mat4_transform_point(&reflect_mat, &aabb.center, &aabb.center);
-                                    mat4_transform_vector(&reflect_mat, &aabb.size, &aabb.size);
-                                    v32 = obj_axis_aligned_bounding_box_check_visibility(&aabb, mat);
-                                }
-                            }
+                            int32_t v32 = obj_bounding_sphere_check_visibility(sub_mesh_morph->bounding_sphere, _mat);
+                            if (v32 == 2)
+                                v32 = obj_axis_aligned_bounding_box_check_visibility(
+                                    sub_mesh_morph->axis_aligned_bounding_box, mat);
 
                             if (!v32) {
                                 culling.culled.sub_meshes++;

@@ -510,6 +510,8 @@ static void (FASTCALL* snow_particle_data_free)() = (void (FASTCALL*)())0x000000
 
 extern render_context* rctx;
 
+static void TaskEffectAuth3D__SetVisibility(size_t This, bool value);
+
 static void draw_fog_particle(EffectFogRing* data, mat4* mat);
 
 static void draw_ripple_particles(ripple_struct* data, mat4* mat);
@@ -781,6 +783,19 @@ void star_catalog_draw() {
     star_catalog_data.draw();
 }
 
+HOOK(void, FASTCALL, TaskEffectAuth3D__SetCurrentStageIndex, 0x00000001403459F0, size_t This, int32_t stage_index) {
+    if (*(int32_t*)(This + 0x138) != stage_index) {
+        TaskEffectAuth3D__SetVisibility(This, 0);
+        *(int32_t*)(This + 0x138) = stage_index;
+        TaskEffectAuth3D__SetVisibility(This, *(bool*)(This + 0x118));
+    }
+}
+
+HOOK(void, FASTCALL, TaskEffectAuth3D__SetEnable, 0x0000000140345B30, size_t This, bool value) {
+    *(bool*)(This + 0x118) = value;
+    TaskEffectAuth3D__SetVisibility(This, value);
+}
+
 HOOK(void, FASTCALL, EffectFogRing__dest, 0x0000000140348090, EffectFogRing* fog_ring) {
     auto elem = fog_ring_ssbo.find(fog_ring);
     if (elem != fog_ring_ssbo.end()) {
@@ -934,63 +949,6 @@ HOOK(void, FASTCALL, leaf_particle_init, 0x000000014034C530, bool change_stage) 
     leaf_particle_scene_ubo.Create(sizeof(leaf_particle_scene_shader_data));
 }
 
-HOOK(bool, FASTCALL, TaskEffectRain__dest, 0x0000000140353DA0, size_t task_eff_rain) {
-    if (stage_param_data_rain_current) {
-        implOfleaf_particle_free();
-        stage_param_data_rain_current = 0;
-        void (FASTCALL * stage_param_data_rain_storage_clear)()
-            = (void (FASTCALL*)())0x0000000140353CD0;
-        stage_param_data_rain_storage_clear();
-        stage_param_data_rain_set = 0;
-        *(int32_t*)(task_eff_rain + 0x70) = -1;
-        *(size_t*)(task_eff_rain + 0x80) = *(size_t*)(task_eff_rain + 0x78);
-    }
-    return true;
-}
-
-HOOK(void, FASTCALL, rain_particle_init, 0x00000001403546A0, bool change_stage) {
-    vec3 velocity = stage_param_data_rain_current->velocity;
-    vec3 vel_range = stage_param_data_rain_current->vel_range;
-
-    for (int32_t i = 0; i < 8; i++) {
-        particle_data& data = rain_ptcl_data[i];
-        data.position.x = 0.0f;
-        data.position.y = ((float_t)i * -12.5f) - 5.0f;
-        data.position.z = 0.0f;
-        data.size = 1.0f;
-        data.alpha = 1.0f;
-        data.life_time = 1;
-        vec3 _velocity;
-        _velocity.x = rand_state_array_get_float(4);
-        _velocity.y = rand_state_array_get_float(4);
-        _velocity.z = rand_state_array_get_float(4);
-        *(vec3*)&data.velocity = (_velocity - 0.5f) * vel_range + velocity;
-    }
-
-    if (change_stage)
-        return;
-
-    rain_particle_free();
-
-    vec3* vtx_data = force_malloc<vec3>(rain_ptcl_count);
-    for (int32_t i = 0; i < rain_ptcl_count; i++) {
-        vec3 position;
-        position.x = rand_state_array_get_float(4);
-        position.y = rand_state_array_get_float(4);
-        position.z = rand_state_array_get_float(4);
-        *vtx_data++ = position;
-    }
-
-    vtx_data -= rain_ptcl_count;
-
-    rain_ssbo.Create(sizeof(vec3) * rain_ptcl_count, vtx_data);
-
-    free_def(vtx_data);
-
-    rain_particle_scene_ubo.Create(sizeof(rain_particle_scene_shader_data));
-    rain_particle_batch_ubo.Create(sizeof(rain_particle_batch_shader_data));
-}
-
 HOOK(void, FASTCALL, particle_free, 0x0000000140351600) {
     if (ptcl_data)
         delete[] ptcl_data;
@@ -1054,6 +1012,63 @@ HOOK(void, FASTCALL, particle_init, 0x0000000140351C50, vec3* offset) {
     gl_state_bind_array_buffer(0);
 
     particle_scene_ubo.Create(sizeof(particle_scene_shader_data));
+}
+
+HOOK(bool, FASTCALL, TaskEffectRain__dest, 0x0000000140353DA0, size_t task_eff_rain) {
+    if (stage_param_data_rain_current) {
+        implOfleaf_particle_free();
+        stage_param_data_rain_current = 0;
+        void (FASTCALL * stage_param_data_rain_storage_clear)()
+            = (void (FASTCALL*)())0x0000000140353CD0;
+        stage_param_data_rain_storage_clear();
+        stage_param_data_rain_set = 0;
+        *(int32_t*)(task_eff_rain + 0x70) = -1;
+        *(size_t*)(task_eff_rain + 0x80) = *(size_t*)(task_eff_rain + 0x78);
+    }
+    return true;
+}
+
+HOOK(void, FASTCALL, rain_particle_init, 0x00000001403546A0, bool change_stage) {
+    vec3 velocity = stage_param_data_rain_current->velocity;
+    vec3 vel_range = stage_param_data_rain_current->vel_range;
+
+    for (int32_t i = 0; i < 8; i++) {
+        particle_data& data = rain_ptcl_data[i];
+        data.position.x = 0.0f;
+        data.position.y = ((float_t)i * -12.5f) - 5.0f;
+        data.position.z = 0.0f;
+        data.size = 1.0f;
+        data.alpha = 1.0f;
+        data.life_time = 1;
+        vec3 _velocity;
+        _velocity.x = rand_state_array_get_float(4);
+        _velocity.y = rand_state_array_get_float(4);
+        _velocity.z = rand_state_array_get_float(4);
+        *(vec3*)&data.velocity = (_velocity - 0.5f) * vel_range + velocity;
+    }
+
+    if (change_stage)
+        return;
+
+    rain_particle_free();
+
+    vec3* vtx_data = force_malloc<vec3>(rain_ptcl_count);
+    for (int32_t i = 0; i < rain_ptcl_count; i++) {
+        vec3 position;
+        position.x = rand_state_array_get_float(4);
+        position.y = rand_state_array_get_float(4);
+        position.z = rand_state_array_get_float(4);
+        *vtx_data++ = position;
+    }
+
+    vtx_data -= rain_ptcl_count;
+
+    rain_ssbo.Create(sizeof(vec3) * rain_ptcl_count, vtx_data);
+
+    free_def(vtx_data);
+
+    rain_particle_scene_ubo.Create(sizeof(rain_particle_scene_shader_data));
+    rain_particle_batch_ubo.Create(sizeof(rain_particle_batch_shader_data));
 }
 
 HOOK(bool, FASTCALL, TaskEffectRipple__dest, 0x0000000140358600, size_t task_effect_ripple) {
@@ -1373,6 +1388,8 @@ HOOK(bool, FASTCALL, star_catalog__init, 0x000000014036CD50, star_catalog* star)
 }
 
 void effect_patch() {
+    INSTALL_HOOK(TaskEffectAuth3D__SetCurrentStageIndex);
+    INSTALL_HOOK(TaskEffectAuth3D__SetEnable);
     INSTALL_HOOK(EffectFogRing__dest);
     INSTALL_HOOK(EffectFogRing__disp);
     INSTALL_HOOK(EffectFogRing__set_stage_indices);
@@ -1380,10 +1397,10 @@ void effect_patch() {
     INSTALL_HOOK(EffectFogRing__draw_static);
     INSTALL_HOOK(leaf_particle_free);
     INSTALL_HOOK(leaf_particle_init);
-    INSTALL_HOOK(TaskEffectRain__dest);
-    INSTALL_HOOK(rain_particle_init);
     INSTALL_HOOK(particle_free);
     INSTALL_HOOK(particle_init);
+    INSTALL_HOOK(TaskEffectRain__dest);
+    INSTALL_HOOK(rain_particle_init);
     INSTALL_HOOK(TaskEffectRipple__dest);
     INSTALL_HOOK(TaskEffectRipple__init);
     INSTALL_HOOK(EffectRipple__draw_static);
@@ -1973,6 +1990,29 @@ void water_particle::draw(mat4* mat) {
 
     shader::unbind();
     gl_state_enable_cull_face();
+}
+
+static void TaskEffectAuth3D__SetVisibility(size_t This, bool value) {
+    struct struc_621 {
+        int32_t stage_index;
+        prj::vector<auth_3d_id> auth_3d_ids;
+    };
+
+    int32_t current_stage_index = *(int32_t*)(This + 0x138);
+    if (current_stage_index == -1)
+        return;
+
+    for (struc_621& i : *(prj::vector<struc_621>*)(This + 0x120)) {
+        if (i.stage_index != current_stage_index)
+            continue;
+
+        extern bool reflect_full;
+        for (auth_3d_id& j : i.auth_3d_ids) {
+            j.set_visibility(value);
+            j.set_reflect(reflect_full);
+        }
+        break;
+    }
 }
 
 static void draw_fog_particle(EffectFogRing* data, mat4* mat) {
