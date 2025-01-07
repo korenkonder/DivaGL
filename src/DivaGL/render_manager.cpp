@@ -1298,7 +1298,10 @@ reflect_full_struct::~reflect_full_struct() {
 }
 
 void reflect_full_struct::free() {
-    delete dof;
+    if (dof) {
+        delete dof;
+        dof = 0;
+    }
 
     reflect_contour_texture.Free();
 
@@ -1322,7 +1325,10 @@ void reflect_full_struct::init() {
 
     reflect_contour_texture.SetColorDepthTextures(reflect_texture.GetColorTex());
 
-    dof = new renderer::DOF3(render_width, render_height);
+    if (dof)
+        dof->resize(render_width, render_height);
+    else
+        dof = new renderer::DOF3(render_width, render_height);
 }
 
 void get_reflect_mat() {

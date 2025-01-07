@@ -551,11 +551,11 @@ static const int32_t star_milky_way_fpt_unival_max[] = {
 };
 
 static const int32_t floor_vpt_unival_max[] = {
-    0, 0,
+    1, 0,
 };
 
 static const int32_t floor_fpt_unival_max[] = {
-    1, 1,
+    0, 1,
 };
 
 static const int32_t puddle_vpt_unival_max[] = {
@@ -1393,9 +1393,9 @@ static void glass_eye_calc(glass_eye_struct* glass_eye) {
         return;
     }
 
-    uint32_t(FASTCALL * get_frame_counter)() = (uint32_t(FASTCALL*)())0x0000000140192E00;
+    uint32_t(FASTCALL * get_main_timer)() = (uint32_t(FASTCALL*)())0x0000000140192E00;
 
-    uint32_t frame = get_frame_counter();
+    uint32_t frame = get_main_timer();
     if (frame == glass_eye->frame)
         return;
 
