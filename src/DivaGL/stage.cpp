@@ -126,9 +126,6 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
     if (s->state != 6 || !s->stage_display)
         return;
 
-    extern bool reflect_full;
-    mdl::obj_reflect_enable = reflect_full;
-
     mdl::DispManager& disp_manager = *::disp_manager;
 
     mat4 mat;
@@ -173,8 +170,6 @@ HOOK(void, FASTCALL, stage__disp, 0x0000000140649560, stage* s) {
             rend->lens_shaft_inv_scale = s->stage_data->lens_shaft_inv_scale;
         }
     }
-
-    mdl::obj_reflect_enable = false;
 }
 
 static void stage__disp_shadow_object(object_info object, const mat4& mat) {
