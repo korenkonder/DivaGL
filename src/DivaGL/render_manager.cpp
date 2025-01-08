@@ -840,8 +840,10 @@ namespace rndr {
         render->bind_render_texture();
         draw_pass_set_camera();
         if (!sss_data_get()->enable || !sss_data_get()->npr_contour
-            || draw_pass_3d_get_translucent_count())
+            || draw_pass_3d_get_translucent_count()) {
+            gl_state_set_depth_mask(GL_TRUE);
             glClearDLL(GL_DEPTH_BUFFER_BIT);
+        }
 
         gl_state_set_depth_func(GL_LEQUAL);
 
@@ -2009,7 +2011,7 @@ static int32_t draw_pass_3d_translucent_count_layers(int32_t* alpha_array,
     draw_pass_3d_translucent_has_objects(arr, translucent);
 
     int32_t count = 0;
-    for (int32_t i = 0xFF; i >= 1; i--)
+    for (int32_t i = 0xFF; i >= 0; i--)
         if (arr[i]) {
             count++;
             *alpha_array++ = i;
