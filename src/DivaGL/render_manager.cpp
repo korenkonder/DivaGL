@@ -1201,7 +1201,6 @@ void image_filter_scale(RenderTexture* dst, texture* src, const vec4& scale) {
 }
 
 void draw_pass_set_camera() {
-    camera_struct::update_data();
     mat4_transpose(&camera_data.view, &rctx->view_mat);
     mat4_transpose(&camera_data.projection, &rctx->proj_mat);
     mat4_transpose(&camera_data.view_projection, &rctx->vp_mat);

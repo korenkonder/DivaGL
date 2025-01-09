@@ -2383,8 +2383,6 @@ namespace mdl {
         if (!obj_vert_buf || !obj_index_buf)
             return false;
 
-        camera_struct::update_data();
-
         mat4 _mat;
         if (mdl::obj_reflect_enable) {
             mat4_transpose(&mat, &_mat);

@@ -84,11 +84,6 @@ void camera_struct::get_view_point(vec4& value) {
     value.w = 0.0f;
 }
 
-void camera_struct::update_data() {
-    implOfcamera_data_update_projection();
-    camera_struct__update_view(camera_data);
-}
-
 void camera_patch() {
     INSTALL_HOOK(camera_data_update_projection);
     INSTALL_HOOK(camera_update);

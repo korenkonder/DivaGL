@@ -55,8 +55,6 @@ struct camera_struct {
 
     void get_view_point(vec3& value);
     void get_view_point(vec4& value);
-
-    static void update_data();
 };
 
 extern camera_struct& camera_data;
