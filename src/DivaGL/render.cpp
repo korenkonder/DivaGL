@@ -1547,6 +1547,8 @@ namespace rndr {
     }
 
     void Render::calc_taa_blend() {
+        taa_blend = 1.0f;
+
         float_t view_point_dist = vec3::distance(view_point, view_point_prev);
         float_t interest_dist = vec3::distance(interest, interest_prev);
         float_t dist = max_def(view_point_dist, interest_dist);
