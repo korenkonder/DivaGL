@@ -1398,7 +1398,7 @@ void x_pv_game_chara_effect::set_chara_effect(int32_t chara_id, int32_t index, i
         return;
 
     if (id.get_enable())
-        id.set_req_frame((float_t)((double_t)(time - auth_3d[index].time) * 0.000000001) * 60.0f);
+        id.set_req_frame((float_t)((double_t)std::abs(time - auth_3d[index].time) * 0.000000001) * 60.0f);
     else {
         id.set_enable(true);
         id.set_paused(false);
@@ -1422,7 +1422,7 @@ void x_pv_game_chara_effect::set_chara_effect(int32_t chara_id, int32_t index, i
             }
 
         if (key != change_fields->data() + change_fields->size())
-            max_frame = (float_t)((double_t)(*key - auth_3d[index].time) * 0.000000001) * 60.0f - 1.0f;
+            max_frame = (float_t)((double_t)std::abs(*key - auth_3d[index].time) * 0.000000001) * 60.0f - 1.0f;
     }
 
     id.set_max_frame(max_frame);
@@ -1436,7 +1436,7 @@ void x_pv_game_chara_effect::set_chara_effect_time(int32_t chara_id, int32_t ind
         if (!i.id.check_not_empty() || !i.id.get_enable())
             continue;
 
-        i.id.set_req_frame((float_t)((double_t)(time - i.time) * 0.000000001) * 60.0f);
+        i.id.set_req_frame((float_t)((double_t)std::abs(time - i.time) * 0.000000001) * 60.0f);
         i.id.set_paused(false);
     }
 }
@@ -1450,7 +1450,7 @@ void x_pv_game_chara_effect::set_time(int64_t time) {
             if (!j.id.check_not_empty() || !j.id.get_enable())
                 continue;
 
-            j.id.set_req_frame((float_t)((double_t)(time - j.time) * 0.000000001) * 60.0f);
+            j.id.set_req_frame((float_t)((double_t)std::abs(time - j.time) * 0.000000001) * 60.0f);
             j.id.set_paused(false);
         }
 }
@@ -1751,7 +1751,7 @@ void x_pv_game_effect::set_song_effect_time_inner(int32_t index, int64_t time, b
 
     x_pv_game_song_effect& song_effect = this->song_effect[index];
 
-    float_t req_frame = (float_t)((double_t)(time - song_effect.time) * 0.000000001) * 60.0f;
+    float_t req_frame = (float_t)((double_t)std::abs(time - song_effect.time) * 0.000000001) * 60.0f;
     float_t max_frame = -1.0f;
 
     if (change_fields) {
@@ -1767,7 +1767,7 @@ void x_pv_game_effect::set_song_effect_time_inner(int32_t index, int64_t time, b
             }
 
         if (key != change_fields->data() + change_fields->size())
-            max_frame = (float_t)((double_t)(*key - song_effect.time) * 0.000000001) * 60.0f - 1.0f;
+            max_frame = (float_t)((double_t)std::abs(*key - song_effect.time) * 0.000000001) * 60.0f - 1.0f;
     }
 
     for (x_pv_game_song_effect_auth_3d& i : song_effect.auth_3d) {
@@ -2651,7 +2651,7 @@ void x_pv_game_data::ctrl_stage_effect_index() {
 
     prj::pair<int64_t, int32_t>* next_stage_effect = &stage_effects[stage_effect_index];
 
-    float_t time = (float_t)((double_t)next_stage_effect->first * 0.000000001);
+    float_t time = (float_t)((double_t)std::abs(next_stage_effect->first) * 0.000000001);
     int32_t bar = bar_beat.get_bar_beat_from_time(0, time);
     next_stage_effect_bar = --bar;
 
