@@ -6,8 +6,7 @@
 #include "light_param.hpp"
 #include "../KKdLib/hash.hpp"
 #include "../KKdLib/str_utils.hpp"
-#include "light_param/light.hpp"
-#include "file_handler.hpp"
+#include "../AFTModsShared/file_handler.hpp"
 #include "render_context.hpp"
 #include <Helpers.h>
 

@@ -5,9 +5,9 @@
 
 #include "render_manager.hpp"
 #include "../KKdLib/mat.hpp"
+#include "../AFTModsShared/light_param/fog.hpp"
+#include "../AFTModsShared/light_param/light.hpp"
 #include "Glitter/glitter.hpp"
-#include "light_param/fog.hpp"
-#include "light_param/light.hpp"
 #include "mdl/disp_manager.hpp"
 #include "mdl/draw_object.hpp"
 #include "rob/rob.hpp"
@@ -23,6 +23,12 @@
 #include "stage_param.hpp"
 #include "texture.hpp"
 #include <Helpers.h>
+
+struct light_data_color {
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+};
 
 struct reflect_full_struct {
     RenderTexture reflect_texture;
@@ -74,6 +80,13 @@ static bool draw_pass_reflect_get_obj_reflect_surface(mdl::ObjType type);
 
 static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     blur_filter_mode filter, const vec2 res_scale, const vec4 scale, const vec4 offset);
+
+static void fog_set(fog_id id);
+
+static void light_get_direction_from_position(vec4* pos_dir, const light_data* light, bool force = false);
+static void light_get_light_color(const light_data* light, light_data_color& value, light_id id);
+
+static void lighting_set(light_set_id set_id);
 
 static void render_manager_free_render_textures();
 static void render_manager_init_render_textures(int32_t multisample);
@@ -376,7 +389,7 @@ namespace rndr {
                 draw_pass_set_camera();
 
                 for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-                    light_set_data[i].data_set((light_set_id)i);
+                    lighting_set((light_set_id)i);
 
                 disp_manager->draw(mdl::OBJ_TYPE_OPAQUE);
                 disp_manager->draw(mdl::OBJ_TYPE_TRANSPARENT);
@@ -472,7 +485,7 @@ namespace rndr {
 
             draw_pass_set_camera();
             for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-                light_set_data[i].data_set((light_set_id)i);
+                lighting_set((light_set_id)i);
 
             if (shadow)
                 draw_pass_3d_shadow_set(shadow_ptr);
@@ -559,7 +572,7 @@ namespace rndr {
 
         draw_pass_set_camera();
         for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-            light_set_data[i].data_set((light_set_id)i);
+            lighting_set((light_set_id)i);
 
         if (shadow)
             draw_pass_3d_shadow_set(shadow_ptr);
@@ -653,9 +666,9 @@ namespace rndr {
             draw_pass_set_camera();
 
             for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-                light_set_data[i].data_set((light_set_id)i);
+                lighting_set((light_set_id)i);
             for (int32_t i = FOG_DEPTH; i < FOG_BUMP; i++)
-                fog_data[i].data_set((fog_id)i);
+                fog_set((fog_id)i);
 
             glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
             glClearDLL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -720,9 +733,9 @@ namespace rndr {
             draw_pass_set_camera();
 
             for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-                light_set_data[i].data_set((light_set_id)i);
+                lighting_set((light_set_id)i);
             for (int32_t i = FOG_DEPTH; i < FOG_BUMP; i++)
-                fog_data[i].data_set((fog_id)i);
+                fog_set((fog_id)i);
 
             vec4 clear_color;
             glGetFloatvDLL(GL_COLOR_CLEAR_VALUE, (GLfloat*)&clear_color);
@@ -848,9 +861,9 @@ namespace rndr {
         gl_state_set_depth_func(GL_LEQUAL);
 
         for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-            light_set_data[i].data_set((light_set_id)i);
+            lighting_set((light_set_id)i);
         for (int32_t i = FOG_DEPTH; i < FOG_MAX; i++)
-            fog_data[i].data_set((fog_id)i);
+            fog_set((fog_id)i);
 
         if (shadow)
             draw_pass_3d_shadow_set(shadow_ptr);
@@ -2061,9 +2074,9 @@ static void draw_pass_reflect_full(rndr::RenderManager& render_manager) {
         gl_state_set_depth_func(GL_LEQUAL);
 
         for (int32_t i = LIGHT_SET_MAIN; i < LIGHT_SET_MAX; i++)
-            light_set_data[i].data_set((light_set_id)i);
+            lighting_set((light_set_id)i);
         for (int32_t i = FOG_DEPTH; i < FOG_MAX; i++)
-            fog_data[i].data_set((fog_id)i);
+            fog_set((fog_id)i);
 
         glClearColorDLL(0.0f, 0.0f, 0.0f, 0.0f);
         if (disp_manager->get_obj_count(mdl::OBJ_TYPE_SSS))
@@ -2270,6 +2283,290 @@ static void blur_filter_apply(RenderTexture* dst, RenderTexture* src,
     gl_state_bind_sampler(0, rctx->render_samplers[0]);
     shaders_ft.draw_arrays(GL_TRIANGLE_STRIP, (GLint)(filter * 4LL), 4);
     gl_state_end_event();
+}
+
+static void fog_set(fog_id id) {
+    fog* f = &fog_data[id];
+    fog_type type = f->get_type();
+    if (type == FOG_NONE)
+        return;
+
+    float_t density = f->get_density();
+    float_t start = f->get_start();
+    float_t end = f->get_end();
+    if (start >= end)
+        start = end - 0.01f;
+
+    vec4 params;
+    params.x = density;
+    params.y = start;
+    params.z = end;
+    params.w = 1.0f / (end - start);
+
+    switch (id) {
+    case FOG_DEPTH: {
+        float_t density = f->get_density();
+        float_t start = f->get_start();
+        float_t end = f->get_end();
+        if (start >= end)
+            start = end - 0.01f;
+        vec4 color;
+        f->get_color(color);
+
+        render_context::fog_params params = {};
+        rctx->get_scene_fog_params(params);
+        params.density = density;
+        params.start = start;
+        params.end = end;
+        params.depth_color = color;
+        rctx->set_scene_fog_params(params);
+    } break;
+    case FOG_HEIGHT: {
+        float_t density = f->get_density();
+        float_t start = f->get_start();
+        float_t end = f->get_end();
+        if (start >= end)
+            start = end - 0.01f;
+        vec4 color;
+        f->get_color(color);
+
+        render_context::fog_params params = {};
+        rctx->get_scene_fog_params(params);
+        params.height_params.x = density;
+        params.height_params.y = start;
+        params.height_params.z = end;
+        params.height_params.w = 1.0f / (end - start);
+        params.height_color = color;
+        rctx->set_scene_fog_params(params);
+    } break;
+    case FOG_BUMP: {
+        float_t density = f->get_density();
+        float_t start = f->get_start();
+        float_t end = f->get_end();
+        if (start >= end)
+            start = end - 0.01f;
+
+        render_context::fog_params params = {};
+        rctx->get_scene_fog_params(params);
+        params.bump_params.x = density;
+        params.bump_params.y = start;
+        params.bump_params.z = end;
+        params.bump_params.w = 1.0f / (end - start);
+        rctx->set_scene_fog_params(params);
+    } break;
+    }
+}
+
+static void light_get_direction_from_position(vec4* pos_dir, const light_data* light, bool force) {
+    if (force || light->get_type() == LIGHT_PARALLEL) {
+        float_t length = vec3::length(*(vec3*)pos_dir);
+        if (length <= 0.000001)
+            *(vec3*)pos_dir = vec3(0.0f, 1.0f, 0.0f);
+        else
+            *(vec3*)pos_dir *= 1.0f / length;
+        pos_dir->w = 0.0f;
+    }
+}
+
+static void light_get_light_color(const light_data* light, light_data_color& value, light_id id) {
+    static bool& light_chara_ambient = *(bool*)0x00000001411A0080;
+    if (id || light_chara_ambient)
+        value.ambient = light->ambient;
+    else
+        value.ambient = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    if (!id && false)
+        value.diffuse = light->diffuse * 4.0f;
+    else
+        value.diffuse = light->diffuse;
+
+    value.specular = light->specular;
+}
+
+static void lighting_set(light_set_id set_id) {
+    static const float_t spec_coef = (float_t)(1.0 / (1.0 - cos(18.0 * DEG_TO_RAD)));
+    static const float_t luce_coef = (float_t)(1.0 / (1.0 - cos(45.0 * DEG_TO_RAD)));
+
+    const light_set* set = &light_set_data[set_id];
+
+    light_data_color light_color[LIGHT_MAX];
+    for (int32_t i = 0; i < LIGHT_MAX; i++)
+        light_get_light_color(&set->lights[i], light_color[i], (light_id)i);
+
+    vec4 light_env_stage_diffuse = light_color[LIGHT_STAGE].diffuse;
+    vec4 light_env_stage_specular = light_color[LIGHT_STAGE].specular;
+
+    vec4 light_env_chara_diffuse = light_color[LIGHT_CHARA].diffuse;
+    vec4 light_env_chara_ambient = light_color[LIGHT_CHARA].ambient;
+    vec4 light_env_chara_specular = light_color[LIGHT_CHARA].specular;
+
+    vec4 light_env_reflect_diffuse;
+    vec4 light_env_reflect_ambient;
+    set->lights[LIGHT_REFLECT].get_diffuse(light_env_reflect_diffuse);
+    set->lights[LIGHT_REFLECT].get_ambient(light_env_reflect_ambient);
+
+    vec4 light_env_proj_diffuse;
+    vec4 light_env_proj_specular;
+    vec4 light_env_proj_position;
+    set->lights[LIGHT_PROJECTION].get_diffuse(light_env_proj_diffuse);
+    set->lights[LIGHT_PROJECTION].get_specular(light_env_proj_specular);
+    set->lights[LIGHT_PROJECTION].get_position(light_env_proj_position);
+    if (set->lights[LIGHT_PROJECTION].get_type() == LIGHT_PARALLEL)
+        light_get_direction_from_position(&light_env_proj_position, 0, true);
+
+    vec4 light_chara_dir;
+    vec4 light_chara_ibl_color0;
+    vec4 light_chara_ibl_color1;
+    vec4 light_chara_specular;
+    set->lights[LIGHT_CHARA].get_position(light_chara_dir);
+    light_get_direction_from_position(&light_chara_dir, &set->lights[LIGHT_CHARA]);
+    set->lights[LIGHT_CHARA].get_ibl_color0(light_chara_ibl_color0);
+    set->lights[LIGHT_CHARA].get_ibl_color1(light_chara_ibl_color1);
+    set->lights[LIGHT_CHARA].get_specular(light_chara_specular);
+
+    vec4 light_chara_spec = light_chara_specular * light_chara_ibl_color0 * spec_coef;
+    vec4 light_chara_luce = light_chara_ibl_color0 * luce_coef;
+    vec4 light_chara_back = light_chara_specular * light_chara_ibl_color1 * spec_coef;
+
+    vec4 light_stage_dir;
+    vec4 light_stage_ibl_color;
+    vec4 light_stage_diffuse;
+    vec4 light_stage_specular;
+    set->lights[LIGHT_STAGE].get_position(light_stage_dir);
+    light_get_direction_from_position(&light_stage_dir, &set->lights[LIGHT_STAGE]);
+    set->lights[LIGHT_STAGE].get_ibl_color0(light_stage_ibl_color);
+    set->lights[LIGHT_STAGE].get_diffuse(light_stage_diffuse);
+    set->lights[LIGHT_STAGE].get_specular(light_stage_specular);
+
+    vec4 light_stage_diff = light_stage_diffuse * light_stage_ibl_color;
+    vec4 light_stage_spec = light_stage_specular * light_stage_ibl_color * spec_coef;
+
+    mat4 irradiance_r_transforms;
+    mat4 irradiance_g_transforms;
+    mat4 irradiance_b_transforms;
+    set->get_irradiance(irradiance_r_transforms, irradiance_g_transforms, irradiance_b_transforms);
+
+    float_t* (FASTCALL * face_data_get)() = (float_t * (FASTCALL*)())0x00000001403D8310;
+    float_t v27 = face_data_get()[0];
+    float_t v28 = (float_t)(1.0 - exp(v27 * -0.44999999)) * 2.0f;
+    v27 = max_def(v27, 0.0f);
+    vec4 light_face_diff = { v28 * 0.1f, v27 * 0.06f, 1.0f, 1.0f };
+
+    vec4 chara_color_rim;
+    vec4 chara_color0;
+    vec4 chara_color1;
+    if (set->lights[LIGHT_CHARA_COLOR].get_type() == LIGHT_PARALLEL) {
+        set->lights[LIGHT_CHARA_COLOR].get_ambient(chara_color_rim);
+        set->lights[LIGHT_CHARA_COLOR].get_diffuse(chara_color0);
+        set->lights[LIGHT_CHARA_COLOR].get_specular(chara_color1);
+        if (chara_color1.w > 1.0f)
+            chara_color1.w = 1.0f;
+    }
+    else {
+        chara_color_rim = 0.0f;
+        chara_color0 = 0.0f;
+        chara_color1 = 0.0f;
+    }
+
+    vec4 chara_f_dir;
+    vec4 chara_f_ambient;
+    vec4 chara_f_diffuse;
+    vec4 chara_tc_param;
+    if (set->lights[LIGHT_TONE_CURVE].get_type() == LIGHT_PARALLEL) {
+        uniform->arr[U_TONE_CURVE] = 1;
+        set->lights[LIGHT_TONE_CURVE].get_position(chara_f_dir);
+        light_get_direction_from_position(&chara_f_dir, &set->lights[LIGHT_TONE_CURVE]);
+        set->lights[LIGHT_TONE_CURVE].get_ambient(chara_f_ambient);
+        set->lights[LIGHT_TONE_CURVE].get_diffuse(chara_f_diffuse);
+
+        light_tone_curve tone_curve;
+        set->lights[LIGHT_TONE_CURVE].get_tone_curve(tone_curve);
+        chara_tc_param.x = tone_curve.start_point;
+        float_t end_point = min_def(tone_curve.end_point, 1.0f) - tone_curve.start_point;
+        if (end_point > 0.0f)
+            chara_tc_param.y = 1.0f / end_point;
+        else
+            chara_tc_param.y = 0.0f;
+        chara_tc_param.z = tone_curve.coefficient;
+        chara_tc_param.w = 0.0f;
+    }
+    else {
+        uniform->arr[U_TONE_CURVE] = 0;
+        chara_f_dir = { 0.0f, 1.0f, 0.0f, 0.0f };
+        chara_f_ambient = 0.0f;
+        chara_f_diffuse = 0.0f;
+        chara_tc_param = 0.0f;
+    }
+
+    vec4 light_reflect_dir;
+    set->lights[LIGHT_CHARA].get_position(light_reflect_dir);
+    if (fabsf(light_reflect_dir.x) <= 0.000001f && fabsf(light_reflect_dir.y) <= 0.000001f
+        && fabsf(light_reflect_dir.z) <= 0.000001f)
+        *(vec3*)&light_reflect_dir = vec3(0.0f, 1.0f, 0.0f);
+    else {
+        float_t length = vec3::length(*(vec3*)&light_reflect_dir);
+        if (length != 0.0f)
+            *(vec3*)&light_reflect_dir *= 1.0f / length;
+    }
+    light_reflect_dir.w = 1.0f;
+
+    vec4 clip_plane;
+    if (set->lights[LIGHT_REFLECT].get_type() == LIGHT_SPOT) {
+        vec3 spot_direction;
+        vec4 position;
+        set->lights[LIGHT_REFLECT].get_spot_direction(spot_direction);
+        set->lights[LIGHT_REFLECT].get_position(position);
+        *(vec3*)&clip_plane = -spot_direction;
+        light_get_direction_from_position(&clip_plane, &set->lights[LIGHT_REFLECT], true);
+        clip_plane.w = -vec3::dot(*(vec3*)&position, *(vec3*)&clip_plane);
+    }
+    else if (set->lights[LIGHT_REFLECT].get_type() == LIGHT_POINT)
+        clip_plane = { 0.0f, -1.0f, 0.0f, 9999.0f };
+    else
+        clip_plane = { 0.0f, -1.0f, 0.0f, 0.0f };
+
+    vec4 light_chara_ibl_direction;
+    vec4 light_chara_position;
+    set->lights[LIGHT_CHARA].get_ibl_direction(light_chara_ibl_direction);
+    set->lights[LIGHT_CHARA].get_position(light_chara_position);
+
+    mat4 normal_tangent_transforms = mat4_identity;
+
+    float_t length = vec3::length(*(vec3*)&light_chara_ibl_direction);
+    if (length >= 0.000001f) {
+        vec3 ibl_direction = *(vec3*)&light_chara_ibl_direction * (1.0f / length);
+
+        length = vec3::length(*(vec3*)&light_chara_position);
+        if (length >= 0.000001f) {
+            vec3 position = *(vec3*)&light_chara_position * (1.0f / length);
+
+            vec3 axis = vec3::cross(ibl_direction, position);
+            length = vec3::length(axis);
+
+            float_t v52 = vec3::dot(ibl_direction, position);
+            float_t angle = fabsf(atan2f(length, v52));
+            if (angle >= 0.01f && angle <= 3.131592653589793f) {
+                if (length != 0.0f)
+                    axis *= 1.0f / length;
+
+                mat4_set(&axis, -angle, &normal_tangent_transforms);
+            }
+        }
+    }
+
+    static vec4& npr_cloth_spec_color = *(vec4*)0x0000000140C9B2A0;
+
+    rctx->set_scene_light(irradiance_r_transforms, irradiance_g_transforms, irradiance_b_transforms,
+        light_env_stage_diffuse, light_env_stage_specular, light_env_chara_diffuse,
+        light_env_chara_ambient, light_env_chara_specular,
+        light_env_reflect_diffuse, light_env_reflect_ambient,
+        light_env_proj_diffuse, light_env_proj_specular,
+        light_env_proj_position, light_stage_dir, light_stage_diff,
+        light_stage_spec, light_chara_dir, light_chara_spec,
+        light_chara_luce, light_chara_back, light_face_diff,
+        chara_color0, chara_color1, chara_f_dir, chara_f_ambient,
+        chara_f_diffuse, chara_tc_param, normal_tangent_transforms,
+        light_reflect_dir, clip_plane, npr_cloth_spec_color);
 }
 
 static void render_manager_free_render_textures() {

@@ -11,8 +11,8 @@
 #include "../KKdLib/farc.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
+#include "../AFTModsShared/uniform.hpp"
 #include "gl.hpp"
-#include "uniform.hpp"
 
 struct shader_sub_table {
     uint32_t sub_index;

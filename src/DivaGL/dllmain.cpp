@@ -27,7 +27,6 @@ static std::wstring GetDirPath();
 std::wstring CONFIG_FILE_STRING = GetDirPath() + L"\\plugins\\DivaGL.ini";
 LPCWSTR CONFIG_FILE = CONFIG_FILE_STRING.c_str();
 
-
 void FASTCALL divagl_main() {
     int32_t cpuid_data[4] = {};
     __cpuid(cpuid_data, 1);

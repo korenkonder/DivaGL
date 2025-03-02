@@ -5,7 +5,7 @@
 
 #include "draw_object.hpp"
 #include "../../KKdLib/hash.hpp"
-#include "../light_param/light.hpp"
+#include "../../AFTModsShared/light_param/light.hpp"
 #include "../shader_ft.hpp"
 #include "../texture.hpp"
 

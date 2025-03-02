@@ -5,7 +5,9 @@
 
 #include "rob.hpp"
 #include "../../KKdLib/str_utils.hpp"
+#include "../mdl/disp_manager.hpp"
 #include "../gl_state.hpp"
+#include "../object.hpp"
 #include "../render_manager.hpp"
 #include <Helpers.h>
 #include <algorithm>
@@ -33,11 +35,7 @@ struct rob_chara_age_age_object {
     rob_chara_age_age_object_vertex* vertex_data;
     int32_t vertex_data_size;
     int32_t vertex_array_size;
-#if SHARED_OBJECT_BUFFER
-    obj_mesh_vertex_buffer_aft obj_vert_buf;
-#else
     obj_mesh_vertex_buffer obj_vert_buf;
-#endif
     obj_mesh_index_buffer obj_index_buf;
     vec3 pos[10];
     int32_t disp_count;
@@ -124,33 +122,6 @@ struct rob_chara_arm_adjust_x {
     void reset();
 };
 
-const mat4* (FASTCALL* rob_chara_bone_data_get_mats_mat)(size_t rob_bone_data, size_t index)
-    = (const mat4 * (FASTCALL*)(size_t rob_bone_data, size_t index))0x0000000140419520;
-bool (FASTCALL* pv_osage_manager_array_get_disp)(int32_t* chara_id)
-    = (bool (FASTCALL*)(int32_t * chara_id))0x00000001404F9130;
-const char* (FASTCALL* chara_index_get_auth_3d_name)(chara_index chara_index)
-    = (const char* (FASTCALL*)(chara_index chara_index))0x0000000140508100;
-void(FASTCALL* sub_1405163C0)(rob_chara* rob_chr, int32_t index, mat4* mat)
-    = (void(FASTCALL*)(rob_chara* rob_chr, int32_t index, mat4 * mat))0x00000001405163C0;
-float_t(FASTCALL* rob_chara_get_max_face_depth)(rob_chara* rob_chr)
-    = (float_t(FASTCALL*)(rob_chara* rob_chr))0x0000000140516510;
-const mat4* (FASTCALL* rob_chara_get_bone_data_mat)(rob_chara* rob_chr, mot_bone_index index)
-    = (const mat4 * (FASTCALL*)(rob_chara* rob_chr, mot_bone_index index))0x0000000140516730;
-const mat4* (FASTCALL* sub_140516740)(rob_chara* rob_chr)
-    = (const mat4 * (FASTCALL*)(rob_chara* rob_chr))0x0000000140516740;
-bool(FASTCALL* rob_chara_array_check_visibility)(size_t rob_chr_smth, int32_t chara_id)
-    = (bool(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140531F50;
-rob_chara* (FASTCALL* rob_chara_array_get)(size_t rob_chr_smth, int32_t chara_id)
-    = (rob_chara * (FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140532030;
-size_t(FASTCALL* get_rob_chara_smth)() = (size_t(FASTCALL*)())0x00000001405320E0;
-rob_chara_item_equip* (FASTCALL* rob_chara_array_get_item_equip)(size_t rob_chr_smth, int32_t chara_id)
-    = (rob_chara_item_equip * (FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x0000000140532120;
-size_t(FASTCALL* rob_chara_array_get_bone_data)(size_t rob_chr_smth, int32_t chara_id)
-    = (size_t(FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x00000001405320F0;
-bool (FASTCALL* rob_chara_pv_data_array_check_chara_id)(size_t rob_chr_smth, int32_t chara_id)
-    = (bool (FASTCALL*)(size_t rob_chr_smth, int32_t chara_id))0x00000001405327B0;
-
-static rob_chara* rob_chara_array = (rob_chara*)0x00000001411B76A0;
 static rob_chara_age_age* rob_chara_age_age_array = (rob_chara_age_age*)0x00000001411E83C0;
 
 static bool& chara_reflect = *(bool*)0x00000001411ADAFC;
@@ -162,169 +133,6 @@ rob_chara_item_adjust_x rob_chara_item_adjust_x_array[ROB_CHARA_COUNT];
 rob_chara_arm_adjust_x rob_chara_arm_adjust_x_array[ROB_CHARA_COUNT];
 
 static void rob_chara_age_age_array_disp(int32_t chara_id, bool reflect, bool chara_color);
-
-SkinParam::CollisionParam::CollisionParam() : type(), node_idx(), pos() {
-    radius = 0.2f;
-}
-
-void RobOsage::SetAirRes(float_t air_res) {
-    skin_param_ptr->air_res = air_res;
-}
-
-void RobOsage::SetColiR(float_t coli_r) {
-    RobOsageNode* i_begin = nodes.data() + 1;
-    RobOsageNode* i_end = nodes.data() + nodes.size();
-    for (RobOsageNode* i = i_begin; i != i_end; i++)
-        i->data_ptr->skp_osg_node.coli_r = coli_r;
-}
-
-void RobOsage::SetForce(float_t force, float_t force_gain) {
-    skin_param_ptr->force = force;
-    skin_param_ptr->force_gain = force_gain;
-    RobOsageNode* i_begin = nodes.data() + 1;
-    RobOsageNode* i_end = nodes.data() + nodes.size();
-    for (RobOsageNode* i = i_begin; i != i_end; i++) {
-        i->data_ptr->force = force;
-        force = force * force_gain;
-    }
-}
-
-void RobOsage::SetHinge(float_t hinge_y, float_t hinge_z) {
-    hinge_y = min_def(hinge_y, 179.0f);
-    hinge_z = min_def(hinge_z, 179.0f);
-    hinge_y = hinge_y * DEG_TO_RAD_FLOAT;
-    hinge_z = hinge_z * DEG_TO_RAD_FLOAT;
-    RobOsageNode* i_begin = nodes.data() + 1;
-    RobOsageNode* i_end = nodes.data() + nodes.size();
-    for (RobOsageNode* i = i_begin; i != i_end; i++) {
-        RobOsageNodeData* data = i->data_ptr;
-        data->skp_osg_node.hinge.ymin = -hinge_y;
-        data->skp_osg_node.hinge.ymax = hinge_y;
-        data->skp_osg_node.hinge.zmin = -hinge_z;
-        data->skp_osg_node.hinge.zmax = hinge_z;
-    }
-}
-
-void RobOsage::SetInitRot(float_t init_rot_y, float_t init_rot_z) {
-    skin_param_ptr->init_rot.y = init_rot_y * DEG_TO_RAD_FLOAT;
-    skin_param_ptr->init_rot.z = init_rot_z * DEG_TO_RAD_FLOAT;
-}
-
-void RobOsage::SetMotionResetData(uint32_t motion_id, float_t frame) {
-    osage_reset = true;
-    auto elem = motion_reset_data.find({ motion_id, (int32_t)prj::roundf(frame * 1000.0f) });
-    if (elem != motion_reset_data.end() && elem->second.size() + 1 == nodes.size())
-        reset_data_list = &elem->second;
-}
-
-// 0x140480F40
-void RobOsage::SetNodesExternalForce(vec3* external_force, float_t strength) {
-    if (!external_force) {
-        RobOsageNode* i_begin = nodes.data() + 1;
-        RobOsageNode* i_end = nodes.data() + nodes.size();
-        for (RobOsageNode* i = i_begin; i != i_end; i++)
-            i->external_force = 0.0f;
-        return;
-    }
-
-    vec3 v4 = *external_force;
-    size_t exf = osage_setting.exf;
-    size_t v8 = 0;
-    if (exf >= 4) {
-        float_t strength4 = strength * strength * strength * strength;
-        v8 = ((exf - 4) / 4 + 1) * 4;
-        for (size_t v10 = v8 / 4; v10; v10--)
-            v4 *= strength4;
-    }
-
-    if (v8 < exf)
-        for (size_t v12 = exf - v8; v12; v12--)
-            v4 *= strength;
-
-    RobOsageNode* i_begin = nodes.data() + 1;
-    RobOsageNode* i_end = nodes.data() + nodes.size();
-    for (RobOsageNode* i = i_begin; i != i_end; i++) {
-        i->external_force = v4;
-        v4 *= strength;
-    }
-}
-
-// 0x140481540
-void RobOsage::SetNodesForce(float_t force) {
-    RobOsageNode* i_begin = nodes.data() + 1;
-    RobOsageNode* i_end = nodes.data() + nodes.size();
-    for (RobOsageNode* i = i_begin; i != i_end; i++)
-        i->force = force;
-}
-
-void RobOsage::SetRot(float_t rot_y, float_t rot_z) {
-    skin_param_ptr->rot.y = rot_y * DEG_TO_RAD_FLOAT;
-    skin_param_ptr->rot.z = rot_z * DEG_TO_RAD_FLOAT;
-}
-
-void rob_chara_item_equip_object::disp(const mat4& mat) {
-    if (obj_info.is_null())
-        return;
-
-    mdl::ObjFlags flags = disp_manager->get_obj_flags();
-    mdl::ObjFlags chara_flags = flags;
-    if (fabsf(alpha - 1.0f) > 0.000001f)
-        enum_or(chara_flags, obj_flags);
-    else
-        enum_and(chara_flags, ~(mdl::OBJ_ALPHA_ORDER_3 | mdl::OBJ_ALPHA_ORDER_2 | mdl::OBJ_ALPHA_ORDER_1));
-    disp_manager->set_obj_flags(chara_flags);
-    if (can_disp) {
-        disp_manager->entry_obj_by_object_info_object_skin(obj_info,
-            &texture_pattern, &texture_data, alpha, mats, ex_data_bone_mats.data(), 0, mat);
-
-        rob_chara_item_equip_mat = &mat;
-
-        for (ExNodeBlock*& i : node_blocks)
-            i->__vftable->Disp(i);
-    }
-    disp_manager->set_obj_flags(flags);
-}
-
-int32_t rob_chara_item_equip_object::get_bone_index(const char* name) {
-    int32_t(FASTCALL * sub_1401F13B0)(int32_t a1, const char* a2)
-        = (int32_t(FASTCALL*)(int32_t a1, const char* a2))0x00000001401F13B0;
-
-    int32_t bone_index = sub_1401F13B0(0, name);
-    if (bone_index == -1)
-        for (auto& i : ex_bones)
-            if (!str_utils_compare(name, i.first))
-                return 0x8000 | i.second;
-    return bone_index;
-}
-
-bone_node* rob_chara_item_equip_object::get_bone_node(
-    int32_t bone_index) {
-    if (!(bone_index & 0x8000))
-        return &bone_nodes[bone_index & 0x7FFF];
-    else if ((bone_index & 0x7FFF) < ex_data_bone_nodes.size())
-        return &ex_data_bone_nodes[bone_index & 0x7FFF];
-    return 0;
-}
-
-bone_node* rob_chara_item_equip_object::get_bone_node(const char* name) {
-    return get_bone_node(get_bone_index(name));
-}
-
-void rob_chara_item_equip_object::skp_load(void* can_prop) {
-    void (FASTCALL * rob_chara_item_equip_object__skp_load)(rob_chara_item_equip_object * This, void* can_prop)
-        = (void (FASTCALL*)(rob_chara_item_equip_object * This, void* can_prop))0x00000001405F43E0;
-    rob_chara_item_equip_object__skp_load(this, can_prop);
-}
-
-rob_chara_item_equip_object* rob_chara_item_equip::get_item_equip_object(item_id id) {
-    if (id >= ITEM_BODY && id <= ITEM_ITEM16)
-        return &item_equip_object[id];
-    return 0;
-}
-
-const mat4* rob_chara_get_adjust_data_mat(rob_chara* rob_chr) {
-    return &rob_chr->data.adjust_data.mat;
-}
 
 const mat4* rob_chara_get_item_adjust_data_mat(rob_chara* rob_chr) {
     return &rob_chara_item_adjust_x_array[rob_chr - rob_chara_array].mat;
@@ -674,9 +482,12 @@ HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
     sub_140512C20(rob_item_equip);
     rob_chara_age_age_array_disp(chara_id, chara_reflect, rob_item_equip->chara_color);
 
+    static void (FASTCALL * rob_chara_item_equip_object_disp)(rob_chara_item_equip_object* rob_bone_data)
+        = (void (FASTCALL*)(rob_chara_item_equip_object* rob_bone_data))0x00000001405F2700;
+
     if (rob_item_equip->item_equip_range)
         for (int32_t i = rob_item_equip->first_item_equip_object; i < rob_item_equip->max_item_equip_object; i++)
-            rob_item_equip->item_equip_object[i].disp(rob_item_equip->mat);
+            rob_chara_item_equip_object_disp(&rob_item_equip->item_equip_object[i]);
     else {
         for (int32_t i = ITEM_ATAMA; i < ITEM_MAX; i++) {
             mdl::ObjFlags chara_flags = (mdl::ObjFlags)0;
@@ -695,7 +506,7 @@ HOOK(void, FASTCALL, rob_chara_item_equip_disp, 0x0000000140512950,
                 enum_and(flags, ~mdl::OBJ_SHADOW);
 
             disp_manager.set_obj_flags((mdl::ObjFlags)(chara_flags | flags | mdl::OBJ_SSS));
-            rob_item_equip->item_equip_object[i].disp(rob_item_equip->mat);
+            rob_chara_item_equip_object_disp(&rob_item_equip->item_equip_object[i]);
         }
     }
     disp_manager.set_texture_color_coefficients(temp_texture_color_coeff);
@@ -765,6 +576,12 @@ HOOK(void, FASTCALL, sub_140526FD0, 0x0000000140526FD0,
         tex_chg_vec.push_back(chg_tex);
     }
     item_cos_data->texture_change.insert({ item_no, tex_chg_vec });
+}
+
+HOOK(void, FASTCALL, rob_chara_item_equip_object_disp, 0x00000001405F2700, rob_chara_item_equip_object* itm_eq_obj) {
+    rob_chara_item_equip_mat = &itm_eq_obj->item_equip->mat;
+    originalrob_chara_item_equip_object_disp(itm_eq_obj);
+    rob_chara_item_equip_mat = 0;
 }
 
 HOOK(void, FASTCALL, sub_1405335C0, 0x0000001405335C0, struc_223* a1) {
@@ -907,6 +724,7 @@ void rob_patch() {
     INSTALL_HOOK(rob_chara_item_equip_disp);
     INSTALL_HOOK(rob_chara_set_chara_size);
     INSTALL_HOOK(sub_140526FD0);
+    INSTALL_HOOK(rob_chara_item_equip_object_disp);
     INSTALL_HOOK(sub_1405335C0);
     INSTALL_HOOK(mothead_func_32);
     INSTALL_HOOK(sub_14053ACA0);

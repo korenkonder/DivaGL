@@ -130,13 +130,12 @@ struct light_set {
     mat4 irradiance_g;
     mat4 irradiance_b;
 
-    void get_ambient_intensity(vec4& value);
+    void get_ambient_intensity(vec4& value) const;
     void set_ambient_intensity(const vec4& value);
     void set_ambient_intensity(const vec4&& value);
-    void get_irradiance(mat4& r, mat4& g, mat4& b);
+    void get_irradiance(mat4& r, mat4& g, mat4& b) const;
     void set_irradiance(const mat4& r, const mat4& g, const mat4& b);
     void set_irradiance(const mat4&& r, const mat4&& g, const mat4&& b);
-    void data_set(light_set_id id);
 };
 
 static_assert(sizeof(light_set) == 0x5F0, "\"light_set\" struct should have a size of 0x5F0");

@@ -8,13 +8,13 @@
 #include "../../KKdLib/io/path.hpp"
 #include "../../KKdLib/prj/algorithm.hpp"
 #include "../../KKdLib/key_val.hpp"
+#include "../../AFTModsShared/bone_database.hpp"
+#include "../../AFTModsShared/canonical_properties.hpp"
+#include "../../AFTModsShared/dw.hpp"
+#include "../../AFTModsShared/resolution_mode.hpp"
 #include "../Glitter/glitter.hpp"
 #include "../rob/rob.hpp"
-#include "../bone_database.hpp"
-#include "../canonical_properties.hpp"
-#include "../dw.hpp"
 #include "../render_context.hpp"
-#include "../resolution_mode.hpp"
 #include <Helpers.h>
 
 class RobOsageTestDw : public dw::Shell {

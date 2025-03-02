@@ -9,15 +9,10 @@
 #include "../KKdLib/time.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
+#include "../AFTModsShared/shadow.hpp"
+#include "../AFTModsShared/types.hpp"
 #include "render_texture.hpp"
 #include "shared.hpp"
-#include "types.hpp"
-
-enum shadow_type_enum {
-    SHADOW_CHARA = 0,
-    SHADOW_STAGE,
-    SHADOW_MAX,
-};
 
 struct Shadow {
     void* __vftable;

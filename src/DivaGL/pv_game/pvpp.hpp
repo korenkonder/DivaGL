@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../../KKdLib/vec.hpp"
-#include "../types.hpp"
+#include "../../AFTModsShared/types.hpp"
 
 enum pvpp_chara_id : int8_t {
     PVPP_CHARA_PNONE =   -1,

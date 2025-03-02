@@ -7,6 +7,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DivaGL", "src\DivaGL\DivaGL.vcxproj", "{4D949362-9095-4113-9423-7E0492618F16}"
 	ProjectSection(ProjectDependencies) = postProject
 		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88} = {65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}
+		{BCF448EA-DCFF-49AF-97FF-361204C69358} = {BCF448EA-DCFF-49AF-97FF-361204C69358}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AFTModsShared", "src\AFTModsShared\AFTModsShared.vcxproj", "{BCF448EA-DCFF-49AF-97FF-361204C69358}"
+	ProjectSection(ProjectDependencies) = postProject
+		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88} = {65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}
 	EndProjectSection
 EndProject
 Global
@@ -23,6 +29,10 @@ Global
 		{4D949362-9095-4113-9423-7E0492618F16}.Debug|x64.Build.0 = Debug|x64
 		{4D949362-9095-4113-9423-7E0492618F16}.Release|x64.ActiveCfg = Release|x64
 		{4D949362-9095-4113-9423-7E0492618F16}.Release|x64.Build.0 = Release|x64
+		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Debug|x64.ActiveCfg = Debug|x64
+		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Debug|x64.Build.0 = Debug|x64
+		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Release|x64.ActiveCfg = Release|x64
+		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

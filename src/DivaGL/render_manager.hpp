@@ -7,10 +7,10 @@
 
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/vec.hpp"
+#include "../AFTModsShared/types.hpp"
 #include "render.hpp"
 #include "shadow.hpp"
 #include "stage.hpp"
-#include "types.hpp"
 #include "wrap.hpp"
 
 enum draw_pass_3d_type {

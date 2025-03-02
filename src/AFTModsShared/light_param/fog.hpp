@@ -43,7 +43,6 @@ struct fog {
     void get_color(vec4& value) const;
     void set_color(const vec4& value);
     void set_color(const vec4&& value);
-    void data_set(fog_id id);
 };
 
 static_assert(sizeof(fog) == 0x24, "\"fog\" struct should have a size of 0x24");

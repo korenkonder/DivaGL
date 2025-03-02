@@ -57,6 +57,8 @@ HOOK(int32_t, FASTCALL, data_init, 0x0000000140192FF0) {
     wrap_addresses();
 #endif
 
+    sprite_shared_init();
+
     auth_3d_patch();
     camera_patch();
     color_change_dw_patch();
@@ -314,9 +316,6 @@ void hook_funcs() {
     extern size_t glut_handle;
     *(uint64_t*)&buf[0x02] = (uint64_t)&glut_create_context;
     WRITE_MEMORY_STRING(glut_handle + 0x0000A970, buf, 0x0C);
-
-    // Patch font shader index
-    WRITE_MEMORY(0x00000001401982D8, uint32_t, SHADER_FT_FONT);
 }
 
 static HGLRC FASTCALL glut_create_context(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int32_t a5) {

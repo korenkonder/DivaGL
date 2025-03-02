@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../types.hpp"
+#include "../../AFTModsShared/types.hpp"
 
 enum pvsr_auth_3d_flags : uint8_t {
     PVSR_AUTH_3D_REPEAT         = 0x01,

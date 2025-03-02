@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{bcf448ea-dcff-49af-97ff-361204c69358}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>AFTModsShared</TargetName>
+    <OutDir>$(SolutionDir)lib\debug\</OutDir>
+    <IntDir>$(SolutionDir)obj\debug\AFTModsShared\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>AFTModsShared</TargetName>
+    <OutDir>$(SolutionDir)lib\release\</OutDir>
+    <IntDir>$(SolutionDir)obj\release\AFTModsShared\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OmitFramePointers>false</OmitFramePointers>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <UseFullPaths>false</UseFullPaths>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\debugopt\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>detours.lib;syelog.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)extern\src</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <OmitFramePointers>false</OmitFramePointers>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CallingConvention>FastCall</CallingConvention>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\release\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>detours.lib;syelog.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AFTModsShared.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="auth_2d.cpp" />
+    <ClCompile Include="auth_3d.cpp" />
+    <ClCompile Include="bone_database.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="canonical_properties.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="dw.cpp" />
+    <ClCompile Include="file_handler.cpp" />
+    <ClCompile Include="frame_rate_control.cpp" />
+    <ClCompile Include="light_param\fog.cpp" />
+    <ClCompile Include="light_param\light.cpp" />
+    <ClCompile Include="mdl\disp_manager.cpp" />
+    <ClCompile Include="object.cpp" />
+    <ClCompile Include="print_work.cpp" />
+    <ClCompile Include="resolution_mode.cpp" />
+    <ClCompile Include="rob\rob.cpp" />
+    <ClCompile Include="sprite.cpp" />
+    <ClCompile Include="task.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="uniform.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="auth_2d.hpp" />
+    <ClInclude Include="auth_3d.hpp" />
+    <ClInclude Include="bone_database.hpp" />
+    <ClInclude Include="camera.hpp" />
+    <ClInclude Include="canonical_properties.hpp" />
+    <ClInclude Include="color.hpp" />
+    <ClInclude Include="dw.hpp" />
+    <ClInclude Include="file_handler.hpp" />
+    <ClInclude Include="frame_rate_control.hpp" />
+    <ClInclude Include="item_table.hpp" />
+    <ClInclude Include="light_param\fog.hpp" />
+    <ClInclude Include="light_param\light.hpp" />
+    <ClInclude Include="mdl\disp_manager.hpp" />
+    <ClInclude Include="object.hpp" />
+    <ClInclude Include="print_work.hpp" />
+    <ClInclude Include="resolution_mode.hpp" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="rob\rob.hpp" />
+    <ClInclude Include="shader.hpp" />
+    <ClInclude Include="shadow.hpp" />
+    <ClInclude Include="sprite.hpp" />
+    <ClInclude Include="task.hpp" />
+    <ClInclude Include="texture.hpp" />
+    <ClInclude Include="types.hpp" />
+    <ClInclude Include="uniform.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

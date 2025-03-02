@@ -4,7 +4,9 @@
 */
 
 #include "color_change_dw.hpp"
+#include "../../AFTModsShared/dw.hpp"
 #include "../rob/rob.hpp"
+#include "../gl_state.hpp"
 #include "../texture.hpp"
 #include <Helpers.h>
 

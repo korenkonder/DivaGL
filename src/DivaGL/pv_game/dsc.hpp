@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../types.hpp"
+#include "../../AFTModsShared/types.hpp"
 
 struct dsc_data {
     int32_t func;

@@ -17,6 +17,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+typedef uint32_t AFTGLuint;
+typedef uint32_t AFTGLenum;
+typedef ssize_t AFTGLsizeiptr;
+
 namespace prj {
     typedef enum HeapCMallocType {
         HeapCMallocSystem = 0x00,

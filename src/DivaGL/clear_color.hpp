@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../KKdLib/default.hpp"
-#include "color.hpp"
+#include "../AFTModsShared/color.hpp"
 
 extern color4u8& clear_color;
 

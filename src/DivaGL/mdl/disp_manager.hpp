@@ -8,9 +8,10 @@
 #include "../../KKdLib/default.hpp"
 #include "../../KKdLib/mat.hpp"
 #include "../../KKdLib/vec.hpp"
+#include "../../AFTModsShared/mdl/disp_manager.hpp"
+#include "../../AFTModsShared/color.hpp"
 #include "../GL/array_buffer.hpp"
 #include "../GL/element_array_buffer.hpp"
-#include "../color.hpp"
 #include "../object.hpp"
 #include "../shadow.hpp"
 
@@ -39,41 +40,6 @@ namespace mdl {
         OBJ_KIND_USER,
         OBJ_KIND_TRANSLUCENT,
         OBJ_KIND_MAX,
-    };
-
-    enum ObjFlags : uint32_t {
-        OBJ_SHADOW                     = 0x00000001,
-        OBJ_2                          = 0x00000002,
-        OBJ_4                          = 0x00000004,
-        OBJ_8                          = 0x00000008,
-        OBJ_10                         = 0x00000010,
-        OBJ_20                         = 0x00000020,
-        OBJ_40                         = 0x00000040,
-        OBJ_SHADOW_OBJECT              = 0x00000080,
-        OBJ_CHARA_REFLECT              = 0x00000100,
-        OBJ_REFLECT                    = 0x00000200,
-        OBJ_REFRACT                    = 0x00000400,
-        OBJ_800                        = 0x00000800,
-        OBJ_TRANSLUCENT_SORT_BY_RADIUS = 0x00001000,
-        OBJ_SSS                        = 0x00002000,
-        OBJ_4000                       = 0x00004000,
-        OBJ_8000                       = 0x00008000,
-        OBJ_ALPHA_ORDER_1              = 0x00010000,
-        OBJ_ALPHA_ORDER_2              = 0x00020000,
-        OBJ_ALPHA_ORDER_3              = 0x00040000,
-        OBJ_80000                      = 0x00080000,
-        OBJ_100000                     = 0x00100000,
-        OBJ_200000                     = 0x00200000,
-        OBJ_400000                     = 0x00400000,
-        OBJ_800000                     = 0x00800000,
-        OBJ_USER                       = 0x01000000,
-        OBJ_2000000                    = 0x02000000,
-        OBJ_4000000                    = 0x04000000,
-        OBJ_8000000                    = 0x08000000,
-        OBJ_10000000                   = 0x10000000,
-        OBJ_20000000                   = 0x20000000,
-        OBJ_40000000                   = 0x40000000,
-        OBJ_NO_TRANSLUCENCY            = 0x80000000,
     };
 
     enum ObjType {
@@ -138,36 +104,6 @@ struct morph_struct {
 };
 
 static_assert(sizeof(morph_struct) == 0x08, "\"morph_struct\" struct should have a size of 0x08");
-
-struct texture_pattern_struct {
-    texture_id src;
-    texture_id dst;
-
-    texture_pattern_struct();
-    texture_pattern_struct(texture_id src, texture_id dst);
-};
-
-static_assert(sizeof(texture_pattern_struct) == 0x08, "\"texture_pattern_struct\" struct should have a size of 0x08");
-
-struct texture_transform_struct {
-    uint32_t id;
-    mat4 mat;
-
-    texture_transform_struct();
-    texture_transform_struct(uint32_t id, const mat4& mat);
-};
-
-static_assert(sizeof(texture_transform_struct) == 0x44, "\"texture_pattern_struct\" struct should have a size of 0x44");
-
-struct texture_data_struct {
-    int32_t field_0;
-    vec3 texture_color_coefficients;
-    vec3 texture_color_offset;
-    vec3 texture_specular_coefficients;
-    vec3 texture_specular_offset;
-};
-
-static_assert(sizeof(texture_data_struct) == 0x34, "\"texture_pattern_struct\" struct should have a size of 0x34");
 
 namespace mdl {
     struct ObjSubMeshArgs;
@@ -459,32 +395,33 @@ namespace mdl {
         void draw(mdl::ObjType type, int32_t depth_mask = 0, bool reflect_texture_mask = true, int32_t alpha = -1);
         /*void draw_show_vector(mdl::ObjType type, int32_t show_vector);*/
         void entry_list(ObjType type, ObjData* data);
-        bool entry_obj(const ::obj* obj, const mat4& mat, obj_mesh_vertex_buffer* obj_vert_buf,
+        bool entry_obj(const ::obj* obj, const mat4& mat, obj_mesh_vertex_buffer_divagl* obj_vert_buf,
             obj_mesh_index_buffer* obj_index_buf, const prj::vector<GLuint>* textures, const vec4* blend_color,
-            const mat4* bone_mat, const ::obj* obj_morph, obj_mesh_vertex_buffer* obj_morph_vert_buf,
+            const mat4* bone_mat, const ::obj* obj_morph, obj_mesh_vertex_buffer_divagl* obj_morph_vert_buf,
             int32_t instances_count, const mat4* instances_mat,
             draw_func func, const ObjSubMeshArgs* func_data, bool enable_bone_mat, bool local = false);
-        void entry_obj_by_obj(const mat4& mat,
-            const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
-            obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha);
 #if SHARED_OBJECT_BUFFER
         void entry_obj_by_obj(const mat4& mat,
-            const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
-            obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha);
+            const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
+            obj_mesh_index_buffer* obj_index_buf, const mat4* bone_mat, float_t alpha);
 #endif
+        void entry_obj_by_obj(const mat4& mat,
+            const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_divagl* obj_vert_buf,
+            obj_mesh_index_buffer* obj_index_buf, const mat4* bone_mat, float_t alpha);
+
         bool entry_obj_by_object_info(const mat4& mat, object_info obj_info);
-        bool entry_obj_by_object_info(const mat4& mat, object_info obj_info, mat4* bone_mat);
+        bool entry_obj_by_object_info(const mat4& mat, object_info obj_info, const mat4* bone_mat);
         bool entry_obj_by_object_info(const mat4& mat, object_info obj_info,
-            vec4* blend_color, mat4* bone_mat, int32_t instances_count, mat4* instances_mat,
+            const vec4* blend_color, const mat4* bone_mat, int32_t instances_count, const mat4* instances_mat,
             void(*func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data, bool enable_bone_mat, bool local = false);
-        bool entry_obj_by_object_info(const mat4& mat, object_info obj_info, float_t alpha, mat4* bone_mat = 0);
+        bool entry_obj_by_object_info(const mat4& mat, object_info obj_info, float_t alpha, const mat4* bone_mat = 0);
         bool entry_obj_by_object_info(const mat4& mat, object_info obj_info,
-            float_t r, float_t g, float_t b, float_t a, mat4* bone_mat = 0, bool local = false);
+            float_t r, float_t g, float_t b, float_t a, const mat4* bone_mat = 0, bool local = false);
         bool entry_obj_by_object_info(const mat4& mat, object_info obj_info,
-            vec4* blend_color, mat4* bone_mat = 0, bool local = false);
+            const vec4* blend_color, const mat4* bone_mat = 0, bool local = false);
         void entry_obj_by_object_info_object_skin(object_info obj_info,
             prj::vector<texture_pattern_struct>* texture_pattern, texture_data_struct* texture_data, float_t alpha,
-            mat4* matrices, mat4* ex_data_matrices, const mat4* mat, const mat4& global_mat);
+            const mat4* matrices, const mat4* ex_data_matrices, const mat4* mat, const mat4& global_mat);
         void entry_obj_etc(const mat4& mat, const EtcObj& etc, bool local = false);
         void entry_obj_user(const mat4& mat, UserArgsFunc func, void* data, ObjType type);
         GLuint get_vertex_array(const ObjSubMeshArgs* args);

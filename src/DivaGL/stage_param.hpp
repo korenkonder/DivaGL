@@ -7,8 +7,8 @@
 
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/vec.hpp"
+#include "../AFTModsShared/types.hpp"
 #include "object.hpp"
-#include "types.hpp"
 
 /*struct stage_param_data_coli {
     int32_t pv_id;

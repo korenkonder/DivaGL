@@ -4,7 +4,7 @@
 */
 
 #include "print_work.hpp"
-#include "shader_ft.hpp"
+#include "shader.hpp"
 
 static const font_character font_character_null = {};
 
@@ -182,7 +182,7 @@ void PrintWork::DrawTextMesh(app::text_flags flags, sprite_text_mesh& mesh) {
 
     args.SetVertexArray(mesh.vertices.data(), mesh.vertices.size());
     if (flags & app::TEXT_FLAG_FONT)
-        args.shader = SHADER_FT_FONT;
+        args.shader = _FONT;
     args.id.index = mesh.sprite_id;
     spr::put_sprite(args);
 }

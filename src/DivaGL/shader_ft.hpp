@@ -66,6 +66,8 @@ extern const shader_table shader_ft_table[];
 extern const size_t shader_ft_table_size;
 extern const shader_bind_func shader_ft_bind_func_table[];
 extern const size_t shader_ft_bind_func_table_size;
+extern const int32_t shader_ft_shader_name_map_table[];
+extern const size_t shader_ft_shader_name_map_table_size;
 
 extern shader_set_data shaders_ft;
 

@@ -6,7 +6,7 @@
 #include "render_context.hpp"
 #include "render_manager.hpp"
 #include "shader_ft.hpp"
-#include "uniform.hpp"
+#include "../AFTModsShared/uniform.hpp"
 
 draw_state_struct& draw_state = *(draw_state_struct*)0x00000001411A32B0;
 

@@ -4,7 +4,7 @@
 */
 
 #include "fbo.hpp"
-#include "../types.hpp"
+#include "../../AFTModsShared/types.hpp"
 
 namespace renderer {
     FBO::FBO() : flags(), width(), height(), buffer(), count(), textures() {

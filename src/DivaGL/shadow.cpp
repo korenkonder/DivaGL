@@ -4,6 +4,7 @@
 */
 
 #include "shadow.hpp"
+#include "../AFTModsShared/light_param/light.hpp"
 #include "render_context.hpp"
 #include "render_manager.hpp"
 #include <Helpers.h>

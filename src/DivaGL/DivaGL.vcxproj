@@ -79,16 +79,10 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\debugopt\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;AFTModsShared.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
-del "$(SolutionDir)bin\$(TargetName).exp"
-del "$(SolutionDir)bin\$(TargetName).lib"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -120,18 +114,12 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)extern\lib;$(SolutionDir)lib\release\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;detours.lib;syelog.lib;libdeflatestatic.lib;AFTModsShared.lib;KKdLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalOptions>/ignore:4098 /ignore:4099 /ignore:4286 %(AdditionalOptions)</AdditionalOptions>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)bin\$(TargetName).dva" "N:\DUMP\plugins\$(TargetName).dva"
-copy /Y "$(SolutionDir)bin\$(TargetName).pdb" "N:\DUMP\plugins\$(TargetName).pdb"
-del "$(SolutionDir)bin\$(TargetName).exp"
-del "$(SolutionDir)bin\$(TargetName).lib"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GL\array_buffer.cpp" />
@@ -161,8 +149,6 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="Glitter\scene.cpp" />
     <ClCompile Include="data_test\rob_osage_test.cpp" />
     <ClCompile Include="graphics\color_change_dw.cpp" />
-    <ClCompile Include="light_param\fog.cpp" />
-    <ClCompile Include="light_param\light.cpp" />
     <ClCompile Include="mdl\disp_manager.cpp" />
     <ClCompile Include="mdl\draw_object.cpp" />
     <ClCompile Include="pv_game\dsc.cpp" />
@@ -174,29 +160,20 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="renderer\fbo.cpp" />
     <ClCompile Include="renderer\transparency.cpp" />
     <ClCompile Include="rob\rob.cpp" />
-    <ClCompile Include="auth_2d.cpp" />
-    <ClCompile Include="bone_database.cpp" />
-    <ClCompile Include="canonical_properties.cpp" />
     <ClCompile Include="clear_color.cpp" />
-    <ClCompile Include="dw.cpp" />
     <ClCompile Include="auth_3d.cpp" />
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="color.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="effect.cpp" />
-    <ClCompile Include="file_handler.cpp" />
-    <ClCompile Include="frame_rate_control.cpp" />
     <ClCompile Include="gl_state.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="light_param.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="print.cpp" />
-    <ClCompile Include="print_work.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="render_context.cpp" />
     <ClCompile Include="render_manager.cpp" />
     <ClCompile Include="render_texture.cpp" />
-    <ClCompile Include="resolution_mode.cpp" />
     <ClCompile Include="screen_shot.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="shader_ft.cpp" />
@@ -205,9 +182,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="stage_param.cpp" />
-    <ClCompile Include="task.cpp" />
     <ClCompile Include="texture.cpp" />
-    <ClCompile Include="uniform.cpp" />
     <ClCompile Include="wrap.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -221,8 +196,6 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="Glitter\glitter.hpp" />
     <ClInclude Include="data_test\rob_osage_test.hpp" />
     <ClInclude Include="graphics\color_change_dw.hpp" />
-    <ClInclude Include="light_param\fog.hpp" />
-    <ClInclude Include="light_param\light.hpp" />
     <ClInclude Include="mdl\disp_manager.hpp" />
     <ClInclude Include="mdl\draw_object.hpp" />
     <ClInclude Include="pv_game\dsc.hpp" />
@@ -234,30 +207,20 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="renderer\fbo.hpp" />
     <ClInclude Include="renderer\transparency.hpp" />
     <ClInclude Include="rob\rob.hpp" />
-    <ClInclude Include="auth_2d.hpp" />
-    <ClInclude Include="bone_database.hpp" />
-    <ClInclude Include="canonical_properties.hpp" />
     <ClInclude Include="clear_color.hpp" />
-    <ClInclude Include="dw.hpp" />
     <ClInclude Include="auth_3d.hpp" />
     <ClInclude Include="camera.hpp" />
-    <ClInclude Include="color.hpp" />
     <ClInclude Include="effect.hpp" />
-    <ClInclude Include="file_handler.hpp" />
-    <ClInclude Include="frame_rate_control.hpp" />
     <ClInclude Include="gl.hpp" />
     <ClInclude Include="gl_state.hpp" />
     <ClInclude Include="hook.hpp" />
-    <ClInclude Include="item_table.hpp" />
     <ClInclude Include="light_param.hpp" />
     <ClInclude Include="object.hpp" />
     <ClInclude Include="print.hpp" />
-    <ClInclude Include="print_work.hpp" />
     <ClInclude Include="render.hpp" />
     <ClInclude Include="render_context.hpp" />
     <ClInclude Include="render_manager.hpp" />
     <ClInclude Include="render_texture.hpp" />
-    <ClInclude Include="resolution_mode.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="screen_shot.hpp" />
     <ClInclude Include="shader.hpp" />
@@ -267,10 +230,7 @@ del "$(SolutionDir)bin\$(TargetName).lib"</Command>
     <ClInclude Include="sprite.hpp" />
     <ClInclude Include="stage.hpp" />
     <ClInclude Include="stage_param.hpp" />
-    <ClInclude Include="task.hpp" />
     <ClInclude Include="texture.hpp" />
-    <ClInclude Include="types.hpp" />
-    <ClInclude Include="uniform.hpp" />
     <ClInclude Include="wrap.hpp" />
   </ItemGroup>
   <ItemGroup>

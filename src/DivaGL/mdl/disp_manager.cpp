@@ -5,6 +5,7 @@
 
 #include "disp_manager.hpp"
 #include "../../KKdLib/hash.hpp"
+#include "../../AFTModsShared/uniform.hpp"
 #include "../Glitter/glitter.hpp"
 #include "../rob/rob.hpp"
 #include "../gl_state.hpp"
@@ -13,7 +14,6 @@
 #include "../shader_ft.hpp"
 #include "../sprite.hpp"
 #include "../stage.hpp"
-#include "../uniform.hpp"
 #include "../wrap.hpp"
 #include "draw_object.hpp"
 #include <Helpers.h>
@@ -58,30 +58,12 @@ material_list_struct::material_list_struct(uint64_t hash, vec4& blend_color,
 
 }
 
-texture_pattern_struct::texture_pattern_struct() {
-
-}
-
-texture_pattern_struct::texture_pattern_struct(texture_id src, texture_id dst) : src(src), dst(dst) {
-
-}
-
-texture_transform_struct::texture_transform_struct() {
-    id = (uint32_t)-1;
-    mat = mat4_identity;
-}
-
-texture_transform_struct::texture_transform_struct(uint32_t id, const mat4& mat) : id(id), mat(mat) {
-
-}
-
 namespace mdl {
     prj::vector<DispManager::vertex_array> vertex_array_cache;
     prj::vector<DispManager::etc_vertex_array> etc_vertex_array_cache;
 
     int32_t material_list_count;
     material_list_struct material_list_array[MATERIAL_LIST_COUNT];
-
 
     bool obj_reflect_enable;
 
@@ -2375,9 +2357,9 @@ namespace mdl {
         return obj_axis_aligned_bounding_box_check_visibility_default(aabb, mat);
     }
 
-    bool DispManager::entry_obj(const ::obj* obj, const mat4& mat, obj_mesh_vertex_buffer* obj_vert_buf,
+    bool DispManager::entry_obj(const ::obj* obj, const mat4& mat, obj_mesh_vertex_buffer_divagl* obj_vert_buf,
         obj_mesh_index_buffer* obj_index_buf, const prj::vector<GLuint>* textures, const vec4* blend_color,
-        const mat4* bone_mat, const ::obj* obj_morph, obj_mesh_vertex_buffer* obj_morph_vert_buf,
+        const mat4* bone_mat, const ::obj* obj_morph, obj_mesh_vertex_buffer_divagl* obj_morph_vert_buf,
         int32_t instances_count, const mat4* instances_mat,
         draw_func func, const ObjSubMeshArgs* func_data, bool enable_bone_mat, bool local) {
         if (!obj_vert_buf || !obj_index_buf)
@@ -2986,40 +2968,38 @@ namespace mdl {
         return true;
     }
 
-    void DispManager::entry_obj_by_obj(const mat4& mat,
-        const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
-        obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
-        if (!obj)
-            return;
-
-        const vec4 blend_color(1.0f, 1.0f, 1.0f, alpha);
-
-        entry_obj(obj, mat, obj_vert_buf, obj_index_buf, textures,
-            alpha < 1.0f ? &blend_color : 0, bone_mat, 0, 0, 0, 0, 0, 0, !!bone_mat);
-    }
-
 #if SHARED_OBJECT_BUFFER
 #pragma warning(push)
+#pragma warning(disable: 6385)
 #pragma warning(disable: 6386)
     void DispManager::entry_obj_by_obj(const mat4& mat,
-        const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_aft* obj_vert_buf,
-        obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
+        const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer* obj_vert_buf,
+        obj_mesh_index_buffer* obj_index_buf, const mat4* bone_mat, float_t alpha) {
         if (!obj)
             return;
 
-        obj_mesh_vertex_buffer* _obj_vert_buf = new (_operator_new(
-            sizeof(obj_mesh_vertex_buffer) * obj->num_mesh)) obj_mesh_vertex_buffer[obj->num_mesh];
+        const int32_t num_mesh = obj->num_mesh;
+        obj_mesh_vertex_buffer_divagl* _obj_vert_buf = new (_operator_new(
+            sizeof(obj_mesh_vertex_buffer_divagl) * num_mesh)) obj_mesh_vertex_buffer_divagl[num_mesh];
         if (!_obj_vert_buf)
             return;
 
-        for (int32_t i = 0; i < obj->num_mesh; i++) {
-            _obj_vert_buf[i].count = obj_vert_buf[i].count;
-            _obj_vert_buf[i].buffers[0] = obj_vert_buf[i].buffers[0];
-            _obj_vert_buf[i].buffers[1] = obj_vert_buf[i].buffers[1];
-            _obj_vert_buf[i].buffers[2] = obj_vert_buf[i].buffers[2];
-            _obj_vert_buf[i].index = obj_vert_buf[i].index;
-            _obj_vert_buf[i].size = obj_vert_buf[i].get_size();
-            _obj_vert_buf[i].offset = 0;
+        for (int32_t i = 0; i < num_mesh; i++) {
+            obj_mesh_vertex_buffer& src_buf = obj_vert_buf[i];
+            obj_mesh_vertex_buffer_divagl& dst_buf = _obj_vert_buf[i];
+            dst_buf = src_buf;
+            if (src_buf.buffers[0]) {
+                GLint buffer;
+                GLint size;
+                glGetIntegervDLL(GL_ARRAY_BUFFER_BINDING, &buffer);
+                glBindBuffer(src_buf.target, src_buf.buffers[0]);
+                glGetBufferParameteriv(src_buf.target, GL_BUFFER_SIZE, &size);
+                glBindBuffer(src_buf.target, buffer);
+                dst_buf.size = size;
+            }
+            else
+                dst_buf.size = 0;
+            dst_buf.offset = 0;
         }
 
         vec4 blend_color = 1.0f;
@@ -3033,17 +3013,29 @@ namespace mdl {
 #pragma warning(pop)
 #endif
 
+    void DispManager::entry_obj_by_obj(const mat4& mat,
+        const ::obj* obj, prj::vector<GLuint>* textures, obj_mesh_vertex_buffer_divagl* obj_vert_buf,
+        obj_mesh_index_buffer* obj_index_buf, const mat4* bone_mat, float_t alpha) {
+        if (!obj)
+            return;
+
+        const vec4 blend_color(1.0f, 1.0f, 1.0f, alpha);
+
+        entry_obj(obj, mat, obj_vert_buf, obj_index_buf, textures,
+            alpha < 1.0f ? &blend_color : 0, bone_mat, 0, 0, 0, 0, 0, 0, !!bone_mat);
+    }
+
     bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info) {
         return entry_obj_by_object_info(mat, obj_info, 0, 0, 0, 0, 0, 0, false);
     }
 
-    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info, mat4* bone_mat) {
+    bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info, const mat4* bone_mat) {
         vec4 blend_color = 1.0f;
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true);
     }
 
     bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info,
-        vec4* blend_color, mat4* bone_mat, int32_t instances_count, mat4* instances_mat,
+        const vec4* blend_color, const mat4* bone_mat, int32_t instances_count, const mat4* instances_mat,
         void(*func)(const ObjSubMeshArgs*), const ObjSubMeshArgs* func_data,
         bool enable_bone_mat, bool local) {
         if (obj_info.id == (uint16_t)-1 && obj_info.set_id == (uint16_t)-1)
@@ -3054,14 +3046,16 @@ namespace mdl {
             return false;
 
         prj::vector<GLuint>* textures = objset_info_storage_get_set_gentex(obj_info.set_id);
-        obj_mesh_vertex_buffer* obj_vert_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(obj_info, 0);
+        obj_mesh_vertex_buffer_divagl* obj_vert_buffer = (obj_mesh_vertex_buffer_divagl*)
+            objset_info_storage_get_obj_mesh_vertex_buffer(obj_info, 0);
         obj_mesh_index_buffer* obj_index_buffer = objset_info_storage_get_obj_mesh_index_buffer(obj_info, 0);
 
         ::obj* obj_morph = 0;
-        obj_mesh_vertex_buffer* obj_morph_vert_buffer = 0;
+        obj_mesh_vertex_buffer_divagl* obj_morph_vert_buffer = 0;
         if (morph.object.set_id != (uint16_t)-1) {
             obj_morph = objset_info_storage_get_obj(morph.object);
-            obj_morph_vert_buffer = objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
+            obj_morph_vert_buffer = (obj_mesh_vertex_buffer_divagl*)
+                objset_info_storage_get_obj_mesh_vertex_buffer(morph.object, 0);
         }
 
         return entry_obj(obj, mat, obj_vert_buffer, obj_index_buffer,
@@ -3070,26 +3064,26 @@ namespace mdl {
     }
 
     bool DispManager::entry_obj_by_object_info(const mat4& mat,
-        object_info obj_info, float_t alpha, mat4* bone_mat) {
+        object_info obj_info, float_t alpha, const mat4* bone_mat) {
         vec4 blend_color = 1.0f;
         blend_color.w = alpha;
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true);
     }
 
     bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info,
-        float_t r, float_t g, float_t b, float_t a, mat4* bone_mat, bool local) {
+        float_t r, float_t g, float_t b, float_t a, const mat4* bone_mat, bool local) {
         vec4 blend_color = { r, g, b, a };
         return entry_obj_by_object_info(mat, obj_info, &blend_color, bone_mat, 0, 0, 0, 0, true, local);
     }
 
     bool DispManager::entry_obj_by_object_info(const mat4& mat, object_info obj_info,
-        vec4* blend_color, mat4* bone_mat, bool local) {
+        const vec4* blend_color, const mat4* bone_mat, bool local) {
         return entry_obj_by_object_info(mat, obj_info, blend_color, 0, 0, 0, 0, 0, false, local);
     }
 
     void DispManager::entry_obj_by_object_info_object_skin(object_info obj_info,
         prj::vector<texture_pattern_struct>* texture_pattern, texture_data_struct* texture_data, float_t alpha,
-        mat4* matrices, mat4* ex_data_matrices, const mat4* mat, const mat4& global_mat) {
+        const mat4* matrices, const mat4* ex_data_matrices, const mat4* mat, const mat4& global_mat) {
         obj_skin* skin = objset_info_storage_get_obj_skin(obj_info);
         if (!skin)
             return;
@@ -3593,17 +3587,10 @@ namespace mdl {
     }
 
 
-#if SHARED_OBJECT_BUFFER
-    HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
-        obj_mesh_vertex_buffer_aft* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
-        disp_manager->entry_obj_by_obj(*rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
-    }
-#else
     HOOK(void, FASTCALL, DispManager__entry_obj_by_obj, 0x0000000140439A20, obj* obj_data, prj::vector<GLuint>* textures,
         obj_mesh_vertex_buffer* obj_vert_buf, obj_mesh_index_buffer* obj_index_buf, mat4* bone_mat, float_t alpha) {
         disp_manager->entry_obj_by_obj(*rob_chara_item_equip_mat, obj_data, textures, obj_vert_buf, obj_index_buf, bone_mat, alpha);
     }
-#endif
 
     HOOK(void, FASTCALL, disp_manager_refresh, 0x0000000140439D20) {
         disp_manager->refresh();
@@ -3621,6 +3608,13 @@ namespace mdl {
         disp_manager->entry_obj_etc(mat, etc);
     }
 
+    HOOK(void, FASTCALL, DispManager__entry_obj_by_object_info_object_skin, 0x00000001405E8E20, uint32_t obj_info,
+        prj::vector<texture_pattern_struct>* texture_pattern, texture_data_struct* texture_data, float_t alpha,
+        const mat4* matrices, const mat4* ex_data_matrices, const mat4* mat) {
+        disp_manager->entry_obj_by_object_info_object_skin(obj_info, texture_pattern,
+            texture_data, alpha, matrices, ex_data_matrices, mat, *rob_chara_item_equip_mat);
+    }
+
     void disp_manager_patch() {
         INSTALL_HOOK(DataTestObjectManager__Disp);
         INSTALL_HOOK(MeshDw__DrawObjAxisAlignedBoundingBox);
@@ -3630,6 +3624,7 @@ namespace mdl {
         INSTALL_HOOK(DispManager__entry_obj_by_obj);
         INSTALL_HOOK(disp_manager_refresh);
         INSTALL_HOOK(sub_1404BCC60);
+        INSTALL_HOOK(DispManager__entry_obj_by_object_info_object_skin);
     }
 }
 

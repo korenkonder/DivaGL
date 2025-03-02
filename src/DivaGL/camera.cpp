@@ -5,10 +5,8 @@
 
 #include "camera.hpp"
 #include "render.hpp"
-#include "resolution_mode.hpp"
+#include "../AFTModsShared/resolution_mode.hpp"
 #include <Helpers.h>
-
-camera_struct& camera_data = *(camera_struct*)0x0000000140FBC2C0;
 
 static void (FASTCALL* camera_struct__update_view)(camera_struct& cam)
     = (void (FASTCALL*)(camera_struct & cam))0x00000001401F7690;
@@ -73,15 +71,6 @@ HOOK(void, FASTCALL, camera_update, 0x00000001401F8970) {
     camera_data.fast_change_hist1 = camera_data.fast_change_hist0;
     camera_data.fast_change_hist0 = camera_data.fast_change;
     camera_data.fast_change = false;
-}
-
-void camera_struct::get_view_point(vec3& value) {
-    value = view_point;
-}
-
-void camera_struct::get_view_point(vec4& value) {
-    *(vec3*)&value = view_point;
-    value.w = 0.0f;
 }
 
 void camera_patch() {

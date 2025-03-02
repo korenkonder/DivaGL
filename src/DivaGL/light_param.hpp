@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "types.hpp"
+#include "../AFTModsShared/types.hpp"
 
 extern void light_param_patch();
 extern void light_param_data_storage_data_set_ibl();

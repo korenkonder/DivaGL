@@ -7,8 +7,8 @@
 #include "../KKdLib/half_t.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
+#include "../AFTModsShared/uniform.hpp"
 #include "print.hpp"
-#include "uniform.hpp"
 #include <Helpers.h>
 #include <time.h>
 
