@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AFTModsShared", "src\AFTMod
 		{65707AD3-568A-4FE9-A75E-BDBF3D5EFC88} = {65707AD3-568A-4FE9-A75E-BDBF3D5EFC88}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpriteDrawLimit", "src\SpriteDrawLimit\SpriteDrawLimit.vcxproj", "{87D41F20-B8C6-43BB-A89D-3A1979928613}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,6 +35,10 @@ Global
 		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Debug|x64.Build.0 = Debug|x64
 		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Release|x64.ActiveCfg = Release|x64
 		{BCF448EA-DCFF-49AF-97FF-361204C69358}.Release|x64.Build.0 = Release|x64
+		{87D41F20-B8C6-43BB-A89D-3A1979928613}.Debug|x64.ActiveCfg = Debug|x64
+		{87D41F20-B8C6-43BB-A89D-3A1979928613}.Debug|x64.Build.0 = Debug|x64
+		{87D41F20-B8C6-43BB-A89D-3A1979928613}.Release|x64.ActiveCfg = Release|x64
+		{87D41F20-B8C6-43BB-A89D-3A1979928613}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
