@@ -5,7 +5,6 @@
 
 #include "glitter.hpp"
 #include "../object.hpp"
-#include "../texture.hpp"
 
 namespace Glitter {
     EffectGroupX::EffectGroupX() : effects(), load_count(), resources(),

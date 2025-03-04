@@ -165,7 +165,9 @@
     <ClInclude Include="rob\rob.hpp" />
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="shadow.hpp" />
+    <ClInclude Include="shared.hpp" />
     <ClInclude Include="sprite.hpp" />
+    <ClInclude Include="stage.hpp" />
     <ClInclude Include="task.hpp" />
     <ClInclude Include="texture.hpp" />
     <ClInclude Include="types.hpp" />

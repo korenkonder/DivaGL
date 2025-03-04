@@ -5,7 +5,6 @@
 
 #include "light.hpp"
 #include "../../KKdLib/mat.hpp"
-#include "../../AFTModsShared/uniform.hpp"
 
 light_set* light_set_data = (light_set*)0x00000001411A00A0;
 

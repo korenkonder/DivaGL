@@ -755,30 +755,6 @@ namespace dw {
         bool round;
         bool field_A5;
         bool field_A6;
-        __int64 field_A8;
-        __int64 field_B0;
-        __int64 field_B8;
-        __int64 field_C0;
-        __int64 field_C8;
-        __int64 field_D0;
-        __int64 field_D8;
-        __int64 field_E0;
-        __int64 field_E8;
-        __int64 field_F0;
-        __int64 field_F8;
-        __int64 field_100;
-        __int64 field_108;
-        __int64 field_110;
-        __int64 field_118;
-        __int64 field_120;
-        __int64 field_128;
-        __int64 field_130;
-        __int64 field_138;
-        __int64 field_140;
-        __int64 field_148;
-        __int64 field_150;
-        __int64 field_158;
-        __int64 field_160;
 
         ScrollBar(Control* parent, Flags flags);
         virtual ~ScrollBar() override;
@@ -818,7 +794,7 @@ namespace dw {
         }
     };
 
-    static_assert(sizeof(dw::ScrollBar) == 0x168, "\"dw::ScrollBar\" struct should have a size of 0x168");
+    static_assert(sizeof(dw::ScrollBar) == 0xA8, "\"dw::ScrollBar\" struct should have a size of 0xA8");
 
     class ShellCloseButton : public Button {
     public:

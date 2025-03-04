@@ -5,12 +5,11 @@
 
 #include "pv_game.hpp"
 #include "../../KKdLib/io/memory_stream.hpp"
+#include "../../AFTModsShared/rob/rob.hpp"
 #include "../../AFTModsShared/auth_2d.hpp"
+#include "../../AFTModsShared/auth_3d.hpp"
 #include "../../AFTModsShared/print_work.hpp"
 #include "../Glitter/glitter.hpp"
-#include "../rob/rob.hpp"
-#include "../auth_3d.hpp"
-#include "../render_texture.hpp"
 #include "dsc.hpp"
 #include "firstread.hpp"
 #include "pvpp.hpp"
@@ -1422,8 +1421,13 @@ void x_pv_game_chara_effect::set_chara_effect(int32_t chara_id, int32_t index, i
                 length -= temp + 1;
             }
 
+        int64_t next_change_field_time = -1;
         if (key != change_fields->data() + change_fields->size())
-            max_frame = (float_t)((double_t)std::abs(*key - auth_3d[index].time) * 0.000000001) * 60.0f - 1.0f;
+            next_change_field_time = *key;
+
+        if (next_change_field_time >= 0)
+            max_frame = (float_t)((double_t)std::abs(next_change_field_time
+                - auth_3d[index].time) * 0.000000001) * 60.0f - 1.0f;
     }
 
     id.set_max_frame(max_frame);
@@ -1767,8 +1771,13 @@ void x_pv_game_effect::set_song_effect_time_inner(int32_t index, int64_t time, b
                 length -= temp + 1;
             }
 
+        int64_t next_change_field_time = -1;
         if (key != change_fields->data() + change_fields->size())
-            max_frame = (float_t)((double_t)std::abs(*key - song_effect.time) * 0.000000001) * 60.0f - 1.0f;
+            next_change_field_time = *key;
+
+        if (next_change_field_time >= 0)
+            max_frame = (float_t)((double_t)std::abs(next_change_field_time
+                - song_effect.time) * 0.000000001) * 60.0f - 1.0f;
     }
 
     for (x_pv_game_song_effect_auth_3d& i : song_effect.auth_3d) {
@@ -3942,38 +3951,6 @@ bool TaskPvGameX::dest() {
 
 void TaskPvGameX::disp() {
     data.disp();
-
-    static bool reflect_show;
-    if (reflect_full && reflect_show) {
-        extern RenderTexture* reflect_tex;
-        if (reflect_tex) {
-            const float_t width = 1280.0f;
-            const float_t height = 720.0f;
-
-            const float_t reflection_quality = 1.0f;
-
-            spr::put_sprite_rect({ 0.0f, 0.0f, width, height }, RESOLUTION_MODE_HD,
-                spr::SPR_PRIO_DEFAULT, { 0x00, 0x00, 0x00, 0xFF }, 0);
-
-            spr::SprArgs args;
-            args.resolution_mode_screen = RESOLUTION_MODE_HD;
-            args.resolution_mode_sprite = RESOLUTION_MODE_HD;
-            args.SetSpriteSize({ width, height });
-            args.SetTexturePosSize(0.0f,
-                (float_t)reflect_tex->GetHeight() - (float_t)reflect_tex->GetHeight() * reflection_quality,
-                (float_t)reflect_tex->GetWidth() * reflection_quality,
-                (float_t)reflect_tex->GetHeight() * reflection_quality);
-            args.texture = reflect_tex->color_texture;
-            args.color = color4u8_bgra(0xFF, 0xFF, 0xFF, 0x3F);
-            args.scale.x = 1.0f;
-            args.scale.y = -1.0f;
-            args.center.x = width * 0.5f;
-            args.center.y = height * 0.5f;
-            args.trans.x = width * 0.5f;
-            args.trans.y = height * 0.5f;
-            spr::put_sprite(args);
-        }
-    }
 }
 
 void TaskPvGameX::load(int32_t pv_id, int32_t modules[6]) {

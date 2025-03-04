@@ -4,15 +4,8 @@
 */
 
 #include "auth_3d.hpp"
-#include "../KKdLib/hash.hpp"
-#include "../AFTModsShared/canonical_properties.hpp"
-#include "../AFTModsShared/file_handler.hpp"
-#include "../AFTModsShared/types.hpp"
-#include "mdl/disp_manager.hpp"
-#include "rob/rob.hpp"
-#include "sprite.hpp"
-#include "texture.hpp"
-#include <Helpers.h>
+#include "canonical_properties.hpp"
+#include "file_handler.hpp"
 
 struct struc_8 {
     float_t max_frame;
@@ -283,7 +276,7 @@ void auth_3d_id::set_chara_id(int32_t value) {
     }
 }
 
-void auth_3d_id::set_chara_item(bool value) {
+void auth_3d_id::set_chara_item(bool value) { // X
     if (id >= 0 && ((id & 0x7FFF) < AUTH_3D_DATA_COUNT)) {
         auth_3d* auth = &auth_3d_data->data[id & 0x7FFF];
         if (auth->id == id)
@@ -358,7 +351,7 @@ void auth_3d_id::set_pos(int32_t value) {
     }
 }
 
-void auth_3d_id::set_reflect(bool value) {
+void auth_3d_id::set_reflect(bool value) { // X
     if (id >= 0 && ((id & 0x7FFF) < AUTH_3D_DATA_COUNT)) {
         auth_3d* auth = &auth_3d_data->data[id & 0x7FFF];
         if (auth->id == id)

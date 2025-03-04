@@ -6,9 +6,9 @@
 #pragma once
 
 #include "../../KKdLib/vec.hpp"
+#include "../../AFTModsShared/object.hpp"
+#include "../../AFTModsShared/stage.hpp"
 #include "../../AFTModsShared/types.hpp"
-#include "../object.hpp"
-#include "../stage.hpp"
 
 struct firstread_str_array_string {
     int32_t id;

@@ -8,11 +8,11 @@
 #include "../KKdLib/default.hpp"
 #include "../KKdLib/mat.hpp"
 #include "../KKdLib/vec.hpp"
-#include "../AFTModsShared/light_param/fog.hpp"
-#include "../AFTModsShared/light_param/light.hpp"
-#include "../AFTModsShared/mdl/disp_manager.hpp"
-#include "../AFTModsShared/rob/rob.hpp"
-#include "../AFTModsShared/frame_rate_control.hpp"
+#include "light_param/fog.hpp"
+#include "light_param/light.hpp"
+#include "mdl/disp_manager.hpp"
+#include "rob/rob.hpp"
+#include "frame_rate_control.hpp"
 #include "object.hpp"
 #include "types.hpp"
 
@@ -537,7 +537,7 @@ struct auth_3d_id {
     void set_alpha_obj_flags(float_t alpha, mdl::ObjFlags obj_flags);
     void set_camera_root_update(bool value);
     void set_chara_id(int32_t value);
-    void set_chara_item(bool value);
+    void set_chara_item(bool value); // X
     void set_enable(bool value);
     void set_frame_rate(FrameRateControl* value);
     void set_last_frame(float_t value);

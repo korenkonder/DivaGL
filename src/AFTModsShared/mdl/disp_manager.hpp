@@ -48,6 +48,21 @@ namespace mdl {
     };
 }
 
+struct morph_struct {
+    object_info object;
+    float_t weight;
+
+    inline morph_struct() : weight() {
+
+    }
+
+    inline morph_struct(object_info object, float_t weight) : object(object), weight(weight) {
+
+    }
+};
+
+static_assert(sizeof(morph_struct) == 0x08, "\"morph_struct\" struct should have a size of 0x08");
+
 struct texture_pattern_struct {
     texture_id src;
     texture_id dst;

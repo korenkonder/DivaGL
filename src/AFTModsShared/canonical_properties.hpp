@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../AFTModsShared/types.hpp"
+#include "types.hpp"
 #include <stdexcept>
 
 struct CanonicalProperties {

@@ -5,18 +5,12 @@
 
 #include "auth_3d.hpp"
 #include "../KKdLib/hash.hpp"
-#include "../AFTModsShared/light_param/fog.hpp"
-#include "../AFTModsShared/light_param/light.hpp"
 #include "../AFTModsShared/canonical_properties.hpp"
-#include "../AFTModsShared/file_handler.hpp"
-#include "../AFTModsShared/frame_rate_control.hpp"
-#include "../AFTModsShared/types.hpp"
 #include "mdl/disp_manager.hpp"
 #include "pv_game/firstread.hpp"
 #include "rob/rob.hpp"
 #include "render_context.hpp"
 #include "sprite.hpp"
-#include "texture.hpp"
 #include <Helpers.h>
 
 enum auth_3d_material_list_flags {
@@ -490,7 +484,7 @@ static bool auth_3d_material_list_parse(auth_3d_material_list* ml, struc_8* a2, 
 
 static void auth_3d_set_material_list(auth_3d* auth) {
     int32_t mat_list_count = 0;
-    material_list_struct mat_list[TEXTURE_PATTERN_COUNT];
+    material_list_struct mat_list[MATERIAL_LIST_COUNT];
     for (auth_3d_curve& i : auth->curve) {
         if (i.type != 1)
             continue;

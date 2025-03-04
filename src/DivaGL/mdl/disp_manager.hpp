@@ -10,10 +10,10 @@
 #include "../../KKdLib/vec.hpp"
 #include "../../AFTModsShared/mdl/disp_manager.hpp"
 #include "../../AFTModsShared/color.hpp"
+#include "../../AFTModsShared/shadow.hpp"
 #include "../GL/array_buffer.hpp"
 #include "../GL/element_array_buffer.hpp"
 #include "../object.hpp"
-#include "../shadow.hpp"
 
 #define MATERIAL_LIST_COUNT 24
 #define TEXTURE_PATTERN_COUNT 24
@@ -97,13 +97,6 @@ struct material_list_struct {
     material_list_struct(uint64_t hash, vec4& blend_color,
         vec4u8& has_blend_color, vec4& emission, vec4u8& has_emission);
 };
-
-struct morph_struct {
-    object_info object;
-    float_t weight;
-};
-
-static_assert(sizeof(morph_struct) == 0x08, "\"morph_struct\" struct should have a size of 0x08");
 
 namespace mdl {
     struct ObjSubMeshArgs;

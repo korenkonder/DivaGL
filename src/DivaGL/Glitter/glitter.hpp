@@ -13,12 +13,11 @@
 #include "../../AFTModsShared/file_handler.hpp"
 #include "../../AFTModsShared/frame_rate_control.hpp"
 #include "../../AFTModsShared/task.hpp"
+#include "../../AFTModsShared/texture.hpp"
 #include "../../AFTModsShared/types.hpp"
 #include "../GL/array_buffer.hpp"
 #include "../GL/element_array_buffer.hpp"
-#include "../gl.hpp"
 #include "../object.hpp"
-#include "../texture.hpp"
 
 #define SHARED_GLITTER_BUFFER (1)
 

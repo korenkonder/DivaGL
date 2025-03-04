@@ -5,6 +5,7 @@
 
 #include "disp_manager.hpp"
 #include "../../KKdLib/hash.hpp"
+#include "../../AFTModsShared/camera.hpp"
 #include "../../AFTModsShared/uniform.hpp"
 #include "../Glitter/glitter.hpp"
 #include "../rob/rob.hpp"

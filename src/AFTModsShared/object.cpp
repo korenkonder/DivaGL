@@ -4,9 +4,6 @@
 */
 
 #include "object.hpp"
-#include "../KKdLib/hash.hpp"
-#include "../AFTModsShared/file_handler.hpp"
-#include <Helpers.h>
 
 void (FASTCALL* objset_info_storage_unload_set)(int32_t set)
     = (void (FASTCALL*)(int32_t set))0x00000001404599B0;
