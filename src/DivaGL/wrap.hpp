@@ -366,7 +366,7 @@ typedef void (GLAPIENTRY * PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bu
 typedef void (GLAPIENTRY * PFNGLGETSHADERIVPROC) (GLuint shader, GLenum pname, GLint * params);
 typedef void (GLAPIENTRY * PFNGLGETSHADERSOURCEPROC) (GLuint shader, GLsizei bufSize, GLsizei * length, GLchar * source);
 typedef void (GLAPIENTRY * PFNGLGETSHADERSOURCEARBPROC) (GLhandleARB obj, GLsizei maxLength, GLsizei * length, GLcharARB * source);
-typedef GLubyte const *  (GLAPIENTRY * PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
+typedef GLubyte const * (GLAPIENTRY * PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 typedef void (GLAPIENTRY * PFNGLGETTEXPARAMETERIIVPROC) (GLenum target, GLenum pname, GLint * params);
 typedef void (GLAPIENTRY * PFNGLGETTEXPARAMETERIIVEXTPROC) (GLenum target, GLenum pname, GLint * params);
 typedef void (GLAPIENTRY * PFNGLGETTEXPARAMETERIUIVPROC) (GLenum target, GLenum pname, GLuint * params);
@@ -3337,6 +3337,7 @@ extern void GLAPIENTRY glTranslatefDLL(GLfloat x, GLfloat y, GLfloat z);
 extern void GLAPIENTRY glVertex3fDLL(GLfloat x, GLfloat y, GLfloat z);
 extern void GLAPIENTRY glVertex3fvDLL(GLfloat const * v);
 extern void GLAPIENTRY glVertexPointerDLL(GLint size, GLenum type, GLsizei stride, const void * pointer);
+
 extern void GLAPIENTRY glActiveTexture(GLenum texture);
 extern void GLAPIENTRY glBindBufferARB(GLenum target, GLuint buffer);
 extern void GLAPIENTRY glBindBufferBaseNV(GLenum target, GLuint index, GLuint buffer);
@@ -3387,6 +3388,7 @@ extern void GLAPIENTRY glRenderbufferStorageMultisampleCoverageNV(GLenum target,
 extern GLboolean GLAPIENTRY glUnmapNamedBufferEXT(GLuint buffer);
 extern void GLAPIENTRY glUseProgram(GLuint program);
 extern void GLAPIENTRY glVertexAttribPointerARB(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void * pointer);
+
 extern void GLAPIENTRY glBeginGLUT(GLenum mode);
 extern void GLAPIENTRY glBitmapGLUT(GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, GLubyte const * bitmap);
 extern void GLAPIENTRY glDrawBufferGLUT(GLenum buf);
@@ -3395,7 +3397,7 @@ extern void GLAPIENTRY glEndGLUT();
 extern void GLAPIENTRY glEvalMesh2GLUT(GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2);
 extern GLenum GLAPIENTRY glGetErrorGLUT();
 extern void GLAPIENTRY glGetIntegervGLUT(GLenum pname, GLint * data);
-extern GLubyte const *  GLAPIENTRY glGetStringGLUT(GLenum name);
+extern GLubyte const * GLAPIENTRY glGetStringGLUT(GLenum name);
 extern void GLAPIENTRY glMap2fGLUT(GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, GLfloat const * points);
 extern void GLAPIENTRY glMapGrid2fGLUT(GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2);
 extern void GLAPIENTRY glNormal3fGLUT(GLfloat nx, GLfloat ny, GLfloat nz);
